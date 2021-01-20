@@ -26,6 +26,7 @@ class _database {
 			}
 		}
 	}
+	
 	function output() {
 		$results = implode("\r\n", $this->buffer_array);
 		if (!($results)) {

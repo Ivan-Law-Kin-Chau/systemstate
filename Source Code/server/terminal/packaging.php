@@ -13,38 +13,37 @@ class _packaging extends _assembly {
 		}
 	}
 	
-	function iterate($iterateFunction, $condition, $uuid, $wildCard = false) {
-		$cache = null;
+	function iterative_search($iterateFunction, $condition, $uuid, $wildCard = false) {
 		if ($wildCard == true && $uuid != "%") {
 			$uuid = "%".$uuid."%";
 		}
-		$iterateLoop = ["object_uuid", "group_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
-		for ($iterateCounter = 0; $iterateCounter < count($iterateLoop); $iterateCounter++) {
-			$array = $iterateLoop[$iterateCounter];
-			$buffer = json_decode($this->search(explode("_", $array)[1], $uuid, explode("_", $array)[0]))->_uuid;
+		$searchArrays = ["object_uuid", "group_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
+		for ($searchArrayIndex = 0; $searchArrayIndex < count($searchArrays); $searchArrayIndex++) {
+			$array = $searchArrays[$searchArrayIndex];
+			$searchResult = json_decode($this->search(explode("_", $array)[1], $uuid, explode("_", $array)[0]))->_uuid;
 			eval('if (' . $condition . ') {
 				$output = true;
 			} else {
 				$output = false;
 			}');
 			if ($output === true) {
-				$cache = $iterateFunction($buffer, $array, $cache);
+				$iterateFunction($searchResult, $array);
 			}
 		}
 	}
 	
 	function expand($uuid) {
 		$return = new stdClass();
-		$this->iterate(function($buffer, $array) use($return) {
-			$return->$array = $buffer;
-		}, '$buffer != null', $uuid, true);
+		$this->iterative_search(function($searchResult, $array) use($return) {
+			$return->$array = $searchResult;
+		}, '$searchResult != null', $uuid, true);
 		return json_encode($return);
 	}
 	
 	function check($uuid) {
 		$return = new stdClass();
-		$this->iterate(function($buffer, $array) use($return, $uuid) {
-			$return->$array = array_values(json_decode(json_encode($buffer), true));
+		$this->iterative_search(function($searchResult, $array) use($return, $uuid) {
+			$return->$array = array_values(json_decode(json_encode($searchResult), true));
 			foreach ($return->$array as &$returnArrayElement) {
 				if (explode("_", $array)[0] == "group") {
 					unset($returnArrayElement[explode("_", $array)[1]]);
@@ -58,27 +57,26 @@ class _packaging extends _assembly {
 			if (count($return->$array) == 0) {
 				unset($return->$array);
 			}
-		}, '$buffer != null', $uuid, "check");
+		}, '$searchResult != null', $uuid, "check");
 		return json_encode($return);
 	}
 	
 	function open($uuid) {
 		if (json_decode($this->load_object($uuid))->_uuid == $uuid) {
 			$return = new stdClass();
-			$this->iterate(function($buffer, $array, $cache) use($return) {
-				for ($i = 0; $i < count($buffer); $i++) {
-					$tempBuffer = array_values(json_decode(json_encode($buffer[$i]), true));
-					$buffer[$i] = false;
+			$this->iterative_search(function($searchResult, $array) use($return) {
+				for ($i = 0; $i < count($searchResult); $i++) {
+					$uuidList = array_values(json_decode(json_encode($searchResult[$i]), true));
+					$searchResult[$i] = false;
 					$functionName = 'load_' . explode("_", $array)[0];
-					$tempBuffer = json_decode(call_user_func_array([$this, $functionName], $tempBuffer));
-					if ($tempBuffer != null && $tempBuffer->_success == true) {
-						$tempBuffer->_dependencies = json_decode($this->check($tempBuffer->_uuid));
-						$buffer[$i] = $tempBuffer;
+					$elementFromUuidList = json_decode(call_user_func_array([$this, $functionName], $uuidList));
+					if ($elementFromUuidList != null && $elementFromUuidList->_success == true) {
+						$elementFromUuidList->_dependencies = json_decode($this->check($elementFromUuidList->_uuid));
+						$searchResult[$i] = $elementFromUuidList;
 					}
 				}
-				$return->$array = $buffer;
-				return $cache;
-			}, '$buffer != null && count($buffer) != 0', $uuid, "open");
+				$return->$array = $searchResult;
+			}, '$searchResult != null && count($searchResult) != 0', $uuid, "open");
 			return json_encode($return);
 		} else {
 			return false;

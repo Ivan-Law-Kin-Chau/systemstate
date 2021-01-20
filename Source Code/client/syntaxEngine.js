@@ -12,6 +12,7 @@ trace = function(output = "") {
 }
 
 iterate = function(iterateFunction, condition, loop = null) {
+	editor = editorStore.getState().editor;
 	iterateLoop = ["group_uuid", "object_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
 	for (iterateCounter = 0; iterateCounter < iterateLoop.length; iterateCounter++) {
 		array = iterateLoop[iterateCounter];
@@ -69,102 +70,12 @@ boolean_convert = function(input) {
 	}
 }
 
-detectSpecialCharacters = function(input) {
-	specialCharacterDetected = false;
-	range = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	for (i = 0; i < input.length; i++) {
-		if (range.indexOf(input[i]) == -1) {
-			specialCharacterDetected = true;
-		}
-	}
-	return specialCharacterDetected;
-}
-
-delimit = function(input, opposite = false) {
-	try {
-		input.split("");
-		splitErrorExists = false;
-	} catch (splitError) {
-		splitErrorExists = true;
-	} finally {
-		if (!(splitErrorExists)) {
-			if (opposite == true) {
-				return input.split("'").join("'").split('\\"').join('"');
-			} else {
-				return input.split("'").join("'").split('"').join('\\"');
-			}
-		} else {
-			return input;
-		}
-	}
-}
-
-delimitAll = function(opposite = false) {
-	iterate(function(array, i) {
-		for (value in editor[array][i]) {
-			if (value != "_sql") {
-				editor[array][i][value] = delimit(editor[array][i][value], opposite);
-			}
-		}
-	}, true);
-}
-
-delimitEditor = function() {
-	delimitAll(true);
-	eval(delimit(unsavedScript, true));
-	render(editor, false);
-	delimitAll(false);
-}
-
-insertJson = function(array, attribute, target) {
-	output = {};
-	for (preexistingAttribute in array) {
-		output[preexistingAttribute] = array[preexistingAttribute];
-		if (preexistingAttribute == target) {
-			output[attribute] = array[target];
-		}
-	}
-	return output;
-}
-
-updateJson = function(array, attribute, updated, index, replaceValueNeeded = true) {
-	updated = delimit(updated);
-	if (attribute == "_direction") {
-		if (editor[array][index]._direction == null) {
-			updated = true;
-			eval(array + "_" + index + attribute + ".innerHTML = \"-&gt;\"");
-		} else if (editor[array][index]._direction == true) {
-			updated = false;
-			eval(array + "_" + index + attribute + ".innerHTML = \"&lt;-\"");
-		} else if (editor[array][index]._direction == false) {
-			updated = null;
-			eval(array + "_" + index + attribute + ".innerHTML = \"&lt;-&gt;\"");
-		}
-	}
-	if (replaceValueNeeded == true) {
-		depended = editor[array][index][attribute];
-		iterate(function(array, i, variable) {
-			if (editor[array][i][variable]) {
-				if (editor[array][i][variable] == depended) {
-					editor[array][i][variable] = updated;
-				}
-			}
-		}, "editor[array][i]", ["_uuid", "_parent", "_start", "_end"]);
-	}
-	render();
-	if (attribute == "_direction") {
-		output = 'editor.' + array + '[' + index + '].' + attribute + ' = ' + boolean_convert(updated) + ';';
+isSameObject = function(input1, input2) {
+	if (JSON.stringify(input1) === JSON.stringify(input2)) {
+		return true;
 	} else {
-		output = 'editor.' + array + '[' + index + '].' + attribute + ' = `' + updated + '`;';
+		return false;
 	}
-	if (unsavedScript != null) {
-		if (unsavedScript == "") {
-			unsavedScript = output;
-		} else {
-			unsavedScript += " " + output;
-		}
-	}
-	return output;
 }
 
 listIncomplete = function(loop, lengthHasToBeEight = false) {
@@ -181,52 +92,56 @@ listIncomplete = function(loop, lengthHasToBeEight = false) {
 }
 
 generateScript = function() {
-	script = [];
+	var script = [];
+	var editor = editorStore.getState().editor;
+	var delimit = function(attribute) {
+		return editor[array][i][attribute].split("\"").join("\\\"");
+	}
 	iterate(function(array, i) {
-		script[script.length] = '(new _' + editor[array][i]._type + '())->add(';
+		script[script.length] = '(new _' + delimit("_type") + '())->add(';
 		if (editor[array][i]._type == "object") {
-			script[script.length - 1] += '"' + editor[array][i]._uuid + '"';
+			script[script.length - 1] += '"' + delimit("_uuid") + '"';
 		}
 		if (editor[array][i]._type == "group") {
-			script[script.length - 1] += '"' + editor[array][i]._uuid + '", "' + editor[array][i]._parent + '"';
+			script[script.length - 1] += '"' + delimit("_uuid") + '", "' + delimit("_parent") + '"';
 		}
 		if (editor[array][i]._type == "link") {
-			script[script.length - 1] += '"' + editor[array][i]._uuid + '", "' + editor[array][i]._start + '", "' + editor[array][i]._end + '", ' + boolean_convert(editor[array][i]._direction);
+			script[script.length - 1] += '"' + delimit("_uuid") + '", "' + delimit("_start") + '", "' + delimit("_end") + '", ' + boolean_convert(editor[array][i]._direction);
 		}
 		if (editor[array][i]._type == "property") {
-			script[script.length - 1] += '"' + editor[array][i]._uuid + '", "' + editor[array][i]._parent + '", "' + editor[array][i]._name + '", "' + editor[array][i]._content + '"';
+			script[script.length - 1] += '"' + delimit("_uuid") + '", "' + delimit("_parent") + '", "' + delimit("_name") + '", "' + delimit("_content") + '"';
 		}
 		script[script.length - 1] += ');';
 	}, "editor[array][i]._add == true");
 	iterate(function(array, i) {
-		script[script.length] = '(new _' + editor[array][i]._type + '())->remove(';
+		script[script.length] = '(new _' + delimit("_type") + '())->remove(';
 		if (editor[array][i]._type == "object") {
-			script[script.length - 1] += '"' + editor[array][i]._uuid + '"';
+			script[script.length - 1] += '"' + delimit("_uuid") + '"';
 		}
 		if (editor[array][i]._type == "group") {
-			script[script.length - 1] += '"' + editor[array][i]._uuid + '", "' + editor[array][i]._parent + '"';
+			script[script.length - 1] += '"' + delimit("_uuid") + '", "' + delimit("_parent") + '"';
 		}
 		if (editor[array][i]._type == "link") {
-			script[script.length - 1] += '"' + editor[array][i]._uuid + '"';
+			script[script.length - 1] += '"' + delimit("_uuid") + '"';
 		}
 		if (editor[array][i]._type == "property") {
-			script[script.length - 1] += '"' + editor[array][i]._uuid + '"';
+			script[script.length - 1] += '"' + delimit("_uuid") + '"';
 		}
 		script[script.length - 1] += ');';
 	}, "editor[array][i]._remove == true");
 	iterate(function(array, i) {
-		script[script.length] = '(new _' + editor[array][i]._type + '())->save(';
+		script[script.length] = '(new _' + delimit("_type") + '())->save(';
 		if (editor[array][i]._type == "object") {
-			script[script.length - 1] += '"' + editor[array][i]._old + '", "' + editor[array][i]._uuid + '"';
+			script[script.length - 1] += '"' + delimit("_old") + '", "' + delimit("_uuid") + '"';
 		}
 		if (editor[array][i]._type == "group") {
-			script[script.length - 1] += '"' + editor[array][i]._old + '", "' + editor[array][i]._uuid + '", "' + editor[array][i]._parent + '", "' + editor[array][i]._parentOld + '"';
+			script[script.length - 1] += '"' + delimit("_old") + '", "' + delimit("_uuid") + '", "' + delimit("_parent") + '", "' + delimit("_parentOld") + '"';
 		}
 		if (editor[array][i]._type == "link") {
-			script[script.length - 1] += '"' + editor[array][i]._old + '", "' + editor[array][i]._uuid + '", "' + editor[array][i]._start + '", "' + editor[array][i]._end + '", ' + boolean_convert(editor[array][i]._direction);
+			script[script.length - 1] += '"' + delimit("_old") + '", "' + delimit("_uuid") + '", "' + delimit("_start") + '", "' + delimit("_end") + '", ' + boolean_convert(editor[array][i]._direction);
 		}
 		if (editor[array][i]._type == "property") {
-			script[script.length - 1] += '"' + editor[array][i]._old + '", "' + editor[array][i]._uuid + '", "' + editor[array][i]._parent + '", "' + editor[array][i]._name + '", "' + editor[array][i]._content + '"';
+			script[script.length - 1] += '"' + delimit("_old") + '", "' + delimit("_uuid") + '", "' + delimit("_parent") + '", "' + delimit("_name") + '", "' + delimit("_content") + '"';
 		}
 		script[script.length - 1] += ');';
 	}, "!(editor[array][i]._add == true || editor[array][i]._remove == true)");
@@ -234,124 +149,18 @@ generateScript = function() {
 	return script.join("\n");
 }
 
-add = function(array, uuid = null, opposite = false) {
-	if (opposite == true) {
-		if (uuid == null) {
-			uuid = editor[array][0]._uuid;
-		}
-		for (i = 0; i < editor[array].length; i++) {
-			if (editor[array][i]._uuid == uuid) {
-				if (editor[array][i]._add == true) {
-					editor[array].splice(0 - (editor[array].length - i), 1);
-				}
-			}
-		}
-	} else {
-		if (!(editor[array])) {
-			editor[array] = [];
-		}
-		if (uuid == null) {
-			index = 0;
-		} else {
-			for (i = 0; i < editor[array].length; i++) {
-				if (editor[array][i]._uuid == uuid) {
-					index = i + 1;
-				}
-			}
-		}
-		if (array.indexOf("object") == 0) {
-			editor[array].splice(index, 0, {
-				"_uuid": "", 
-				"_type": "object", 
-				"_add": true
-			});
-		}
-		if (array.indexOf("group") == 0) {
-			editor[array].splice(index, 0, {
-				"_uuid": "", 
-				"_parent": "", 
-				"_type": "group", 
-				"_add": true
-			});
-		}
-		if (array.indexOf("link") == 0) {
-			editor[array].splice(index, 0, {
-				"_uuid": "", 
-				"_start": "", 
-				"_end": "", 
-				"_direction": null, 
-				"_type": "link", 
-				"_add": true
-			});
-		}
-		if (array.indexOf("property") == 0) {
-			editor[array].splice(index, 0, {
-				"_uuid": "", 
-				"_parent": "", 
-				"_name": "", 
-				"_content": "", 
-				"_type": "property", 
-				"_add": true
-			});
-		}
-		editor[array][index]["_" + array.split("_")[1]] = currentlyOpened;
-	}
-	render(editor);
-}
-
-load = function(query, useD3 = true) {
-	searchBarManager.searchArray[-1] = [];
-	searchBarManager.searchArray[-1][0] = query;
+load = function(query) {
+	currentlyOpened = query;
 	queryBarManager.query(`open("` + query + `");`, `system`, `
 		try {
-			if ("` + query + `" == originallyOpened && mouseOnNode == true && ` + boolean_convert(useD3) + ` == false) {
-				loadType = "redundant";
-			} else if ("` + query + `" == originallyOpened && ` + boolean_convert(useD3) + ` == false) {
-				loadType = "afterPreviewing";
-				editor = JSON.parse(this.responseText);
-			} else if ("` + query + `" != originallyOpened && ` + boolean_convert(useD3) + ` == false) {
-				loadType = "previewing";
-				editor = JSON.parse(this.responseText);
-			} else {
-				loadType = "normal";
-				editor = JSON.parse(this.responseText);
-			}
+			var editor = JSON.parse(this.responseText);
 		} catch (error) {
-			editor = null;
+			var editor = null;
 		} finally {
-			if (editor != null && loadType != "redundant") {
-				iterate(function(array, i) {
-					editor[array][i] = insertJson(editor[array][i], "_old", "_uuid");
-					if (array.split("_")[0] == "group") {
-						editor[array][i] = insertJson(editor[array][i], "_parentOld", "_parent");
-					}
-				}, true);
-				delimitAll(false);
-				if (loadType == "afterPreviewing") {
-					eval(delimit(unsavedScript, true));
-				}
-				if (loadType == "normal") {
-					unsavedScript = "";
-				}
-				delimitAll(true);
-				render(editor, ` + boolean_convert(useD3) + `);
-				delimitAll();
-				currentlyOpened = "` + query + `";
-				if (` + boolean_convert(useD3) + ` == true) {
-					originallyOpened = "` + query + `";
-					mouseOnNode = false;
-					setStatusMessage("Loading Force-Directed Graph");
-				} else {
-					if (mouseOnNode == true) {
-						setStatusMessage("Previewing Editor");
-					}
-					if (mouseOnNode == false) {
-						setStatusMessage();
-					}
-				}
-				if (valid.indexOf("` + query + `") == -1) {
-					valid[valid.length] = "` + query + `";
-				}
+			if (editor !== null) {
+				render(editor);
+			} else {
+				currentlyOpened = null;
 			}
 		}
 	`, 0);
@@ -379,30 +188,34 @@ save = function(ignoreWarnings = false) {
 		}
 	}
 	if (canProceed == true) {
-		queryBarManager.query(encodeURIComponent("script(\"" + encodeURIComponent(generateScript()) + "\");"), "system", "load(editor[\"object_uuid\"][0]._uuid);", 1);
-		unsavedScript = null;
+		queryBarManager.query(encodeURIComponent("script(\"" + encodeURIComponent(generateScript()) + "\");"), "system", "reload();", 1);
 	}
 }
 
-remove = function(array, uuid = null, opposite = false) {
-	if (array == "group_uuid") {
-		buffer = "_parent";
-	} else if (array == "group_parent") {
-		buffer = "_uuid";
-	} else {
-		buffer = "_uuid";
-	}
-	if (uuid == null) {
-		uuid = editor[array][editor[array].length - 1][buffer];
-	}
-	for (i = 0; i < editor[array].length; i++) {
-		if (editor[array][i][buffer] == uuid) {
-			if (opposite == true) {
-				delete editor[array][i]._remove;
-			} else {
-				editor[array][i]._remove = true;
+reload = function () {
+	var editor = editorStore.getState().editor;
+	if (typeof editor === "object" && JSON.stringify(editor) !== "{}") {
+		var notRemovedElementFound = false;
+		for (var array in editor) {
+			if (array !== "object_uuid") {
+				for (var item in editor[array]) {
+					if (!(editor[array][item]._remove === true)) {
+						notRemovedElementFound = true;
+					}
+				}
 			}
 		}
+		
+		if (notRemovedElementFound === true) {
+			load(editorStore.getState().editor["object_uuid"][0]._uuid);
+		} else {
+			editorStore.dispatch({
+				"type": "empty"
+			});
+		}
+	} else {
+		editorStore.dispatch({
+			"type": "empty"
+		});
 	}
-	render(editor);
 }

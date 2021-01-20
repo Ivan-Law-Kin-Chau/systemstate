@@ -38,6 +38,15 @@ class _query {
 		}
 		if ($this->get_queryType()) {
 			foreach ($array as $row) {
+				// SQLite3 does not natively support booleans
+				// So here the value of $row["direction"] has to be converted back into a boolean if it exists
+				if ($row["direction"] === "") {
+					$row["direction"] = null;
+				} else if ($row["direction"] === "1") {
+					$row["direction"] = true;
+				} else if ($row["direction"] === "0") {
+					$row["direction"] = false;
+				}
 				eval($this->get_inner());
 			}
 		}

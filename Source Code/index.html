@@ -1,16 +1,16 @@
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <html>
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=0.8">
 <link rel="icon" href="resources/favicon.ico" type="image/ico">
 <link rel="shortcut icon" href="resources/favicon.ico" type="image/x-icon">
 <link rel="stylesheet" type="text/css" href="resources/main.css">
+<script type="text/javascript" src="client/redux.min.js"></script>
+<script type="text/javascript" src="client/editorStore.js"></script>
+<script type="text/javascript" src="client/selectorStore.js"></script>
 <script type="text/javascript" src="client/userInterface.js"></script>
 <script type="text/javascript" src="client/userInterfaceHandlers.js"></script>
-<script type="text/javascript" src="client/generateEditor.js"></script>
 <script type="text/javascript" src="client/syntaxEngine.js"></script>
-<script type="text/javascript" src="client/graphEngine.js"></script>
-<script type="text/javascript" src="client/d3.v3.min.js"></script>
 </head>
 
 <body>
@@ -19,16 +19,11 @@
 <div id="sidebarScroller" class="invertedColors viewer unselectable">
 <div id="sidebar" class="invertedColors inner unselectable">No Content</div>
 </div>
-<div id="canvas" class="invertedColors viewer unselectable"></div>
 </div>
 
 <div class="aboveTabs text invertedColors unselectable">
 <a id="enterButton">Enter</a>
-<span id="pipeOne">|</span>
-<a id="viewGraph">Graph</a> 
-<a id="viewSplit">[Split]</a> 
-<a id="viewEditor">Editor</a>
-<span id="pipeTwo">|</span>
+<span id="pipe">|</span>
 <a id="openConsoleInterface">[Console]</a> 
 <a id="openSearchEngine">Search</a> 
 <a id="openJsonViewer">JSON</a> 
@@ -74,25 +69,26 @@ Editor Actions:
 
 Selected Element: 
 [<span id="selected"></span>]
-<a onclick="selection.add();">(+)</a>
-<a onclick="selection.remove();">(-)</a><br>
+<a onclick="selectionAdd();">(+)</a>
+<a onclick="selectionRemove();">(-)</a><br>
 
 More Components: 
 <span style="vertical-align: top; display: inline-block;">
-#%%%%%%%%<a onclick="selection.add('group_uuid');">(+)</a>: 
-#%%%%%%%%<a onclick="selection.add('object_uuid');">(+)</a> this: 
-#%%%%%%%%<a onclick="selection.add('group_parent');">(+)</a><br>
+#%%%%%%%%<a onclick="selectionAdd('group_parent');">(+)</a>: 
+#%%%%%%%%<a onclick="selectionAdd('object_uuid');">(+)</a> this: 
+#%%%%%%%%<a onclick="selectionAdd('group_uuid');">(+)</a><br>
 
-#%%%%%%%%<a onclick="selection.add('link_uuid');">(+)</a>: 
-#%%%%%%%%<a onclick="selection.add('link_start');">(+)</a> &lt;-&gt; 
-#%%%%%%%%<a onclick="selection.add('link_end');">(+)</a><br>
+#%%%%%%%%<a onclick="selectionAdd('link_uuid');">(+)</a>: 
+#%%%%%%%%<a onclick="selectionAdd('link_start');">(+)</a> &lt;-&gt; 
+#%%%%%%%%<a onclick="selectionAdd('link_end');">(+)</a><br>
 
-#%%%%%%%%<a onclick="selection.add('property_uuid');">(+)</a>: 
-#%%%%%%%%<a onclick="selection.add('property_parent');">(+)</a>: 
+#%%%%%%%%<a onclick="selectionAdd('property_uuid');">(+)</a>: 
+#%%%%%%%%<a onclick="selectionAdd('property_parent');">(+)</a>: 
 %%%%%%%%: <br>
 %%%%%%%%
 </span>
 
+</div>
 </div>
 </div>
 </div>

@@ -55,14 +55,6 @@ button::-moz-focus-inner {
 	background-color: #000000;
 	color: #FFFFFF;
 }
-.nodeLabel {
-	background-color: #FFFFFF;
-	color: #000000;
-}
-.nodeLabel::selection {
-	background-color: #000000;
-	color: #FFFFFF;
-}
 #query {
 	font-family: 'Consolas';
 	font-size: 16px;
@@ -101,17 +93,6 @@ button::-moz-focus-inner {
 	left: 0px;
 	z-index: 24;
 }
-#canvas {
-	width: calc(35% - 32px);
-	height: calc(65% - 74px);
-	background-color: #000000;
-	color: #FFFFFF;
-	overflow: hidden;
-	position: fixed;
-	left: 0px;
-	z-index: 0;
-	top: 32px;
-}
 #searchSuggestionsScroller {
 	width: calc(100% - 16px);
 	height: calc(100% - 24px);
@@ -119,10 +100,10 @@ button::-moz-focus-inner {
 }
 #sidebarScroller {
 	float: right;
-	width: 65%;
+	width: calc(100% - 16px);
 	height: calc(65% - 74px);
 	position: fixed;
-	left: calc(35% - 16px);
+	left: 0;
 	z-index: 12;
 	top: 32px;
 }
