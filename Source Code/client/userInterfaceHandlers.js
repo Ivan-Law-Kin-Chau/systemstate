@@ -75,51 +75,6 @@ tabsHandler = function() {
 	return tabsManager;
 }
 
-viewHandler = function() {
-	viewManager = {};
-	viewManager.revert = function() {
-		document.getElementById("canvas").style.display = "initial";
-		document.getElementById("canvas").style.width = "initial";
-		document.getElementById("sidebarScroller").style.display = "initial";
-		document.getElementById("sidebarScroller").style.width = "initial";
-		document.getElementById("sidebarScroller").style.left = "calc(35% - 16px)";
-		document.getElementById("viewGraph").innerHTML = "Graph";
-		document.getElementById("viewSplit").innerHTML = "Split";
-		document.getElementById("viewEditor").innerHTML = "Editor";
-	}
-	viewManager.setCurrentView = function(view) {
-		viewManager.currentView = view;
-		viewManager.revert();
-		if (view == 1) {
-			document.getElementById("sidebarScroller").style.display = "none";
-			document.getElementById("canvas").style.width = "calc(100% - 16px)";
-			document.getElementById("canvas").style.left = "0";
-			document.getElementById("viewGraph").innerHTML = "[Graph]";
-		} else if (view == 2) {
-			document.getElementById("canvas").style.width = "calc(35% - 32px)";
-			document.getElementById("sidebarScroller").style.width = "65%";
-			document.getElementById("sidebarScroller").style.left = "calc(35% - 16px)";
-			document.getElementById("viewSplit").innerHTML = "[Split]";
-		} else if (view == 3) {
-			document.getElementById("canvas").style.display = "none";
-			document.getElementById("sidebarScroller").style.width = "calc(100% - 16px)";
-			document.getElementById("sidebarScroller").style.left = "0";
-			document.getElementById("viewEditor").innerHTML = "[Editor]";
-		}
-	}
-	viewManager.setCurrentView(2);
-	document.getElementById("viewGraph").addEventListener('click', function(event) {
-		viewManager.setCurrentView(1);
-	});
-	document.getElementById("viewSplit").addEventListener('click', function(event) {
-		viewManager.setCurrentView(2);
-	});
-	document.getElementById("viewEditor").addEventListener('click', function(event) {
-		viewManager.setCurrentView(3);
-	});
-	return viewManager;
-}
-
 fileHandler = function() {
 	fileManager = {};
 	fileManager.import = function(filename, passcode = null) {
@@ -216,13 +171,6 @@ queryBarHandler = function() {
 			jsQuery = processQuery.substring(3, processQuery.length);
 			eval(jsQuery);
 		} else {
-			if (recordedScript != null) {
-				if (recordedScript == "") {
-					recordedScript = processQuery;
-				} else {
-					recordedScript += " " + processQuery;
-				}
-			}
 			terminalFunction(function(responseText) {
 				this.responseText = responseText;
 				json = JSON.parse(this.responseText);
@@ -287,7 +235,6 @@ searchBarHandler = function() {
 	searchBarObject.wrapper = function() {
 		if (searchBarObject.handler() == false) {
 			if (hotkeys.ctrl.keyStatus != 0 && hotkeys.alt.keyStatus != 0) {
-				searchBarObject.searchArray[-1] = null;
 				if (document.activeElement.id) {
 					if (document.activeElement.id != "searchBar") {
 						searchBarObject.searchOrigin = document.activeElement.id;
@@ -306,9 +253,6 @@ searchBarHandler = function() {
 		searchBarObject.searchArray = [];
 		for (i = 0; i < searchBarObject.processArray.length; i++) {
 			if (searchBarObject.processArray[i].length == 2) {
-				if (valid.indexOf(searchBarObject.processArray[i][0]) == -1) {
-					valid[valid.length] = searchBarObject.processArray[i][0];
-				}
 				searchBarObject.searchArray[searchBarObject.searchArray.length] = [searchBarObject.processArray[i][0], [searchBarObject.processArray[i][1]]];
 			}
 			if (searchBarObject.processArray[i].length == 1) {
@@ -328,24 +272,15 @@ searchBarHandler = function() {
 		}
 	}
 	searchBarObject.end = function() {
-		terminateFunction = false;
-		if (searchBarObject.searchArray[-1] == null) {
-			if (searchBarObject.searchArray[0] == null) {
-				document.getElementById("query").focus();
-				terminateFunction == true;
-			}
+		if (searchBarObject.searchArray[0][0]) {
 			entry = searchBarObject.searchArray[0][0];
-		} else {
-			entry = searchBarObject.searchArray[-1][0];
-		}
-		if (valid.indexOf(entry) != -1 && terminateFunction == false) {
 			if (hotkeys.shift.keyStatus > 0) {
 				load(entry);
 				document.getElementById("searchBar").focus();
 			} else if (searchBarObject.searchOrigin == "query") {
 				queryBarManager.insert(entry);
 			} else if (searchBarObject.searchOrigin.length > 0) {
-				document.getElementById(searchBarObject.searchOrigin).value = entry;
+				document.getElementById(searchBarObject.searchOrigin).setShadowAttribute("value", entry);
 				document.getElementById(searchBarObject.searchOrigin).focus();
 				hotkeys.enter.keyStatus = 2;
 			}

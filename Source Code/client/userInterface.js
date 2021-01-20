@@ -7,7 +7,7 @@ preloader.onreadystatechange = function() {
 preloader.open("POST", "resources/settings.json", false);
 preloader.send();
 
-document.addEventListener('DOMContentLoaded', event => {
+document.addEventListener("DOMContentLoaded", event => {
 	softwareVersion = "Systemstate Editor Pre-alpha v0.3.1";
 	hotkeys = {
 		"enter": {
@@ -51,19 +51,14 @@ document.addEventListener('DOMContentLoaded', event => {
 			"keyStatus": 0
 		}
 	};
-	editor = null;
-	valid = [];
 	currentlyOpened = null;
-	originallyOpened = null;
-	mouseOnNode = false;
-	recordedScript = null;
-	unsavedScript = null;
 	traceCache = [];
-	selector();
 	lastForm = false;
+	selectorStore.dispatch({
+		"type": "initiate"
+	});
 	
 	tabsManager = tabsHandler();
-	viewManager = viewHandler();
 	fileManager = fileHandler();
 	queryBarManager = queryBarHandler();
 	searchBarManager = searchBarHandler();
@@ -123,7 +118,7 @@ document.addEventListener('DOMContentLoaded', event => {
 	document.getElementById("enterButton").addEventListener('click', function(event) {
 		if (lastForm) {
 			original = hotkeys.shift.keyStatus;
-			event = new Event('submit', {
+			event = new Event("submit", {
 				"cancelable": true
 			});
 			hotkeys.shift.keyStatus = 1;
@@ -139,17 +134,9 @@ document.addEventListener('DOMContentLoaded', event => {
 	setStatusMessage();
 	document.title = softwareVersion;
 	document.getElementById("query").focus();
-	queryBarManager.query(`expand("%");`, `system`, `
-		editor = JSON.parse(this.responseText);
-		iterate(function(array, i) {
-			valid[valid.length] = editor[array][i];
-		}, "editor[array]");
-		editor = null;
-	`, 0);
 	
 	initEditor = settings.client.editor;
 	initTab = settings.client.tab;
-	initView = settings.client.view;
 	initDevice = settings.client.device;
 	
 	parseGetSpawner = parseGet();
@@ -173,23 +160,13 @@ document.addEventListener('DOMContentLoaded', event => {
 		}
 	}
 	
-	if (initView != null) {
-		if (initView == "Graph") {
-			viewManager.setCurrentView(1);
-		} else if (initView == "Split") {
-			viewManager.setCurrentView(2);
-		} else if (initView == "Editor") {
-			viewManager.setCurrentView(3);
-		}
-	}
-	
 	if (initDevice != null) {
 		if (initDevice == "Mobile") {
 			document.getElementById("enterButton").style.display = "initial";
-			document.getElementById("pipeOne").style.display = "initial";
+			document.getElementById("pipe").style.display = "initial";
 		} else if (initDevice == "Desktop") {
 			document.getElementById("enterButton").style.display = "none";
-			document.getElementById("pipeOne").style.display = "none";
+			document.getElementById("pipe").style.display = "none";
 		}
 	}
 });
@@ -212,12 +189,12 @@ noContentRender = function(elementId) {
 	}
 }
 
-render = function(input = null, useD3 = true, holdInnerHTML = false) {
+render = function(input = null) {
 	if (input != null) {
-		document.getElementById("sidebar").innerHTML = reload(input, useD3);
-	}
-	if (editor != null) {
-		document.getElementById("sidebarPreview").innerHTML = JSON.stringify(editor, null, 4);
+		editorStore.dispatch({
+			"type": "reset", 
+			"editor": input
+		});
 	}
 	noContentRender("searchSuggestions");
 	noContentRender("sidebar");
@@ -291,159 +268,4 @@ graphicalUI = function() {
 	window.guiWidgets = window.guiWidgets.split("<br>");
 	window.guiWidgets = window.guiWidgets.join("\n");
 	document.getElementById("gui").innerHTML = window.guiWidgets;
-}
-
-selector = function(array = null, index = null, action = null, attribute = null) {
-	canProceed = true;
-	suppressGraphicalUI = false;
-	if (editor == null || array == null) {
-		suppressGraphicalUI = true;
-		selected = {
-			"array": null, 
-			"index": null, 
-			"action": null
-		};
-	} else if (typeof editor[array] != "undefined") {
-		if (typeof window.selection.uncolor != "undefined") {
-			window.selection.uncolor();
-		}
-		if (typeof editor[array][index] != "undefined") {
-			selected = {
-				"array": array, 
-				"index": index, 
-				"action": action
-			};
-			if (attribute !== null) {
-				selected.attribute = attribute;
-			}
-			if (typeof window.selection != "undefined") {
-				if (isSameObject({
-					"array": selected.array, 
-					"index": selected.index, 
-					"action": selected.action
-				}, {
-					"array": window.selection.array, 
-					"index": window.selection.index, 
-					"action": window.selection.action
-				}) == true) {
-					document.getElementById("selected").innerHTML = "%%%%%%%%";
-					window.selector();
-					canProceed = false;
-				}
-			}
-			if (canProceed == true) {
-				loop = [selected.attribute];
-				selected.uncolorTargetList = [];
-				if (selected.action == "element") {
-					if (array == "group_uuid") {
-						loop[loop.length] = "_parent";
-					} else if (array == "group_parent") {
-						loop[loop.length] = "_uuid";
-					} else {
-						loop[loop.length] = "_" + array.split("_")[1];
-					}
-				}
-				if (selected.action == "add") {
-					loop[loop.length] = "_add";
-				}
-				if (selected.action == "remove") {
-					loop[loop.length] = "_remove";
-				}
-				for (i = 0; i < loop.length; i++) {
-					uncolorTarget = document.getElementById(selected.array + "_" + index + loop[i]) || null;
-					if (uncolorTarget !== null) {
-						selected.uncolorTargetList[selected.uncolorTargetList.length] = uncolorTarget;
-						uncolorTarget.style.color = "#FF0000";
-					}
-				}
-			}
-		}
-	}
-	selected.uncolor = function() {
-		if (typeof selected.uncolorTargetList != "undefined") {
-			for (i = 0; i < selected.uncolorTargetList.length; i++) {
-				if (document.getElementById(selected.uncolorTargetList[i].id) != null) {
-					document.getElementById(selected.uncolorTargetList[i].id).style.color = "#000000";
-				}
-			}
-		}
-	}
-	selected.recolor = function() {
-		if (typeof selected.uncolorTargetList != "undefined") {
-			for (i = 0; i < selected.uncolorTargetList.length; i++) {
-				if (document.getElementById(selected.uncolorTargetList[i].id) != null) {
-					document.getElementById(selected.uncolorTargetList[i].id).style.color = "#FF0000";
-				}
-			}
-		}
-	}
-	selected.arrayIndexKey = function(array = null, index = null) {
-		if (array == null) {
-			array = selected.array;
-		}
-		if (index == null) {
-			index = selected.index;
-		}
-		try {
-			if (array == "group_uuid") {
-				key = editor[array][index]["_parent"];
-			} else if (array == "group_parent") {
-				key = editor[array][index]["_uuid"];
-			} else {
-				key = editor[array][index]["_uuid"];
-			}
-		} catch (error) {
-			key = null;
-		}
-		return {
-			"array": array, 
-			"index": index, 
-			"key": key
-		};
-	}
-	selected.add = function(array = null, index = null) {
-		processArrayIndexKey = selected.arrayIndexKey(array, index);
-		array = processArrayIndexKey.array;
-		index = processArrayIndexKey.index;
-		key = processArrayIndexKey.key;
-		if (key == null) {
-			add(array);
-		} else {
-			add(array, key);
-		}
-		setStatusMessage("Loading Force-Directed Graph");
-		delimitEditor();
-	}
-	selected.remove = function() {
-		processArrayIndexKey = selected.arrayIndexKey(array, index);
-		array = processArrayIndexKey.array;
-		index = processArrayIndexKey.index;
-		key = processArrayIndexKey.key;
-		if (selected.action == "element") {
-			remove(selected.array, key);
-		}
-		if (selected.action == "add") {
-			add(selected.array, key, true);
-			selector();
-		}
-		if (selected.action == "remove") {
-			remove(selected.array, key, true);
-		}
-		window.selection.uncolor();
-		setStatusMessage("Loading Force-Directed Graph");
-		delimitEditor();
-	}
-	if (canProceed == true) {
-		if (selected.action != null) {
-			document.getElementById("selected").innerHTML = selected.array + "_" + selected.index + "_" + selected.action;
-		} else if (document.getElementById("selected") != null) {
-			document.getElementById("selected").innerHTML = "";
-		}
-	}
-	if (canProceed == true || typeof window.selection == "undefined") {
-		window.selection = selected;
-		if (suppressGraphicalUI == false) {
-			tabsManager.setCurrentTab(4);
-		}
-	}
 }

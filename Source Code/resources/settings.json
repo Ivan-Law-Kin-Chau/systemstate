@@ -2,7 +2,6 @@
 	"client": {
 		"editor": null, 
 		"tab": "Search", 
-		"view": "Split", 
 		"device": "Desktop"
 	}, 
 	"server": {
