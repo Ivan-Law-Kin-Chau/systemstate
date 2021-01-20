@@ -70,8 +70,11 @@ class _settings {
 	}
 	
 	function lock_settings() {
-		if(!(flock($this->lock, LOCK_SH | LOCK_NB))) {
-			$GLOBALS["process"]->kill(12, "Another instance of the Systemstate Server is already running. ");
+		if(flock($this->lock, LOCK_SH | LOCK_NB)) {
+			unlink(getcwd()."\\..\\resources\\call");
+		} else {
+			touch(getcwd()."\\..\\resources\\call");
+			$GLOBALS["process"]->kill(12, "Another instance of the Systemstate Server is already running. ", false);
 		}
 	}
 	
