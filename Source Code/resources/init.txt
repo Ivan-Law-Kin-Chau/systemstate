@@ -1,0 +1,2 @@
+Systemstate Editor Pre-alpha v0.3.1
+Copyright (c) 2020 Chiu Tsz Yin. All rights reserved. 
