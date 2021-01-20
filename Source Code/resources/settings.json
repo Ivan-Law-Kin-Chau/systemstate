@@ -1,0 +1,14 @@
+{
+	"client": {
+		"editor": null, 
+		"tab": "Search", 
+		"view": "Split", 
+		"device": "Desktop"
+	}, 
+	"server": {
+		"port": 800, 
+		"debug": false, 
+		"beautify_jsons": false, 
+		"stream_capacity": 1048576
+	}
+}

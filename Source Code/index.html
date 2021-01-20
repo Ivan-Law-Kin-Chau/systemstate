@@ -1,0 +1,100 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=0.8">
+<link rel="icon" href="resources/favicon.ico" type="image/ico">
+<link rel="shortcut icon" href="resources/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" type="text/css" href="resources/main.css">
+<script type="text/javascript" src="client/userInterface.js"></script>
+<script type="text/javascript" src="client/userInterfaceHandlers.js"></script>
+<script type="text/javascript" src="client/generateEditor.js"></script>
+<script type="text/javascript" src="client/syntaxEngine.js"></script>
+<script type="text/javascript" src="client/graphEngine.js"></script>
+<script type="text/javascript" src="client/d3.v3.min.js"></script>
+</head>
+
+<body>
+<div id="editor">
+<div id="version" class="invertedBackground viewer unselectable"></div>
+<div id="sidebarScroller" class="invertedColors viewer unselectable">
+<div id="sidebar" class="invertedColors inner unselectable">No Content</div>
+</div>
+<div id="canvas" class="invertedColors viewer unselectable"></div>
+</div>
+
+<div class="aboveTabs text invertedColors unselectable">
+<a id="enterButton">Enter</a>
+<span id="pipeOne">|</span>
+<a id="viewGraph">Graph</a> 
+<a id="viewSplit">[Split]</a> 
+<a id="viewEditor">Editor</a>
+<span id="pipeTwo">|</span>
+<a id="openConsoleInterface">[Console]</a> 
+<a id="openSearchEngine">Search</a> 
+<a id="openJsonViewer">JSON</a> 
+<a id="openGraphicalUI">GUI</a>
+</div>
+
+<div class="tabs">
+<div id="consoleInterface" class="tab">
+<div id="scroller">
+<div id="output"></div>
+</div>
+<form id="queryForm" method="post">
+<input type="input" id="query" name="query" list="suggestions" autocomplete="off">
+<input type="submit">
+</form>
+</div>
+
+<div id="searchEngine" class="tab">
+<form id="searchForm" class="invertedColors">
+<input type='input' class="invertedBackground text" id="searchBar" placeholder="Find... " autocomplete="off">
+<input type="submit" class="invertedBackground">
+</form>
+<div id="searchSuggestionsScroller" class="invertedColors viewer">
+<div id="searchSuggestions" class="invertedColors inner unselectable">No Content</div>
+</div>
+</div>
+
+<div id="jsonViewer" class="tab">
+<div id="jsonViewerScroller" class="invertedColors viewer">
+<div id="sidebarPreview" class="invertedColors inner unselectable">No Content</div>
+</div>
+</div>
+
+<div id="graphicalUI" class="tab">
+<div id="graphicalUIScroller" class="invertedColors viewer">
+<div id="gui" class="invertedColors inner unselectable">
+
+Editor Actions: 
+<a onclick="save();">(Save)</a>
+<a onclick="fileManager.export().upload();">(Import)</a>
+<a onclick="fileManager.import('backup');">(Export)</a>
+<a onclick="terminate();">(Terminate)</a><br>
+
+Selected Element: 
+[<span id="selected"></span>]
+<a onclick="selection.add();">(+)</a>
+<a onclick="selection.remove();">(-)</a><br>
+
+More Components: 
+<span style="vertical-align: top; display: inline-block;">
+#%%%%%%%%<a onclick="selection.add('group_uuid');">(+)</a>: 
+#%%%%%%%%<a onclick="selection.add('object_uuid');">(+)</a> this: 
+#%%%%%%%%<a onclick="selection.add('group_parent');">(+)</a><br>
+
+#%%%%%%%%<a onclick="selection.add('link_uuid');">(+)</a>: 
+#%%%%%%%%<a onclick="selection.add('link_start');">(+)</a> &lt;-&gt; 
+#%%%%%%%%<a onclick="selection.add('link_end');">(+)</a><br>
+
+#%%%%%%%%<a onclick="selection.add('property_uuid');">(+)</a>: 
+#%%%%%%%%<a onclick="selection.add('property_parent');">(+)</a>: 
+%%%%%%%%: <br>
+%%%%%%%%
+</span>
+
+</div>
+</div>
+</div>
+</body>
+</html>
