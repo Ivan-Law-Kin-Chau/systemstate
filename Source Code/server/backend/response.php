@@ -91,10 +91,13 @@ class _response {
 		return $this->get_header_string().$this->get_body();
 	}
 	
-	function set_header($key, $value) {
+	function set_header($key, $value, $move_to_end = false) {
 		$buffer = str_split($key);
 		unset($buffer[0]);
 		$key = strtoupper($key[0]).implode("", $buffer);
+		if (isset($this->headers[$key]) && $move_to_end === true) {
+			unset($this->headers[$key]);
+		}
 		$this->headers[$key] = $value;
 	}
 	

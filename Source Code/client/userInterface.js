@@ -4,7 +4,7 @@ preloader.onreadystatechange = function() {
 		settings = JSON.parse(this.responseText);
 	}
 }
-preloader.open("POST", "resources/settings.json", true);
+preloader.open("POST", "resources/settings.json", false);
 preloader.send();
 
 document.addEventListener('DOMContentLoaded', event => {
@@ -249,7 +249,7 @@ parseGet = function() {
 	return output;
 }
 
-terminalFunction = function(responseFunction, query = "", target = "http://localhost:" + settings.server.port) {
+terminalFunction = function(responseFunction, query = "", target = "http://localhost:" + settings.server.port + "/terminal") {
 	terminal = new XMLHttpRequest();
 	terminal.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
@@ -384,12 +384,16 @@ selector = function(array = null, index = null, action = null, attribute = null)
 		if (index == null) {
 			index = selected.index;
 		}
-		if (array == "group_uuid") {
-			key = editor[array][index]["_parent"];
-		} else if (array == "group_parent") {
-			key = editor[array][index]["_uuid"];
-		} else {
-			key = editor[array][index]["_uuid"];
+		try {
+			if (array == "group_uuid") {
+				key = editor[array][index]["_parent"];
+			} else if (array == "group_parent") {
+				key = editor[array][index]["_uuid"];
+			} else {
+				key = editor[array][index]["_uuid"];
+			}
+		} catch (error) {
+			key = null;
 		}
 		return {
 			"array": array, 

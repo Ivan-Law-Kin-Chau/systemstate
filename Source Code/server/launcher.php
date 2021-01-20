@@ -27,6 +27,7 @@ require_once "terminal/packaging.php";
 require_once "terminal/terminal.php";
 
 require_once "process.php";
+require_once "return.php";
 
 $process = new _process();
 
