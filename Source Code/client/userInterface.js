@@ -54,9 +54,6 @@ document.addEventListener("DOMContentLoaded", event => {
 	currentlyOpened = null;
 	traceCache = [];
 	lastForm = false;
-	selectorStore.dispatch({
-		"type": "initiate"
-	});
 	
 	tabsManager = tabsHandler();
 	fileManager = fileHandler();
@@ -128,7 +125,7 @@ document.addEventListener("DOMContentLoaded", event => {
 		}
 	});
 	
-	graphicalUI();
+	prepareGraphicalUI();
 	render();
 	read("init.txt");
 	setStatusMessage();
@@ -191,8 +188,8 @@ noContentRender = function(elementId) {
 
 render = function(input = null) {
 	if (input != null) {
-		editorStore.dispatch({
-			"type": "reset", 
+		reduxStore.dispatch({
+			"type": "EDITOR_RESET", 
 			"editor": input
 		});
 	}
@@ -260,8 +257,7 @@ terminate = function() {
 	}, 3000);
 }
 
-graphicalUI = function() {
-	window.uploaderManager = fileManager.export();
+prepareGraphicalUI = function() {
 	window.guiWidgets = document.getElementById("gui").innerHTML;
 	window.guiWidgets = window.guiWidgets.split("\n");
 	window.guiWidgets = window.guiWidgets.join("");

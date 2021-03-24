@@ -12,7 +12,7 @@ trace = function(output = "") {
 }
 
 iterate = function(iterateFunction, condition, loop = null) {
-	editor = editorStore.getState().editor;
+	editor = reduxStore.getState().editor;
 	iterateLoop = ["group_uuid", "object_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
 	for (iterateCounter = 0; iterateCounter < iterateLoop.length; iterateCounter++) {
 		array = iterateLoop[iterateCounter];
@@ -93,7 +93,7 @@ listIncomplete = function(loop, lengthHasToBeEight = false) {
 
 generateScript = function() {
 	var script = [];
-	var editor = editorStore.getState().editor;
+	var editor = reduxStore.getState().editor;
 	var delimit = function(attribute) {
 		return editor[array][i][attribute].split("\"").join("\\\"");
 	}
@@ -193,7 +193,7 @@ save = function(ignoreWarnings = false) {
 }
 
 reload = function () {
-	var editor = editorStore.getState().editor;
+	var editor = reduxStore.getState().editor;
 	if (typeof editor === "object" && JSON.stringify(editor) !== "{}") {
 		var notRemovedElementFound = false;
 		for (var array in editor) {
@@ -207,15 +207,15 @@ reload = function () {
 		}
 		
 		if (notRemovedElementFound === true) {
-			load(editorStore.getState().editor["object_uuid"][0]._uuid);
+			load(reduxStore.getState().editor["object_uuid"][0]._uuid);
 		} else {
-			editorStore.dispatch({
-				"type": "empty"
+			reduxStore.dispatch({
+				"type": "EDITOR_EMPTY"
 			});
 		}
 	} else {
-		editorStore.dispatch({
-			"type": "empty"
+		reduxStore.dispatch({
+			"type": "EDITOR_EMPTY"
 		});
 	}
 }

@@ -1,164 +1,3 @@
-editorStore = Redux.createStore(function (state = {}, action = {}) {
-	console.log("editorStore", action);
-	
-	var stateIterate = function(iterateFunction, state, condition, loop = null) {
-		iterateLoop = ["group_uuid", "object_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
-		for (iterateCounter = 0; iterateCounter < iterateLoop.length; iterateCounter++) {
-			array = iterateLoop[iterateCounter];
-			if (state.editor[array]) {
-				if (loop == false) {
-					if (eval(condition)) iterateFunction(array);
-				} else {
-					for (i = 0; i < state.editor[array].length; i++) {
-						if (loop == null) {
-							if (eval(condition)) iterateFunction(array, i);
-						} else {
-							for (j = 0; j < loop.length; j++) {
-								variable = loop[j];
-								if (eval(condition)) iterateFunction(array, i, variable);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	if (action.type === "empty") {
-		state = {};
-	} else if (action.type === "reset") {
-		state.editor = action.editor;
-		var insertJson = function(array, attribute, target) {
-			output = {};
-			for (preexistingAttribute in array) {
-				output[preexistingAttribute] = array[preexistingAttribute];
-				if (preexistingAttribute == target) {
-					output[attribute] = array[target];
-				}
-			}
-			return output;
-		}
-		stateIterate(function(array, i) {
-			state.editor[array][i] = insertJson(state.editor[array][i], "_old", "_uuid");
-			if (array.split("_")[0] == "group") {
-				state.editor[array][i] = insertJson(state.editor[array][i], "_parentOld", "_parent");
-			}
-		}, state, true);
-	} else if (action.type === "add") {
-		var array = action.array;
-		var uuid = action.key;
-		if (typeof uuid === "undefined") uuid = null;
-		var opposite = action.opposite;
-		if (typeof opposite === "undefined") opposite = false;
-		var editor = state.editor;
-		if (opposite == true) {
-			if (uuid == null) {
-				uuid = editor[array][0]._uuid;
-			}
-			for (i = 0; i < editor[array].length; i++) {
-				if (editor[array][i]._uuid == uuid) {
-					if (editor[array][i]._add == true) {
-						editor[array].splice(0 - (editor[array].length - i), 1);
-					}
-				}
-			}
-		} else {
-			if (!(editor[array])) {
-				editor[array] = [];
-			}
-			if (uuid == null) {
-				index = 0;
-			} else {
-				for (i = 0; i < editor[array].length; i++) {
-					if (editor[array][i]._uuid == uuid) {
-						index = i + 1;
-					}
-				}
-			}
-			if (array.indexOf("object") == 0) {
-				editor[array].splice(index, 0, {
-					"_uuid": "", 
-					"_type": "object", 
-					"_add": true
-				});
-			}
-			if (array.indexOf("group") == 0) {
-				editor[array].splice(index, 0, {
-					"_uuid": "", 
-					"_parent": "", 
-					"_type": "group", 
-					"_add": true
-				});
-			}
-			if (array.indexOf("link") == 0) {
-				editor[array].splice(index, 0, {
-					"_uuid": "", 
-					"_start": "", 
-					"_end": "", 
-					"_direction": null, 
-					"_type": "link", 
-					"_add": true
-				});
-			}
-			if (array.indexOf("property") == 0) {
-				editor[array].splice(index, 0, {
-					"_uuid": "", 
-					"_parent": "", 
-					"_name": "", 
-					"_content": "", 
-					"_type": "property", 
-					"_add": true
-				});
-			}
-			editor[array][index]["_" + array.split("_")[1]] = currentlyOpened;
-		}
-	} else if (action.type === "remove") {
-		var array = action.array;
-		var uuid = action.key;
-		if (typeof uuid === "undefined") uuid = null;
-		var opposite = action.opposite;
-		if (typeof opposite === "undefined") opposite = false;
-		var editor = state.editor;
-		if (array == "group_uuid") {
-			buffer = "_parent";
-		} else if (array == "group_parent") {
-			buffer = "_uuid";
-		} else {
-			buffer = "_uuid";
-		}
-		if (uuid == null) {
-			uuid = editor[array][editor[array].length - 1][buffer];
-		}
-		for (i = 0; i < editor[array].length; i++) {
-			if (editor[array][i][buffer] == uuid) {
-				if (opposite == true) {
-					delete editor[array][i]._remove;
-				} else {
-					editor[array][i]._remove = true;
-				}
-			}
-		}
-	} else if (action.type === "update") {
-		const array = action.array;
-		const attribute = action.attribute;
-		const updatedValue = action.updated;
-		const index = action.index;
-		
-		// If a key is edited, all instances of that key within editorStore should also be updated accordingly
-		originalValue = state.editor[array][index][attribute];
-		stateIterate(function(array, i, variable) {
-			if (state.editor[array][i][variable]) {
-				if (state.editor[array][i][variable] == originalValue) {
-					state.editor[array][i][variable] = updatedValue;
-				}
-			}
-		}, state, "state.editor[array][i]", ["_uuid", "_parent", "_start", "_end"]);
-		
-		state.editor[array][index][attribute] = updatedValue;
-	}
-	return state;
-});
-
 class SSElement extends HTMLElement {
 	constructor() {
 		super();
@@ -180,7 +19,7 @@ class SSElement extends HTMLElement {
 		var array = this.getAttribute("array");
 		var index = this.getAttribute("index");
 		var attribute = this.getAttribute("attribute");
-		var item = editorStore.getState().editor[array][index];
+		var item = reduxStore.getState().editor[array][index];
 		
 		var classes = {
 			"this": {
@@ -193,8 +32,9 @@ class SSElement extends HTMLElement {
 					{
 						"triggers": ["click"], 
 						"callback": function () {
-							selectorStore.dispatch({
-								"type": "select", 
+							reduxStore.dispatch({
+								"type": "SELECTOR_SELECT", 
+								"cache": reduxStore.getState().editor, 
 								"selection": {
 									"array": array, 
 									"index": index, 
@@ -216,8 +56,9 @@ class SSElement extends HTMLElement {
 					{
 						"triggers": ["click"], 
 						"callback": function () {
-							selectorStore.dispatch({
-								"type": "select", 
+							reduxStore.dispatch({
+								"type": "SELECTOR_SELECT", 
+								"cache": reduxStore.getState().editor, 
 								"selection": {
 									"array": array, 
 									"index": index, 
@@ -239,8 +80,9 @@ class SSElement extends HTMLElement {
 					{
 						"triggers": ["click"], 
 						"callback": function () {
-							selectorStore.dispatch({
-								"type": "select", 
+							reduxStore.dispatch({
+								"type": "SELECTOR_SELECT", 
+								"cache": reduxStore.getState().editor, 
 								"selection": {
 									"array": array, 
 									"index": index, 
@@ -262,8 +104,9 @@ class SSElement extends HTMLElement {
 					{
 						"triggers": ["click"], 
 						"callback": function () {
-							selectorStore.dispatch({
-								"type": "select", 
+							reduxStore.dispatch({
+								"type": "SELECTOR_SELECT", 
+								"cache": reduxStore.getState().editor, 
 								"selection": {
 									"array": array, 
 									"index": index, 
@@ -293,8 +136,8 @@ class SSElement extends HTMLElement {
 								customElement.value = null;
 							}
 							shadowElement.innerHTML = direction_convert(customElement.value);
-							editorStore.dispatch({
-								"type": "update", 
+							reduxStore.dispatch({
+								"type": "EDITOR_UPDATE", 
 								"array": array, 
 								"attribute": attribute, 
 								"updated": customElement.value, 
@@ -321,8 +164,8 @@ class SSElement extends HTMLElement {
 					{
 						"triggers": ["blur"], 
 						"callback": function () {
-							editorStore.dispatch({
-								"type": "update", 
+							reduxStore.dispatch({
+								"type": "EDITOR_UPDATE", 
 								"array": array, 
 								"attribute": attribute, 
 								"updated": this.value, 
@@ -354,8 +197,8 @@ class SSElement extends HTMLElement {
 					{
 						"triggers": ["blur"], 
 						"callback": function () {
-							editorStore.dispatch({
-								"type": "update", 
+							reduxStore.dispatch({
+								"type": "EDITOR_UPDATE", 
 								"array": array, 
 								"attribute": attribute, 
 								"updated": this.value, 
@@ -387,8 +230,8 @@ class SSElement extends HTMLElement {
 					{
 						"triggers": ["blur"], 
 						"callback": function () {
-							editorStore.dispatch({
-								"type": "update", 
+							reduxStore.dispatch({
+								"type": "EDITOR_UPDATE", 
 								"array": array, 
 								"attribute": attribute, 
 								"updated": this.value, 
@@ -512,7 +355,7 @@ generateEditor = function () {
 		return input;
 	}
 	
-	var editor = editorStore.getState().editor;
+	var editor = reduxStore.getState().editor;
 	var results = "";
 	var firstNewLineAdded = false;
 	var orderOfArrays = ["group_parent", "object_uuid", "group_uuid", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent", "property_name", "property_content"];
@@ -585,29 +428,3 @@ generateEditor = function () {
 		document.getElementById("sidebar").innerHTML = results;
 	}
 }
-
-editorStore.subscribe(function () {
-	if (JSON.stringify(editorStore.getState()) === "{}") {
-		document.getElementById("sidebar").innerHTML = "No Content";
-		document.getElementById("sidebarPreview").innerHTML = "No Content";
-		selectorStore.dispatch({
-			"type": "reset"
-		});
-	} else {
-		generateEditor();
-		
-		(function () {
-			const uncolorTarget = selectorStore.getState().uncolorTarget;
-			if (uncolorTarget !== null) {
-				document.getElementById(uncolorTarget).setShadowStyle("color", "#FF0000");
-			}
-		})();
-		
-		(function () {
-			var editor = editorStore.getState().editor;
-			if (editor != null) {
-				document.getElementById("sidebarPreview").innerHTML = JSON.stringify(editor, null, 4);
-			}
-		})();
-	}
-});
