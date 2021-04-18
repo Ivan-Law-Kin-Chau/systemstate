@@ -1,8 +1,8 @@
-initialState = {
+var initialState = {
 	"canProceed": true, 
 	"suppressGraphicalUI": false, 
 	"editorStoreDispatch": null, 
-	"uncolorTarget": null, 
+	"colorTarget": null, 
 	"selected": {
 		"array": null, 
 		"index": null, 
@@ -10,7 +10,7 @@ initialState = {
 	}
 };
 
-selectionAdd = function (array = null, index = null) {
+var selectionAdd = function (array = null, index = null) {
 	reduxStore.dispatch({
 		"type": "SELECTOR_ADD", 
 		"cache": reduxStore.getState().editor, 
@@ -21,7 +21,7 @@ selectionAdd = function (array = null, index = null) {
 	});
 }
 
-selectionRemove = function () {
+var selectionRemove = function () {
 	var selection = reduxStore.getState().selector.selected;
 	reduxStore.dispatch({
 		"type": "SELECTOR_REMOVE", 
@@ -34,21 +34,13 @@ selectionRemove = function () {
 	});
 }
 
-selectorReducer = function (state = JSON.parse(JSON.stringify(initialState)), action = {}) {
-	state.editorStoreDispatch = null;
-	
+var selectorReducer = function (state = JSON.parse(JSON.stringify(initialState)), action = {}) {
 	var pureUnselect = false;
 	var resetSelection = function () {
 		let editorStoreDispatch = state.editorStoreDispatch;
 		state = JSON.parse(JSON.stringify(initialState));
 		state.editorStoreDispatch = editorStoreDispatch;
 		document.getElementById("selected").innerHTML = "";
-	}
-	
-	var uncolor = function (id) {
-		if (document.getElementById(id) != null) {
-			document.getElementById(id).setShadowStyle("color", "#000000");
-		}
 	}
 	
 	var arrayIndexKey = function (target = {}) {
@@ -62,15 +54,10 @@ selectorReducer = function (state = JSON.parse(JSON.stringify(initialState)), ac
 		
 		try {
 			var editor = action.cache;
-			if (target.array === "group_uuid") {
-				key = editor[target.array][target.index]["_parent"];
-			} else if (target.array === "group_parent") {
-				key = editor[target.array][target.index]["_uuid"];
-			} else {
-				key = editor[target.array][target.index]["_uuid"];
-			}
+			var attribute = (new ArrayAttribute(target.array)).attribute;
+			var key = editor[target.array][target.index][attribute];
 		} catch (error) {
-			key = null;
+			var key = null;
 		}
 		
 		return {
@@ -86,13 +73,13 @@ selectorReducer = function (state = JSON.parse(JSON.stringify(initialState)), ac
 	} else if (action.type === "SELECTOR_SELECT") {
 		let newTarget = action.selection.array + "_" + action.selection.index + action.selection.attribute;
 		let currentTarget = state.selected.array + "_" + state.selected.index + state.selected.attribute;
-		if (state.uncolorTarget === currentTarget) {
+		if (state.colorTarget === currentTarget) {
 			/*
 			Test whether or not this action is merely unselecting the current selection, instead of selecting something new
 			This is important because if this action is merely unselecting, we only need to uncolor, but, 
 			if we are selecting something new, we need to perform the actions to select the new element as well
 			*/
-			if (state.uncolorTarget === newTarget) {
+			if (state.colorTarget === newTarget) {
 				pureUnselect = true;
 				document.getElementById("selected").innerHTML = "";
 				state.suppressGraphicalUI = true;
@@ -100,8 +87,6 @@ selectorReducer = function (state = JSON.parse(JSON.stringify(initialState)), ac
 				pureUnselect = false;
 			}
 			
-			uncolor(state.uncolorTarget);
-			state.uncolorTarget = null;
 			state = JSON.parse(JSON.stringify(initialState));
 		}
 		
@@ -114,18 +99,17 @@ selectorReducer = function (state = JSON.parse(JSON.stringify(initialState)), ac
 				"attribute": action.selection.attribute
 			};
 			
-			state.uncolorTarget = state.selected.array + "_" + state.selected.index + state.selected.attribute;
-			document.getElementById(state.uncolorTarget).setShadowStyle("color", "#FF0000");
+			state.colorTarget = state.selected.array + "_" + state.selected.index + state.selected.attribute;
 			var string = state.selected.attribute;
 			if (state.selected.action !== null) {
 				document.getElementById("selected").innerHTML = state.selected.array + "_" + state.selected.index + "_" + state.selected.action;
 			}
 		}
 	} else if (action.type === "SELECTOR_ADD") {
-		processArrayIndexKey = arrayIndexKey(action.target);
-		array = processArrayIndexKey.array;
-		index = processArrayIndexKey.index;
-		key = processArrayIndexKey.key;
+		const processArrayIndexKey = arrayIndexKey(action.target);
+		const array = processArrayIndexKey.array;
+		const index = processArrayIndexKey.index;
+		const key = processArrayIndexKey.key;
 		if (key == null) {
 			state.editorStoreDispatch = {
 				"type": "EDITOR_ADD", 
@@ -139,10 +123,10 @@ selectorReducer = function (state = JSON.parse(JSON.stringify(initialState)), ac
 			};
 		}
 	} else if (action.type === "SELECTOR_REMOVE") {
-		processArrayIndexKey = arrayIndexKey(action.target);
-		array = processArrayIndexKey.array;
-		index = processArrayIndexKey.index;
-		key = processArrayIndexKey.key;
+		const processArrayIndexKey = arrayIndexKey(action.target);
+		const array = processArrayIndexKey.array;
+		const index = processArrayIndexKey.index;
+		const key = processArrayIndexKey.key;
 		if (state.selected.action == "element") {
 			state.editorStoreDispatch = {
 				"type": "EDITOR_REMOVE", 
@@ -164,7 +148,7 @@ selectorReducer = function (state = JSON.parse(JSON.stringify(initialState)), ac
 				"opposite": true
 			};
 		}
-		uncolor(state.uncolorTarget);
+		state.colorTarget = null;
 		resetSelection();
 	}
 	if (action.type.startsWith("SELECTOR") && state.suppressGraphicalUI === false && pureUnselect === false) {
@@ -175,37 +159,14 @@ selectorReducer = function (state = JSON.parse(JSON.stringify(initialState)), ac
 	return state;
 }
 
-editorReducer = function (state = {}, action = {}) {
-	var stateIterate = function (iterateFunction, state, condition, loop = null) {
-		iterateLoop = ["group_uuid", "object_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
-		for (iterateCounter = 0; iterateCounter < iterateLoop.length; iterateCounter++) {
-			array = iterateLoop[iterateCounter];
-			if (state[array]) {
-				if (loop == false) {
-					if (eval(condition)) iterateFunction(array);
-				} else {
-					for (i = 0; i < state[array].length; i++) {
-						if (loop == null) {
-							if (eval(condition)) iterateFunction(array, i);
-						} else {
-							for (j = 0; j < loop.length; j++) {
-								variable = loop[j];
-								if (eval(condition)) iterateFunction(array, i, variable);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	
+var editorReducer = function (state = {}, action = {}) {
 	if (action.type === "EDITOR_EMPTY") {
 		state = {};
 	} else if (action.type === "EDITOR_RESET") {
 		state = action.editor;
 		var duplicateItemAttribute = function(item, originalAttribute, targetAttribute) {
 			var output = {};
-			for (preexistingAttribute in item) {
+			for (let preexistingAttribute in item) {
 				output[preexistingAttribute] = item[preexistingAttribute];
 				if (preexistingAttribute === originalAttribute) {
 					output[targetAttribute] = item[originalAttribute];
@@ -213,22 +174,25 @@ editorReducer = function (state = {}, action = {}) {
 			}
 			return output;
 		}
-		stateIterate(function(array, i) {
-			state[array][i] = duplicateItemAttribute(state[array][i], "_uuid", "_old");
-			if (array.split("_")[0] == "group") {
-				state[array][i] = duplicateItemAttribute(state[array][i], "_parent", "_parentOld");
+		for (let array in state) {
+			for (let i = 0; i < state[array].length; i++) {
+				state[array][i] = duplicateItemAttribute(state[array][i], "_uuid", "_old");
+				if (array.split("_")[0] == "group") {
+					state[array][i] = duplicateItemAttribute(state[array][i], "_parent", "_parentOld");
+				}
 			}
-		}, state, true);
+		}
 	} else if (action.type === "EDITOR_ADD") {
 		const array = action.array;
-		const uuid = action.key === undefined ? null : action.key;
-		const opposite = action.opposite === undefined ? false : action.opposite;
+		var uuid = action.key === undefined ? null : action.key;
+		var opposite = action.opposite === undefined ? false : action.opposite;
 		if (opposite == true) {
 			if (uuid == null) {
 				uuid = state[array][0]._uuid;
 			}
-			for (i = 0; i < state[array].length; i++) {
-				if (state[array][i]._uuid == uuid) {
+			for (let i = 0; i < state[array].length; i++) {
+				var attribute = (new ArrayAttribute(array)).attribute;
+				if (state[array][i][attribute] == uuid) {
 					if (state[array][i]._add == true) {
 						state[array].splice(0 - (state[array].length - i), 1);
 					}
@@ -239,11 +203,12 @@ editorReducer = function (state = {}, action = {}) {
 				state[array] = [];
 			}
 			if (uuid == null) {
-				index = 0;
+				var index = 0;
 			} else {
-				for (i = 0; i < state[array].length; i++) {
-					if (state[array][i]._uuid == uuid) {
-						index = i + 1;
+				for (let i = 0; i < state[array].length; i++) {
+					var attribute = (new ArrayAttribute(array)).attribute;
+					if (state[array][i][attribute] == uuid) {
+						var index = i + 1;
 					}
 				}
 			}
@@ -283,20 +248,20 @@ editorReducer = function (state = {}, action = {}) {
 		}
 	} else if (action.type === "EDITOR_REMOVE") {
 		const array = action.array;
-		const uuid = action.key === undefined ? null : action.key;
-		const opposite = action.opposite === undefined ? false : action.opposite;
+		var uuid = action.key === undefined ? null : action.key;
+		var opposite = action.opposite === undefined ? false : action.opposite;
 		if (array == "group_uuid") {
-			buffer = "_parent";
+			var attribute = "_parent";
 		} else if (array == "group_parent") {
-			buffer = "_uuid";
+			var attribute = "_uuid";
 		} else {
-			buffer = "_uuid";
+			var attribute = "_uuid";
 		}
 		if (uuid == null) {
-			uuid = state[array][state[array].length - 1][buffer];
+			uuid = state[array][state[array].length - 1][attribute];
 		}
 		for (i = 0; i < state[array].length; i++) {
-			if (state[array][i][buffer] == uuid) {
+			if (state[array][i][attribute] == uuid) {
 				if (opposite == true) {
 					delete state[array][i]._remove;
 				} else {
@@ -304,57 +269,124 @@ editorReducer = function (state = {}, action = {}) {
 				}
 			}
 		}
-	} else if (action.type === "EDITOR_UPDATE") {
+	} else if (action.type === "EDITOR_UPDATE" || action.type === "EDITOR_UPDATE_AFTER_SEARCH") {
 		const array = action.array;
 		const attribute = action.attribute;
 		const updatedValue = action.updated;
 		const index = action.index;
 		
-		// If a key is edited, all instances of that key within the editorReducer's state should also be updated accordingly
-		const originalValue = state[array][index][attribute];
-		stateIterate(function(array, i, variable) {
-			if (state[array][i][variable]) {
-				if (state[array][i][variable] === originalValue) {
-					state[array][i][variable] = updatedValue;
+		if (action.suppressUpdateKeys === false) {
+			// If a key is edited, all instances of that key within the editorReducer's state should also be updated accordingly
+			const originalValue = state[array][index][attribute];
+			let loop = ["_uuid", "_parent", "_start", "_end"];
+			for (let array in state) {
+				for (let i = 0; i < state[array].length; i++) {
+					for (let j = 0; j < loop.length; j++) {
+						let variable = loop[j];
+						if (state[array][i]) {
+							if (state[array][i][variable]) {
+								if (state[array][i][variable] === originalValue) {
+									state[array][i][variable] = updatedValue;
+								}
+							}
+						}
+					}
 				}
 			}
-		}, state, "state[array][i]", ["_uuid", "_parent", "_start", "_end"]);
+		}
 		
 		state[array][index][attribute] = updatedValue;
 	}
 	return state;
 }
 
-reduxStore = Redux.createStore(Redux.combineReducers({
-	"selector": selectorReducer, 
-	"editor": editorReducer
-}), /* Redux DevTools for debugging purposes */ window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
+var reduxStore = Redux.createStore(function (state = {
+	"selector": JSON.parse(JSON.stringify(initialState)), 
+	"editor": {}, 
+	"focused": {
+		"isRelatedToLastAction": false, 
+		"value": false
+	}, 
+	"suppressUpdateKeys": {
+		"isRelatedToLastAction": false, 
+		"value": false
+	}
+}, action = {}) {
+	state.focused.isRelatedToLastAction = false;
+	state.suppressUpdateKeys.isRelatedToLastAction = false;
+	if (action.type.startsWith("SELECTOR")) {
+		state.selector = selectorReducer(state.selector, action);
+		if (state.selector.editorStoreDispatch !== null) {
+			state.editor = editorReducer(state.editor, state.selector.editorStoreDispatch);
+			state.selector.editorStoreDispatch = null;
+		}
+	} else if (action.type.startsWith("EDITOR")) {
+		if (action.type === "EDITOR_UPDATE_AFTER_SEARCH") {
+			state.focused.isRelatedToLastAction = true;
+			state.focused.value = action.array + "_" + action.index + action.attribute;
+		}
+		state.editor = editorReducer(state.editor, {...action, "suppressUpdateKeys": state.suppressUpdateKeys.value});
+	} else if (action.type === "SET_SUPPRESS_UPDATE_KEYS") {
+		state.suppressUpdateKeys.isRelatedToLastAction = true;
+		state.suppressUpdateKeys.value = action.value;
+	}
+	return state;
+}, /* Redux DevTools for debugging purposes */ window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__({
+	"trace": true, 
+	"traceLimit": 100
+}));
 
 reduxStore.subscribe(function () {
-	const editorStoreDispatch = reduxStore.getState().selector.editorStoreDispatch;
-	if (editorStoreDispatch !== null) reduxStore.dispatch(editorStoreDispatch);
+	var state = reduxStore.getState();
+	if (state.suppressUpdateKeys.isRelatedToLastAction === true) return;
+	if (JSON.stringify(state.editor) === "{}" && editorAlreadyEmpty !== false) return;
 	
-	if (JSON.stringify(reduxStore.getState().editor) === "{}") {
-		document.getElementById("sidebar").innerHTML = "No Content";
-		document.getElementById("sidebarPreview").innerHTML = "No Content";
-		reduxStore.dispatch({
-			"type": "SELECTOR_RESET"
-		});
+	if (state.focused.isRelatedToLastAction === true) {
+		ReactDOM.render(<Editor focused={state.focused.value}/>, document.getElementById("sidebar"));
 	} else {
-		generateEditor();
-		
-		(function () {
-			const uncolorTarget = reduxStore.getState().selector.uncolorTarget;
-			if (uncolorTarget !== null) {
-				document.getElementById(uncolorTarget).setShadowStyle("color", "#FF0000");
-			}
-		})();
-		
-		(function () {
-			var editor = reduxStore.getState().editor;
-			if (JSON.stringify(editor) !== "{}") {
-				document.getElementById("sidebarPreview").innerHTML = JSON.stringify(editor, null, 4);
-			}
-		})();
+		ReactDOM.render(<Editor focused=""/>, document.getElementById("sidebar"));
 	}
 });
+
+var editorAlreadyEmpty = true;
+
+class Editor extends React.Component {
+	constructor () {
+		super();
+		this.focused = React.createRef();
+	}
+	
+	componentDidMount () {
+		if (this.focused.current) this.focused.current.focus();
+	}
+	
+	render () {
+		if (JSON.stringify(reduxStore.getState().editor) === "{}") {
+			if (editorAlreadyEmpty === false) {
+				reduxStore.dispatch({
+					"type": "SELECTOR_RESET"
+				});
+				editorAlreadyEmpty = true;
+				document.getElementById("sidebarPreview").innerHTML = "No Content";
+				return "No Content";
+			}
+		} else {
+			editorAlreadyEmpty = false;
+			
+			(function () {
+				var editor = reduxStore.getState().editor;
+				var arrayList = Object.keys(editor).sort();
+				var editorInOrder = {};
+				for (let i = 0; i < arrayList.length; i++) {
+					editorInOrder[arrayList[i]] = editor[arrayList[i]];
+				}
+				if (JSON.stringify(editorInOrder) !== "{}") {
+					document.getElementById("sidebarPreview").innerHTML = JSON.stringify(editorInOrder, null, 4);
+				}
+			})();
+			
+			const seed = Math.random().toString().substring(2);
+			return generateEditor(this.props.focused, seed);
+		}
+	}
+}

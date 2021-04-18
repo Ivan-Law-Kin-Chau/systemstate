@@ -52,11 +52,11 @@ condition_convert = function(input = null) {
 
 direction_convert = function(input) {
 	if (input == null) {
-		return "&lt;-&gt;";
+		return "<->";
 	} else if (input == true) {
-		return "-&gt";
+		return "->";
 	} else if (input == false) {
-		return "&lt;-";
+		return "<-";
 	}
 }
 
@@ -217,5 +217,26 @@ reload = function () {
 		reduxStore.dispatch({
 			"type": "EDITOR_EMPTY"
 		});
+	}
+}
+
+class ArrayAttribute {
+	constructor (array) {
+		this.array = array;
+		if (this.array === "group_uuid") {
+			this.attribute = "_parent";
+		} else if (this.array === "group_parent") {
+			this.attribute = "_uuid";
+		} else {
+			this.attribute = "_uuid";
+		}
+	}
+}
+
+class ArrayIndex {
+	constructor (id) {
+		this.array = id.split("_")[0] + "_" + id.split("_")[1];
+		this.index = id.split("_")[2];
+		this.attribute = "_" + id.split("_")[3];
 	}
 }

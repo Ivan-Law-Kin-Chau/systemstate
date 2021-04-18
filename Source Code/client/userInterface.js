@@ -81,6 +81,10 @@ document.addEventListener("DOMContentLoaded", event => {
 			if (hotkeys[keyName].keyCode == event.keyCode) {
 				if (hotkeys[keyName].keyStatus == 0) {
 					hotkeys[keyName].keyStatus = 1;
+					if (keyName === "shift") reduxStore.dispatch({
+						"type": "SET_SUPPRESS_UPDATE_KEYS", 
+						"value": true
+					});
 				}
 			}
 		}
@@ -93,6 +97,10 @@ document.addEventListener("DOMContentLoaded", event => {
 		for (keyName in hotkeys) {
 			if (hotkeys[keyName].keyCode == event.keyCode) {
 				hotkeys[keyName].keyStatus = 0;
+				if (keyName === "shift") reduxStore.dispatch({
+					"type": "SET_SUPPRESS_UPDATE_KEYS", 
+					"value": false
+				});
 			}
 		}
 	});

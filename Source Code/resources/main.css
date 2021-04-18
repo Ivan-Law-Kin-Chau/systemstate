@@ -5,7 +5,7 @@ body {
 	background-color: #EEEEEE;
 	color: #000000;
 	overflow: hidden;
-	font-family: 'Consolas';
+	font-family: "Consolas";
 	display: inline-block;
 }
 a {
@@ -30,7 +30,7 @@ input, textarea, button, pre {
 	vertical-align: top;
 	overflow: hidden;
 	resize: none;
-	font-family: 'Consolas';
+	font-family: "Consolas";
 	font-size: 16px;
 }
 input:focus, textarea:focus, button:focus {
@@ -56,7 +56,7 @@ button::-moz-focus-inner {
 	color: #FFFFFF;
 }
 #query {
-	font-family: 'Consolas';
+	font-family: "Consolas";
 	font-size: 16px;
 	line-height: 20px;
 	height: 24px;
@@ -115,7 +115,7 @@ button::-moz-focus-inner {
 	word-break: break-all;
 	background-color: #000000;
 	color: #FFFFFF;
-	font-family: 'Consolas';
+	font-family: "Consolas";
 	overflow-x: hidden;
 	overflow-y: scroll;
 }
@@ -141,11 +141,11 @@ button::-moz-focus-inner {
 }
 #queryForm input[type="input"], #searchForm input[type="input"] {
 	min-width: 100%;
-	font-family: 'Consolas';
+	font-family: "Consolas";
 }
 #queryForm input[type="submit"], #searchForm input[type="submit"] {
 	display: none;
-	font-family: 'Consolas';
+	font-family: "Consolas";
 }
 .tab {
 	width: 100%;

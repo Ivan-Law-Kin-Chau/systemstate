@@ -95,7 +95,7 @@ fileHandler = function() {
 	fileManager.export = function() {
 		uploaderObject = {};
 		uploaderObject.uploaderForm = document.getElementById("gui").appendChild(document.createElement("form"));
-		uploaderObject.uploaderForm.action = "http://localhost:800";
+		uploaderObject.uploaderForm.action = "http://localhost:800/terminal";
 		uploaderObject.uploaderForm.method = "post";
 		uploaderObject.uploaderForm.target = "uploader";
 		uploaderObject.uploaderForm.enctype = "multipart/form-data";
@@ -280,9 +280,15 @@ searchBarHandler = function() {
 			} else if (searchBarObject.searchOrigin == "query") {
 				queryBarManager.insert(entry);
 			} else if (searchBarObject.searchOrigin.length > 0) {
-				document.getElementById(searchBarObject.searchOrigin).setShadowAttribute("value", entry);
-				document.getElementById(searchBarObject.searchOrigin).focus();
+				arrayIndex = new ArrayIndex(searchBarObject.searchOrigin);
 				hotkeys.enter.keyStatus = 2;
+				reduxStore.dispatch({
+					"type": "EDITOR_UPDATE_AFTER_SEARCH", 
+					"array": arrayIndex.array, 
+					"attribute": arrayIndex.attribute, 
+					"updated": entry, 
+					"index": arrayIndex.index
+				});
 			}
 		}
 		document.getElementById("searchBar").value = "";
