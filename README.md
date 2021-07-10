@@ -1,22 +1,7 @@
 # Systemstate Editor
 
-My flagship project which emulates something like a graph database on top of a relational database. I have been developing this software since late 2019, but a burglary made me lose access to most of my progress. Therefore, I am keeping backups on Github to prevent similar events from devastating my progress again. 
+## A Developmental Dead-End
 
-Here is a slightly embarrassing video where I try to explain what is the Systemstate Editor all about with my stuttering voice: https://youtu.be/U5ghiox7gNk
+Due to the inherent limitations of Systemstate Editor's architecture, not much further progress could be made beyond this point. We eventually decided to call it a developmental dead-end and rewrite the entire Systemstate Editor with a new architecture, in order to eventually turn the user interface feature into reality. 
 
-## Technologies Used
-
-Back-end: 
- - PHP 7.2
- - BSD Sockets
- - Sqlite3
-
-Front-end: 
- - Redux
- - Custom Elements
- - Shadow DOM
-
-## Main Features
-
- - A server with its own event loop, written from scratch, to handle everything from HTTP requests to interacting with the database, while also providing command-line features to debug the server while it is running
- - The client sends AJAX requests in terms of objects, groups, links and properties to the server, which then generates JSONs from the relational database to respond with
+![Dead-End](deadEnd.gif)
