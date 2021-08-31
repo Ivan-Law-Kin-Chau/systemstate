@@ -70,11 +70,11 @@ module.exports = class Assembly {
 			}
 			
 			for (const row of rows) {
-				var output = row["uuid"];
+				var uuid = row["uuid"];
 			}
 			
 			resolve(JSON.stringify({
-				_uuid: output, 
+				_uuid: uuid, 
 				_success: true, 
 				_type: type, 
 				_sql: sql
@@ -137,7 +137,7 @@ module.exports = class Assembly {
 			}
 			
 			for (const row of rows) {
-				var output = row["uuid"];
+				var uuid = row["uuid"];
 				var parent = row["parent"];
 			}
 			
@@ -210,14 +210,14 @@ module.exports = class Assembly {
 			}
 			
 			for (const row of rows) {
-				var output = row["uuid"];
+				var uuid = row["uuid"];
 				var start = row["start"];
 				var end = row["end"];
 				var direction = row["direction"];
 			}
 			
 			resolve(JSON.stringify({
-				_uuid: output, 
+				_uuid: uuid, 
 				_start: start, 
 				_end: end, 
 				_direction: this.boolean_convert(direction), 
@@ -288,7 +288,7 @@ module.exports = class Assembly {
 			}
 			
 			for (const row of rows) {
-				var output = row["uuid"];
+				var uuid = row["uuid"];
 				var parent = row["parent"];
 				var name = row["name"];
 				var content = row["content"];
