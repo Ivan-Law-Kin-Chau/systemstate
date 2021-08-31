@@ -13,6 +13,10 @@ app.get("/", function (req, res) {
 	res.render("index.html");
 });
 
+app.get("/classes/Editor.js", function (req, res) {
+	res.sendFile(__dirname + "/views/classes/Editor.js");
+});
+
 var database = new (require("sqlite3").verbose()).Database("./database/systemstate.db");
 var commands = new (require("./packaging.js"))(database);
 

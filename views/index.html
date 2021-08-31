@@ -1,20 +1,33 @@
-<script>
+<script type="module">
 
-function act (command) {
-	terminal = new XMLHttpRequest();
-	terminal.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			console.log(this.responseText);
+import Editor from "./classes/Editor.js";
+
+window.send = async function (command) {
+	return new Promise ((resolve, reject) => {
+		var terminal = new XMLHttpRequest();
+		terminal.onreadystatechange = async function () {
+			if (this.readyState == 4 && this.status == 200) {
+				resolve(JSON.parse(this.responseText));
+			}
 		}
-	}
-	terminal.open("POST", "http://localhost:800/", true);
-	terminal.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	
-	// encodeURIComponent does not turn percentage signs into "%25" correctly
-	// So I have to do that manually
-	command = command.split("%").join("%25");
-	
-	terminal.send("command=" + encodeURIComponent(command));
+		terminal.open("POST", "http://localhost:800/", true);
+		terminal.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		
+		// encodeURIComponent does not turn percentage signs into "%25" correctly
+		// So I have to do that manually
+		command = command.split("%").join("%25");
+		
+		terminal.send("command=" + encodeURIComponent(command));
+	});
+}
+
+window.openUuid = async function (uuid) {
+	var dependencies = await send("check(\"" + uuid + "\")");
+	var output = new Editor(uuid);
+	await output.loadDependencies(dependencies);
+	console.log(output);
 }
 
 </script>
+
+<button onclick="openUuid('fzYkA7sH');">Press</button>
