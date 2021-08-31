@@ -1,45 +1,7 @@
-class Object {
-	constructor (data) {
-		this.data = data;
-	}
-	
-	add (editor) {
-		// Do something
-		return editor;
-	}
-	
-	load (editor, action) {
-		this.validate(editor);
-		var userInterface = true;
-		return userInterface;
-	}
-	
-	save (editor, action) {
-		// Do something
-		return editor;
-	}
-	
-	remove (editor) {
-		// Do something
-		return editor;
-	}
-	
-	validate (editor) {
-		return true;
-	}
-}
-
-class Group extends Object {
-	
-}
-
-class Link extends Object {
-	
-}
-
-class Property extends Object {
-	
-}
+import SSObject from "./SSObject.js";
+import SSGroup from "./SSGroup.js";
+import SSLink from "./SSLink.js";
+import SSProperty from "./SSProperty.js";
 
 export default class Editor {
 	constructor (uuid) {
@@ -61,7 +23,7 @@ export default class Editor {
 				} else {
 					loaded = await send("load_" + type + "(\"" + item + "\")");
 				}
-				let loadedClassInstance = eval("(new " + type[0].toUpperCase() + type.slice(1) + "(loaded))");
+				let loadedClassInstance = eval("(new SS" + type[0].toUpperCase() + type.slice(1) + "(loaded))");
 				this.editor[array].push(loadedClassInstance);
 			}
 		}
