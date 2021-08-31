@@ -334,4 +334,58 @@ module.exports = class Assembly {
 			}));
 		});
 	}
+	
+	
+	async search (property, content, type = "object", descriptive = null) {
+		var type = type;
+		
+		if (descriptive === true) {
+			var sql = "SELECT DISTINCT t1.parent, t2.content FROM `property` t1 JOIN `property` t2 ON t1.parent = t2.parent WHERE t1.content LIKE \'" + content + "\' ORDER BY t1.parent, t2.name ASC;";
+		} else {
+			if (type === "group") {
+				var sql = "SELECT uuid, parent FROM `" + type + "` WHERE " + property + " LIKE \'" + content + "\';";
+			} else {
+				var sql = "SELECT uuid FROM `" + type + "` WHERE " + property + " LIKE \'" + content + "\';";
+			}
+		}
+		
+		return this.query(sql, (rows, resolve) => {
+			for (const row of rows) {
+				if (descriptive === true) {
+					if (typeof output === "undefined") {
+						var output = [];
+						var parent = "";
+					}
+					
+					if (parent !== row["parent"]) {
+						parent = row["parent"];
+						output[output.length] = [row["parent"], row["content"]];
+					} else {
+						output[output.length] = [row["content"]];
+					}
+				} else {
+					if (typeof output === "undefined") {
+						var output = [];
+					}
+					
+					output[output.length] = {};
+					for (var rowProperty in row) {
+						var rowContent = row[rowProperty];
+						output[output.length - 1][rowProperty] = rowContent;
+					}
+				}
+			}
+			
+			if (typeof output === "undefined") {
+				var output = [];
+			}
+			
+			resolve(JSON.stringify({
+				_uuid: output, 
+				_success: true, 
+				_type: "search", 
+				_sql: sql
+			}));
+		});
+	}
 }
