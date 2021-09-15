@@ -12,8 +12,10 @@ import SSKey from "./classes/Elements/SSKey.js";
 import SSInput from "./classes/Elements/SSInput.js";
 import SSTextarea from "./classes/Elements/SSTextarea.js";
 
-import { h, Component, render } from "../../libraries/preact.js";
-import htm from "../../libraries/htm.js";
+import {convertHTMLToBoolean, convertBooleanToHTML, convertBooleanToDirection} from "./scripts/convertor.js";
+
+import {h, Component, render} from "./libraries/preact.js";
+import htm from "./libraries/htm.js";
 
 const html = htm.bind(h);
 
@@ -25,36 +27,6 @@ window.selectElement = function (key) {
 	console.log("Select Element: " + key);
 	if (document.getElementById(key).red === "0") document.getElementById(key).red = "1";
 	if (document.getElementById(key).red === "1") document.getElementById(key).red = "0";
-}
-
-window.convertHTMLToBoolean = function (input) {
-	if (input == null) {
-		return null;
-	} else if (input == "1") {
-		return true;
-	} else if (input == "0") {
-		return false;
-	}
-}
-
-window.convertBooleanToHTML = function (input) {
-	if (input === null) {
-		return null;
-	} else if (input === true) {
-		return "1";
-	} else if (input === false) {
-		return "0";
-	}
-}
-
-window.convertBooleanToDirection = function (input) {
-	if (input === null) {
-		return "<->";
-	} else if (input === true) {
-		return "->";
-	} else if (input === false) {
-		return "<-";
-	}
 }
 
 window.simulate = function (input) {

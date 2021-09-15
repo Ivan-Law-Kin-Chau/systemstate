@@ -1,4 +1,4 @@
-import { h, Component, render } from "../../libraries/preact.js";
+import {h, Component, render} from "../../libraries/preact.js";
 import htm from "../../libraries/htm.js";
 
 const html = htm.bind(h);
@@ -15,15 +15,11 @@ export default class SSRemove extends Component {
 	}
 	
 	render (props, state) {
-		if (typeof this.state.value === "undefined") this.setState({
-			value: props.value
-		});
-		
-		let style = "";
+		let style;
 		if (props.red === "0") {
-			style += " color: #000000;";
+			style = "color: #000000;";
 		} else if (props.red === "1") {
-			style += " color: #FF0000;";
+			style = "color: #FF0000;";
 		}
 		
 		return html`<span id=${props.id} onClick=${this.onClick(this)} style=${style}>#remove</span>`;

@@ -1,3 +1,5 @@
+import {isValidKey, isValidDirection, isValidSingleLineString, isValidMultiLineString} from "../scripts/validator.js";
+
 export default class SSObject {
 	constructor (state) {
 		this.state = state;
@@ -24,10 +26,9 @@ export default class SSObject {
 		return editor;
 	}
 	
-	validate (editor) {
-		const uuid = editor.uuid;
+	validate () {
 		if (this.state._type !== "object") return false;
-		if (this.state._uuid !== uuid) return false;
+		if (!(isValidKey(this.state._uuid))) return false;
 		return true;
 	}
 }
