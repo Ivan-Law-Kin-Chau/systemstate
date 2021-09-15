@@ -6,7 +6,7 @@ var urlencodedParser = bodyParser.urlencoded({
 	extended: false
 });
 
-app.use(express.static(__dirname + "/views/"))
+app.use("/", express.static(__dirname + "/views/"))
 
 /*
 app.set("view engine", "ejs");
@@ -20,7 +20,7 @@ app.get("/", function (req, res) {
 var database = new (require("sqlite3").verbose()).Database("./database/systemstate.db");
 var commands = new (require("./packaging.js"))(database);
 
-app.post("/", urlencodedParser, async function (req, res) {
+app.post("/terminal", urlencodedParser, async function (req, res) {
 	var command = req.body.command;
 	var output = await commands.execute(decodeURIComponent(command));
 	res.send(output);

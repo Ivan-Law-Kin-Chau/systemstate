@@ -1,6 +1,6 @@
 export default class SSObject {
-	constructor (data) {
-		this.data = data;
+	constructor (state) {
+		this.state = state;
 	}
 	
 	add (editor) {
@@ -25,6 +25,9 @@ export default class SSObject {
 	}
 	
 	validate (editor) {
+		const uuid = editor.uuid;
+		if (this.state._type !== "object") return false;
+		if (this.state._uuid !== uuid) return false;
 		return true;
 	}
 }

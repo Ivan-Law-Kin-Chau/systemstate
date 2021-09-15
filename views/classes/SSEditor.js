@@ -3,16 +3,16 @@ import SSGroup from "./SSGroup.js";
 import SSLink from "./SSLink.js";
 import SSProperty from "./SSProperty.js";
 
-export default class Editor {
+export default class SSEditor {
 	constructor (uuid) {
 		this.uuid = uuid; // The head UUID of the Editor class instance
-		this.editor = {}; // All the other class instances will be stored here
+		this.state = {}; // All the other class instances will be stored here
 		this.dependenciesLoaded = false; // Will become true after the loadDependencies method is called
 	}
 	
 	async loadDependencies (dependencies) {
 		for (let array in dependencies) {
-			this.editor[array] = [];
+			this.state[array] = [];
 			for (let item of dependencies[array]) {
 				const type = array.split("_")[0];
 				let loaded;
@@ -24,7 +24,7 @@ export default class Editor {
 					loaded = await send("load_" + type + "(\"" + item + "\")");
 				}
 				let loadedClassInstance = eval("(new SS" + type[0].toUpperCase() + type.slice(1) + "(loaded))");
-				this.editor[array].push(loadedClassInstance);
+				if (loadedClassInstance.validate(this) === true) this.state[array].push(loadedClassInstance);
 			}
 		}
 		this.dependenciesLoaded = true;

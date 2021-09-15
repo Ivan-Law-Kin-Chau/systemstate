@@ -1,6 +1,87 @@
+<link rel="stylesheet" type="text/css" href="/main.css">
 <script type="module">
 
-import Editor from "./classes/Editor.js";
+import SSEditor from "./classes/SSEditor.js";
+
+import SSThis from "./classes/Elements/SSThis.js";
+import SSSelector from "./classes/Elements/SSSelector.js";
+import SSAdd from "./classes/Elements/SSAdd.js";
+import SSRemove from "./classes/Elements/SSRemove.js";
+import SSButton from "./classes/Elements/SSButton.js";
+import SSKey from "./classes/Elements/SSKey.js";
+import SSInput from "./classes/Elements/SSInput.js";
+import SSTextarea from "./classes/Elements/SSTextarea.js";
+
+import { h, Component, render } from "../../libraries/preact.js";
+import htm from "../../libraries/htm.js";
+
+const html = htm.bind(h);
+
+window.visitKey = function (key) {
+	console.log("Visit Key: " + key);
+}
+
+window.selectElement = function (key) {
+	console.log("Select Element: " + key);
+	if (document.getElementById(key).red === "0") document.getElementById(key).red = "1";
+	if (document.getElementById(key).red === "1") document.getElementById(key).red = "0";
+}
+
+window.convertHTMLToBoolean = function (input) {
+	if (input == null) {
+		return null;
+	} else if (input == "1") {
+		return true;
+	} else if (input == "0") {
+		return false;
+	}
+}
+
+window.convertBooleanToHTML = function (input) {
+	if (input === null) {
+		return null;
+	} else if (input === true) {
+		return "1";
+	} else if (input === false) {
+		return "0";
+	}
+}
+
+window.convertBooleanToDirection = function (input) {
+	if (input === null) {
+		return "<->";
+	} else if (input === true) {
+		return "->";
+	} else if (input === false) {
+		return "<-";
+	}
+}
+
+window.simulate = function (input) {
+	var virtualElement = document.createElement("pre");
+	virtualElement.style.display = "inline-block";
+	virtualElement.style.visibility = "hidden";
+	virtualElement.style.width = "auto";
+	virtualElement.style.height = "auto";
+	virtualElement.innerHTML = input;
+	document.getElementsByTagName("body")[0].appendChild(virtualElement);
+	if (input.split("\n")[input.split("\n").length - 1] == "") {
+		var output = {
+			"width": (virtualElement.getBoundingClientRect().width) + "px", 
+			"height": (virtualElement.getBoundingClientRect().height + 20) + "px"
+		};
+	} else {
+		var output = {
+			"width": (virtualElement.getBoundingClientRect().width) + "px", 
+			"height": (virtualElement.getBoundingClientRect().height + 1) + "px"
+		};
+	}
+	virtualElement.outerHTML = "";
+	virtualElement.remove();
+	return output;
+}
+
+render(html`<${SSThis} id="k" value="1" red="0"/>`, document.getElementById("renderZone"));
 
 window.send = async function (command) {
 	return new Promise ((resolve, reject) => {
@@ -10,7 +91,7 @@ window.send = async function (command) {
 				resolve(JSON.parse(this.responseText));
 			}
 		}
-		terminal.open("POST", "http://localhost:800/", true);
+		terminal.open("POST", "http://localhost:800/terminal", true);
 		terminal.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 		
 		// encodeURIComponent does not turn percentage signs into "%25" correctly
@@ -22,12 +103,15 @@ window.send = async function (command) {
 }
 
 window.openUuid = async function (uuid) {
+	// First, get the dependencies of the editor with the UUID as the editor's head
 	var dependencies = await send("check(\"" + uuid + "\")");
-	var output = new Editor(uuid);
+	var output = new SSEditor(uuid);
+	
+	// Then, for each dependency, load the element that corresponds to it
 	await output.loadDependencies(dependencies);
 	console.log(output);
 }
-
 </script>
 
 <button onclick="openUuid('fzYkA7sH');">Press</button>
+<div id="renderZone"></div>
