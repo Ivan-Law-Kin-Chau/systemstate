@@ -1,7 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/main.css">
 <script type="module">
 
-import SSEditor from "./classes/SSEditor.js";
+import SSEditor from "./classes/UserInterfaces/SSEditor.js";
 
 import SSThis from "./classes/Elements/SSThis.js";
 import SSSelector from "./classes/Elements/SSSelector.js";
@@ -74,6 +74,18 @@ window.send = async function (command) {
 	});
 }
 
+/*
+
+openUuid should be changed in the future. 
+It should loop through the array of all user interfaces available, 
+and run the validate function of each user interface, 
+then render first the one that returned true at the validate function. 
+SSEditor will the the last user interface, 
+and its validate function will always return true, 
+so if all other user interfaces rendered false at their validate functions, 
+SSEditor will be the user interface used in the end. 
+
+*/
 window.openUuid = async function (uuid) {
 	// First, get the dependencies of the editor with the UUID as the editor's head
 	var dependencies = await send("check(\"" + uuid + "\")");
@@ -83,6 +95,8 @@ window.openUuid = async function (uuid) {
 	await output.loadDependencies(dependencies);
 	console.log(output);
 }
+
+window.SSEditor = SSEditor;
 </script>
 
 <button onclick="openUuid('fzYkA7sH');">Press</button>

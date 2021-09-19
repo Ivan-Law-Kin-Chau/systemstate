@@ -10,13 +10,17 @@ export default class SSObject {
 		return editor;
 	}
 	
-	load (editor, action) {
+	load (editor, action = {}) {
+		if (typeof action.uuid === "undefined") action.uuid = null;
+		// action.uuid will store the UUID of #this
+		// And then the output of the load function will change according to action.uuid
+		
 		this.validate(editor);
 		var userInterface = true;
 		return userInterface;
 	}
 	
-	save (editor, action) {
+	save (editor, action = {}) {
 		// Do something
 		return editor;
 	}

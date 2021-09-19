@@ -2,7 +2,7 @@ export function isValidKey (input) {
 	if (typeof input !== "string") return false;
 	if (input.length !== 8) return false;
 	
-	for (const i = 0; i < 8; i++) {
+	for (let i = 0; i < 8; i++) {
 		if ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".indexOf(input.charAt(i)) === -1) return false;
 	}
 	
