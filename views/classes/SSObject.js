@@ -1,38 +1,31 @@
-import {isValidKey, isValidDirection, isValidSingleLineString, isValidMultiLineString} from "../scripts/validator.js";
+import * as validator from "../scripts/validator.js";
+import SSComponent from "./SSComponent.js";
 
-export default class SSObject {
-	constructor (state) {
-		this.state = state;
+import {h, Component, render} from "../../libraries/preact.js";
+import htm from "../../libraries/htm.js";
+
+const html = htm.bind(h);
+
+export default class SSObject extends SSComponent {
+	constructor () {
+		super();
 	}
 	
-	add (editor) {
-		// Do something
-		return editor;
-	}
-	
-	load (editor, action = {}) {
-		if (typeof action.uuid === "undefined") action.uuid = null;
-		// action.uuid will store the UUID of #this
-		// And then the output of the load function will change according to action.uuid
-		
-		this.validate(editor);
-		var userInterface = true;
-		return userInterface;
-	}
-	
-	save (editor, action = {}) {
-		// Do something
-		return editor;
-	}
-	
-	remove (editor) {
-		// Do something
-		return editor;
+	render (props, state) {
+		this.state = JSON.parse(props.state);
+		if (this.validate() === true) {
+			var templateArray = [[false, "selector"], [true, "key"], [], " this", ", "];
+			return html`${this.generateHTMFromTemplate(props, templateArray)}`;
+		} else if (this.validate() === false) {
+			console.log("Invalid SSObject, current state: ");
+			console.log(this.state);
+			return html``;
+		}
 	}
 	
 	validate () {
 		if (this.state._type !== "object") return false;
-		if (!(isValidKey(this.state._uuid))) return false;
+		if (!(validator.isValidKey(this.state._uuid))) return false;
 		return true;
 	}
 }

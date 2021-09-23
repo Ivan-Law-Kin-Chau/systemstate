@@ -1,3 +1,5 @@
+import * as convertor from "../../scripts/convertor.js";
+
 import {h, Component, render} from "../../libraries/preact.js";
 import htm from "../../libraries/htm.js";
 
@@ -24,7 +26,7 @@ export default class Button extends Component {
 				"value": newValue, 
 			});
 			
-			classInstance.props.value = convertBooleanToHTML(newValue);
+			classInstance.props.value = convertor.convertBooleanToHTML(newValue);
 			classInstance.setState({
 				value: newValue
 			});
@@ -33,7 +35,7 @@ export default class Button extends Component {
 	
 	render (props, state) {
 		if (typeof this.state.value === "undefined") this.setState({
-			value: convertHTMLToBoolean(props.value)
+			value: convertor.convertHTMLToBoolean(props.value)
 		});
 		
 		let style = "";
@@ -43,6 +45,6 @@ export default class Button extends Component {
 			style += " color: #FF0000;";
 		}
 		
-		return html`<button id=${props.id} onClick=${this.onClick(this)} style=${style}>${convertBooleanToDirection(convertHTMLToBoolean(props.value))}</button>`;
+		return html`<button id=${props.id} onClick=${this.onClick(this)} style=${style}>${convertor.convertBooleanToDirection(convertor.convertHTMLToBoolean(props.value))}</button>`;
 	}
 }

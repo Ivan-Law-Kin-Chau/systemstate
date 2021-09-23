@@ -12,7 +12,10 @@ import SSKey from "./classes/Elements/SSKey.js";
 import SSInput from "./classes/Elements/SSInput.js";
 import SSTextarea from "./classes/Elements/SSTextarea.js";
 
-import {convertHTMLToBoolean, convertBooleanToHTML, convertBooleanToDirection} from "./scripts/convertor.js";
+import SSObject from "./classes/SSObject.js";
+import SSGroup from "./classes/SSGroup.js";
+import SSLink from "./classes/SSLink.js";
+import SSProperty from "./classes/SSProperty.js";
 
 import {h, Component, render} from "./libraries/preact.js";
 import htm from "./libraries/htm.js";
@@ -53,7 +56,14 @@ window.simulate = function (input) {
 	return output;
 }
 
-render(html`<${SSThis} id="k" value="1" red="0"/>`, document.getElementById("renderZone"));
+render(html`<${SSObject} uuid="fzYkA7sH" array="object_uuid" index="0" state=${
+	JSON.stringify({
+		"_uuid": "fzYkA7sH", 
+		"_success": true, 
+		"_type": "object", 
+		"_sql": "SELECT * FROM `object` WHERE uuid = 'fzYkA7sH';"
+	})
+}/>`, document.getElementById("renderZone"));
 
 window.send = async function (command) {
 	return new Promise ((resolve, reject) => {
