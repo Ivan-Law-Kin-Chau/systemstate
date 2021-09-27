@@ -1,6 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/main.css">
 <script type="module">
 
+import SSPackaging from "./classes/SSPackaging.js";
 import SSEditor from "./classes/UserInterfaces/SSEditor.js";
 
 import SSThis from "./classes/Elements/SSThis.js";
@@ -83,6 +84,8 @@ window.send = async function (command) {
 		terminal.send("command=" + encodeURIComponent(command));
 	});
 }
+
+window.packaging = new SSPackaging(window.send);
 
 /*
 

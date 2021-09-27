@@ -23,9 +23,10 @@ export default class SSObject extends SSComponent {
 		}
 	}
 	
-	validate () {
-		if (this.state._type !== "object") return false;
-		if (!(validator.isValidKey(this.state._uuid))) return false;
+	validate (validateTarget = null) {
+		if (validateTarget === null) validateTarget = this.state;
+		if (validateTarget._type !== "object") return false;
+		if (!(validator.isValidKey(validateTarget._uuid))) return false;
 		return true;
 	}
 }

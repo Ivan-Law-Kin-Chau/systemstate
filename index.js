@@ -18,7 +18,7 @@ app.get("/", function (req, res) {
 */
 
 var database = new (require("sqlite3").verbose()).Database("./database/systemstate.db");
-var commands = new (require("./packaging.js"))(database);
+var commands = new (require("./assembly.js"))(database);
 
 app.post("/terminal", urlencodedParser, async function (req, res) {
 	var command = req.body.command;

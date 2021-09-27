@@ -23,12 +23,13 @@ export default class SSLink extends SSComponent {
 		}
 	}
 	
-	validate () {
-		if (this.state._type !== "link") return false;
-		if (!(validator.isValidKey(this.state._uuid))) return false;
-		if (!(validator.isValidKey(this.state._start))) return false;
-		if (!(validator.isValidKey(this.state._end))) return false;
-		if (!(validator.isValidDirection(this.state._direction))) return false;
+	validate (validateTarget = null) {
+		if (validateTarget === null) validateTarget = this.state;
+		if (validateTarget._type !== "link") return false;
+		if (!(validator.isValidKey(validateTarget._uuid))) return false;
+		if (!(validator.isValidKey(validateTarget._start))) return false;
+		if (!(validator.isValidKey(validateTarget._end))) return false;
+		if (!(validator.isValidDirection(validateTarget._direction))) return false;
 		return true;
 	}
 }

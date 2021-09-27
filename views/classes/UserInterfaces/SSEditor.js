@@ -1,3 +1,5 @@
+import SSPackaging from "../SSPackaging.js";
+
 import SSObject from "../SSObject.js";
 import SSGroup from "../SSGroup.js";
 import SSLink from "../SSLink.js";
@@ -10,11 +12,12 @@ export default class SSEditor {
 		this.dependenciesLoaded = false; // Will become true after the loadDependencies method is called
 		
 		this.send = send;
+		this.packaging = new SSPackaging(send);
 	}
 	
 	async add (editor = {}) {
 		// First, get the dependencies of the editor with the UUID as the editor's head
-		var dependencies = await send("check(\"" + this.uuid + "\")");
+		var dependencies = JSON.parse(await this.packaging.check(this.uuid));
 		
 		// Then, for each dependency, load the element that corresponds to it
 		for (let array in dependencies) {
@@ -29,12 +32,12 @@ export default class SSEditor {
 				} else {
 					loaded = await send("load_" + type + "(\"" + item + "\")");
 				}
-				let loadedClassInstance = eval("(new SS" + type[0].toUpperCase() + type.slice(1) + "(loaded))");
-				if (loadedClassInstance.validate(this) === true) this.state[array].push(loadedClassInstance);
+				let loadedClassInstance = eval("(new SS" + type[0].toUpperCase() + type.slice(1) + "())");
+				if (loadedClassInstance.validate(loaded) === true) this.state[array].push(loaded);
 			}
 		}
-		this.dependenciesLoaded = true;
 		
+		this.dependenciesLoaded = true;
 		return editor;
 	}
 	

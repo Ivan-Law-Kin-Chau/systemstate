@@ -23,12 +23,13 @@ export default class SSProperty extends SSComponent {
 		}
 	}
 	
-	validate () {
-		if (this.state._type !== "property") return false;
-		if (!(validator.isValidKey(this.state._uuid))) return false;
-		if (!(validator.isValidKey(this.state._parent))) return false;
-		if (!(validator.isValidSingleLineString(this.state._name))) return false;
-		if (!(validator.isValidMultiLineString(this.state._content))) return false;
+	validate (validateTarget = null) {
+		if (validateTarget === null) validateTarget = this.state;
+		if (validateTarget._type !== "property") return false;
+		if (!(validator.isValidKey(validateTarget._uuid))) return false;
+		if (!(validator.isValidKey(validateTarget._parent))) return false;
+		if (!(validator.isValidSingleLineString(validateTarget._name))) return false;
+		if (!(validator.isValidMultiLineString(validateTarget._content))) return false;
 		return true;
 	}
 }

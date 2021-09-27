@@ -23,10 +23,11 @@ export default class SSGroup extends SSComponent {
 		}
 	}
 	
-	validate () {
-		if (this.state._type !== "group") return false;
-		if (!(validator.isValidKey(this.state._uuid))) return false;
-		if (!(validator.isValidKey(this.state._parent))) return false;
+	validate (validateTarget = null) {
+		if (validateTarget === null) validateTarget = this.state;
+		if (validateTarget._type !== "group") return false;
+		if (!(validator.isValidKey(validateTarget._uuid))) return false;
+		if (!(validator.isValidKey(validateTarget._parent))) return false;
 		return true;
 	}
 }
