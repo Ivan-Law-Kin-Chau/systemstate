@@ -1,7 +1,7 @@
-import * as classes from "./Elements/All.js";
+import * as classes from "../Elements/All.js";
 
-import {h, Component, render} from "../../libraries/preact.js";
-import htm from "../../libraries/htm.js";
+import {h, Component, render} from "../../../libraries/preact.js";
+import htm from "../../../libraries/htm.js";
 
 const html = htm.bind(h);
 

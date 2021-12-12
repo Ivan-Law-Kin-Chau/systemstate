@@ -1,8 +1,8 @@
-import * as validator from "../scripts/validator.js";
+import * as validator from "../../scripts/validator.js";
 import SSComponent from "./SSComponent.js";
 
-import {h, Component, render} from "../../libraries/preact.js";
-import htm from "../../libraries/htm.js";
+import {h, Component, render} from "../../../libraries/preact.js";
+import htm from "../../../libraries/htm.js";
 
 const html = htm.bind(h);
 

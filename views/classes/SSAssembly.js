@@ -1,4 +1,4 @@
-import * as items from "./All.js";
+import * as items from "./Items/All.js";
 import * as convertor from "../../scripts/convertor.js";
 import * as identifier from "../../scripts/identifier.js";
 
