@@ -51,13 +51,18 @@ export default class SSAssembly {
 		if (typeof this.state[type][identityString] === "undefined") {
 			var item = await send(loadString);
 			if (item._success === true) {
-				this.state[type][identityString] = item;
+				let validatorClass = eval("(new items[\"SS" + type[0].toUpperCase() + type.slice(1) + "\"]())");
+				if (validatorClass.validate(item) === true) {
+					this.state[type][identityString] = item;
+				} else {
+					throw "Invalid item: [\"" + type + "\", \"" + identityString + "\"]";
+				}
 			} else if (item._success === false) {
-				throw "Item not found";
+				throw "Item not found: [\"" + type + "\", \"" + identityString + "\"]";
 			}
 		}
 		
-		return this.state[type][identityString];
+		return [type, identityString];
 	}
 	
 	async setState (type, identity, content = null) {
@@ -95,7 +100,7 @@ export default class SSAssembly {
 			throw "Invalid item";
 		}
 		
-		return this.state[type][identityString];
+		return [type, identityString];
 	}
 	
 	async syncWithServer () {
@@ -144,9 +149,11 @@ export default class SSAssembly {
 						// Move the item to the updated location according to its new _uuid (and new _parent if the item is a group)
 						(function () {
 							var identityStringToDelete = identifier.identityToString(type, identity);
-							delete this.state[type][identityStringToDelete];
 							var identityStringToAdd = identifier.identityToString(type, item);
-							this.state[type][identityStringToAdd] = item;
+							if (identityStringToDelete !== identityStringToAdd) {
+								delete this.state[type][identityStringToDelete];
+								this.state[type][identityStringToAdd] = item;
+							}
 						}).bind(this)
 					);
 				}
@@ -160,5 +167,7 @@ export default class SSAssembly {
 				script[line]();
 			}
 		}
+		
+		return true;
 	}
 }

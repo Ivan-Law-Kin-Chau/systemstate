@@ -45,7 +45,7 @@ export default class SSPackaging {
 				delete output[array];
 			}
 		}, (searchResult) => (searchResult !== null), uuid);
-		return JSON.stringify(output);
+		return output;
 	}
 	
 	async open (uuid) {
@@ -68,14 +68,14 @@ export default class SSPackaging {
 				
 				output[array] = searchResult;
 			}, (searchResult) => (searchResult !== null && searchResult.length > 0), uuid);
-			return JSON.stringify(output);
+			return output;
 		} else {
-			return JSON.stringify({
+			return {
 				_success: false, 
 				_type: "Systemstate Error", 
 				_sql: initialLoad._sql, 
 				_error: "Not found", 
-			});
+			};
 		}
 	}
 }

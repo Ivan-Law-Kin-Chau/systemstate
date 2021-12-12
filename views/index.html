@@ -1,23 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/main.css">
 <script type="module">
 
-import SSAssembly from "./classes/SSAssembly.js";
-import SSPackaging from "./classes/SSPackaging.js";
 import SSEditor from "./classes/UserInterfaces/SSEditor.js";
-
-import SSThis from "./classes/Elements/SSThis.js";
-import SSSelector from "./classes/Elements/SSSelector.js";
-import SSAdd from "./classes/Elements/SSAdd.js";
-import SSRemove from "./classes/Elements/SSRemove.js";
-import SSButton from "./classes/Elements/SSButton.js";
-import SSKey from "./classes/Elements/SSKey.js";
-import SSInput from "./classes/Elements/SSInput.js";
-import SSTextarea from "./classes/Elements/SSTextarea.js";
-
-import SSObject from "./classes/SSObject.js";
-import SSGroup from "./classes/SSGroup.js";
-import SSLink from "./classes/SSLink.js";
-import SSProperty from "./classes/SSProperty.js";
+import * as items from "./classes/All.js";
 
 import {h, Component, render} from "./libraries/preact.js";
 import htm from "./libraries/htm.js";
@@ -58,15 +43,6 @@ window.simulate = function (input) {
 	return output;
 }
 
-render(html`<${SSObject} uuid="fzYkA7sH" array="object_uuid" index="0" state=${
-	JSON.stringify({
-		"_uuid": "fzYkA7sH", 
-		"_success": true, 
-		"_type": "object", 
-		"_sql": "SELECT * FROM `object` WHERE uuid = 'fzYkA7sH';"
-	})
-}/>`, document.getElementById("renderZone"));
-
 window.send = async function (command) {
 	console.log(command);
 	return new Promise ((resolve, reject) => {
@@ -87,8 +63,13 @@ window.send = async function (command) {
 	});
 }
 
-window.assembly = new SSAssembly();
-window.packaging = new SSPackaging(window.send);
+const renderFunction = async function () {
+	window.editor = new SSEditor("fzYkA7sH", window.send);
+	await window.editor.assembly.getState("object", {_uuid: "fzYkA7sH"});
+	render(html`<${items["SSObject"]} identityString="fzYkA7sH" templateThis="uuid" assembly=${window.editor.assembly}/>`, document.getElementById("renderZone"));
+}
+
+renderFunction();
 
 /*
 
@@ -111,8 +92,6 @@ window.openUuid = async function (uuid) {
 	await output.loadDependencies(dependencies);
 	console.log(output);
 }
-
-window.SSEditor = SSEditor;
 </script>
 
 <button onclick="openUuid('fzYkA7sH');">Press</button>
