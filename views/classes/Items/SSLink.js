@@ -17,7 +17,7 @@ export default class SSLink extends SSComponent {
 		this.state = this.assembly.state["link"][this.identityString];
 		if (this.validate() === true) {
 			var templateThis = props.templateThis ? props.templateThis : null;
-			var templateArray = [[true, "key", "uuid"], ": ", [true, "key", "start"], " ", [true, "button", "direction"], " ", [true, "key", "end"], "\n"];
+			var templateArray = [[true, "key", "uuid"], ": ", [true, "key", "start"], " ", [true, "button", "direction"], " ", [true, "key", "end"]];
 			return html`${this.generateHTMFromTemplate(props.identityString, this.state, templateThis, templateArray)}`;
 		} else if (this.validate() === false) {
 			console.log("Invalid SSLink, current state: ");

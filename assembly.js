@@ -3,19 +3,27 @@ module.exports = class Assembly {
 		this.database = database;
 	}
 	
-	boolean_convert(input) {
+	convert_boolean_to_string (input) {
 		if (input === null) {
 			return "null";
 		} else if (input === true) {
 			return "true";
 		} else if (input === false) {
 			return "false";
-		} else if (input == "") {
+		} else {
+			throw "Conversion error: " + input;
+		}
+	}
+	
+	convert_string_to_boolean (input) {
+		if (input === null) {
 			return null;
-		} else if (input == "1") {
+		} else if (input === 1) {
 			return true;
-		} else if (input == "0") {
+		} else if (input === 0) {
 			return false;
+		} else {
+			throw "Conversion error: " + input;
 		}
 	}
 	
@@ -181,7 +189,7 @@ module.exports = class Assembly {
 	
 	async add_link (uuid, start, end, direction = null) {
 		var type = "link";
-		var sql = "INSERT INTO `" + type + "` VALUES (\'" + uuid + "\', \'" + start + "\', \'" + end + "\', " + this.boolean_convert(direction) + ");";
+		var sql = "INSERT INTO `" + type + "` VALUES (\'" + uuid + "\', \'" + start + "\', \'" + end + "\', " + this.convert_boolean_to_string(direction) + ");";
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -220,7 +228,7 @@ module.exports = class Assembly {
 				_uuid: uuid, 
 				_start: start, 
 				_end: end, 
-				_direction: this.boolean_convert(direction), 
+				_direction: this.convert_string_to_boolean(direction), 
 				_success: true, 
 				_type: type, 
 				_sql: sql
@@ -230,13 +238,13 @@ module.exports = class Assembly {
 	
 	async save_link (uuid, uuidNew, start, end, direction = null) {
 		var type = "link";
-		var sql = "UPDATE `" + type + "` SET uuid = \'" + uuidNew + "\', start = \'" + start + "\', end = \'" + end + "\', direction = " + this.boolean_convert(direction) + " WHERE uuid = \'" + uuid + "\';";
+		var sql = "UPDATE `" + type + "` SET uuid = \'" + uuidNew + "\', start = \'" + start + "\', end = \'" + end + "\', direction = " + this.convert_boolean_to_string(direction) + " WHERE uuid = \'" + uuid + "\';";
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuidNew, 
 				_start: start, 
 				_end: end, 
-				_direction: this.boolean_convert(direction), 
+				_direction: this.convert_string_to_boolean(direction), 
 				_success: true, 
 				_type: type, 
 				_sql: sql

@@ -1,6 +1,14 @@
 import SSAssembly from "../SSAssembly.js";
 import SSPackaging from "../SSPackaging.js";
 
+import * as items from "../Items/All.js";
+import * as convertor from "../../scripts/convertor.js";
+
+import {h, Component, render} from "../../libraries/preact.js";
+import htm from "../../libraries/htm.js";
+
+const html = htm.bind(h);
+
 export default class SSEditor {
 	constructor (uuid, send) {
 		// The head UUID of the Editor class instance
@@ -12,7 +20,7 @@ export default class SSEditor {
 		this.state = {};
 	}
 	
-	async add (assembly = this.assembly, action = {}) {
+	async add (action = {}) {
 		// First, get the dependencies of the editor with the UUID as the editor's head
 		var dependencies = await this.packaging.check(this.uuid);
 		
@@ -46,44 +54,65 @@ export default class SSEditor {
 		}
 		
 		this.dependenciesLoaded = true;
-		return assembly;
+		return this.assembly;
 	}
 	
-	async load (assembly = this.assembly, action = {}) {
-		if (await this.validate(this) === true) {
+	async load (action = {}) {
+		if (await this.validate(this.assembly, this.uuid) === true) {
 			let orderOfArrays = ["group_parent", "object_uuid", "group_uuid", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent", "property_name", "property_content"];
-			
-			let itemAddRemove = function (item, array, index, attribute) {
-				output = "";
-				if (item.state._add === true) output += " <${SSAdd} id=\"" + array + "_" + index + attribute + "\" red=\"0\"/>";
-				if (item.state._remove === true) output += " <${SSRemove} id=\"" + array + "_" + index + attribute + "\" red=\"0\"/>";
-				return output;
-			}
+			let renderOutput = [];
 			
 			for (var i = 0; i < orderOfArrays.length; i++) {
 				const array = orderOfArrays[i];
 				if (!(this.state[array])) continue;
+				let arrayOutput = [];
 				
 				for (let index = 0; index < this.state[array].length; index++) {
+					let templateType = array.split("_")[0];
+					let templateThis = array.split("_")[1];
+					
+					if (templateType === "group") {
+						if (templateThis === "uuid") {
+							templateThis = "parent";
+						} else if (templateThis === "parent") {
+							templateThis = "uuid";
+						}
+					}
+					
 					const type = this.state[array][index][0];
 					const identityString = this.state[array][index][1];
-					console.log(this.assembly.state[type][identityString]);
+					
+					if (array === "group_uuid" && arrayOutput !== []) {
+						arrayOutput.push(": ");
+					}
+					
+					if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(html`<br/>`);
+					
+					arrayOutput.push(html`<${items[convertor.convertCamelCaseToSS(type)]} identityString=${identityString} templateThis=${templateThis} assembly=${this.assembly}/>`);
+					
+					if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(", ");
+					
+					if (array === "group_parent" && arrayOutput !== []) {
+						arrayOutput.push(": ");
+					}
 				}
+				
+				renderOutput = [...renderOutput, ...arrayOutput];
 			}
 			
-			return true;
+			return renderOutput;
 		}
 	}
 	
-	async save (assembly = this.assembly, action = {}) {
-		return assembly;
+	async save (action = {}) {
+		return this.assembly;
 	}
 	
-	async remove (assembly = this.assembly, action = {}) {
-		return assembly;
+	async remove (action = {}) {
+		return this.assembly;
 	}
 	
-	async validate () {
+	async validate (assembly, uuid) {
 		return true;
 	}
 }

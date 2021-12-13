@@ -1,4 +1,5 @@
 import * as classes from "../Elements/All.js";
+import * as convertor from "../../scripts/convertor.js";
 
 import {h, Component, render} from "../../../libraries/preact.js";
 import htm from "../../../libraries/htm.js";
@@ -32,11 +33,11 @@ export default class SSComponent extends Component {
 		
 		for (let j = 0; j < templateArray.length; j++) {
 			if (Array.isArray(templateArray[j])) {
-				const elementName = "SS" + templateArray[j][1][0].toUpperCase() + templateArray[j][1].slice(1);
+				const elementName = convertor.convertCamelCaseToSS(templateArray[j][1]);
 				if (templateArray[j][0] === true) {
-					processArray.push(html`<${classes[elementName]} id="${identityString}_this" value=${item["_" + templateArray[j][2]]} red="0"/>`);
+					processArray.push(html`<${classes[elementName]} id=${identityString} value=${item["_" + templateArray[j][2]]} red="0"/>`);
 				} else if (templateArray[j][0] === false) {
-					processArray.push(html`<${classes[elementName]} id="${identityString}_this" red="0"/>`);
+					processArray.push(html`<${classes[elementName]} id=${identityString} red="0"/>`);
 				}
 			}
 			

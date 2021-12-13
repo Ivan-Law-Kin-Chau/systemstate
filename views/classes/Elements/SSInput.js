@@ -29,11 +29,11 @@ export default class SSInput extends Component {
 			value: props.value
 		});
 		
-		let style = "position: relative; top: 1px;";
+		let style;
 		if (props.red === "0") {
-			style += " color: #000000;";
+			style = "color: #000000;";
 		} else if (props.red === "1") {
-			style += " color: #FF0000;";
+			style = "color: #FF0000;";
 		}
 		
 		let dimensions = window.simulate(this.state.value ? this.state.value : "");

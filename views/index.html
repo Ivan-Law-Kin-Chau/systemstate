@@ -65,8 +65,8 @@ window.send = async function (command) {
 
 const renderFunction = async function () {
 	window.editor = new SSEditor("fzYkA7sH", window.send);
-	await window.editor.assembly.getState("object", {_uuid: "fzYkA7sH"});
-	render(html`<${items["SSObject"]} identityString="fzYkA7sH" templateThis="uuid" assembly=${window.editor.assembly}/>`, document.getElementById("renderZone"));
+	await window.editor.add();
+	render(html`<div>${await window.editor.load()}</div>`, document.getElementById("renderZone"));
 }
 
 renderFunction();
@@ -94,5 +94,5 @@ window.openUuid = async function (uuid) {
 }
 </script>
 
-<button onclick="openUuid('fzYkA7sH');">Press</button>
+<!--button onclick="openUuid('fzYkA7sH');">Press</button-->
 <div id="renderZone"></div>

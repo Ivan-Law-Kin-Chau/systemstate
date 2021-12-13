@@ -17,7 +17,7 @@ export default class SSGroup extends SSComponent {
 		this.state = this.assembly.state["group"][this.identityString];
 		if (this.validate() === true) {
 			var templateThis = props.templateThis ? props.templateThis : null;
-			var templateArray = [[false, "selector"], [true, "key"], [], ", "];
+			var templateArray = [[false, "selector"], [true, "key"], []];
 			return html`${this.generateHTMFromTemplate(props.identityString, this.state, templateThis, templateArray)}`;
 		} else if (this.validate() === false) {
 			console.log("Invalid SSGroup, current state: ");

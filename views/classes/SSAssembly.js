@@ -51,7 +51,7 @@ export default class SSAssembly {
 		if (typeof this.state[type][identityString] === "undefined") {
 			var item = await send(loadString);
 			if (item._success === true) {
-				let validatorClass = eval("(new items[\"SS" + type[0].toUpperCase() + type.slice(1) + "\"]())");
+				let validatorClass = eval("(new items[\"" + convertor.convertCamelCaseToSS(type) + "\"]())");
 				if (validatorClass.validate(item) === true) {
 					this.state[type][identityString] = item;
 				} else {
@@ -92,7 +92,7 @@ export default class SSAssembly {
 		
 		if (content === null) item._remove = true;
 		
-		let itemInstance = eval("(new items[\"SS" + type[0].toUpperCase() + type.slice(1) + "\"]())");
+		let itemInstance = eval("(new items[\"" + convertor.convertCamelCaseToSS(type) + "\"]())");
 		let validationResult = itemInstance.validate(item);
 		if (validationResult === true) {
 			this.state[type][identityString] = item;

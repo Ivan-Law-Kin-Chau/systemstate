@@ -17,7 +17,7 @@ export default class SSObject extends SSComponent {
 		this.state = this.assembly.state["object"][this.identityString];
 		if (this.validate() === true) {
 			var templateThis = props.templateThis ? props.templateThis : null;
-			var templateArray = [[false, "selector"], [true, "key"], [], " this", ", "];
+			var templateArray = [[false, "selector"], [true, "key"], [], " this"];
 			return html`${this.generateHTMFromTemplate(props.identityString, this.state, templateThis, templateArray)}`;
 		} else if (this.validate() === false) {
 			console.log("Invalid SSObject, current state: ");
