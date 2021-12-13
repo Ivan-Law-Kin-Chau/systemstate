@@ -1,4 +1,3 @@
-import SSAssembly from "../SSAssembly.js";
 import SSPackaging from "../SSPackaging.js";
 
 import * as items from "../Items/All.js";
@@ -10,12 +9,12 @@ import htm from "../../libraries/htm.js";
 const html = htm.bind(h);
 
 export default class SSEditor {
-	constructor (uuid, send) {
+	constructor (uuid, send, assembly) {
 		// The head UUID of the Editor class instance
 		this.uuid = uuid;
 		
 		this.send = send;
-		this.assembly = new SSAssembly();
+		this.assembly = assembly;
 		this.packaging = new SSPackaging(send);
 		this.state = {};
 	}

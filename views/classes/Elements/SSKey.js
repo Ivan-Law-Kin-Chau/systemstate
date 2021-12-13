@@ -12,7 +12,8 @@ export default class SSKey extends Component {
 	
 	onChange (classInstance) {
 		return function (event) {
-			console.log({
+			window.listener.dispatch({
+				"type": "SAVE", 
 				"id": event.target.id, 
 				"value": event.target.value, 
 			});
@@ -26,7 +27,10 @@ export default class SSKey extends Component {
 	
 	onClick (classInstance) {
 		return function (event) {
-			visitKey(classInstance.state.value);
+			window.listener.dispatch({
+				"type": "OPEN", 
+				"key": classInstance.state.value
+			});
 		}
 	}
 	

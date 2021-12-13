@@ -21,9 +21,10 @@ export default class Button extends Component {
 				newValue = null;
 			}
 			
-			console.log({
+			window.listener.dispatch({
+				"type": "SAVE", 
 				"id": event.target.id, 
-				"value": newValue, 
+				"value": newValue
 			});
 			
 			classInstance.props.value = convertor.convertBooleanToHTML(newValue);

@@ -12,7 +12,10 @@ export default class SSSelector extends Component {
 	
 	onClick (classInstance) {
 		return function (event) {
-			selectElement(classInstance.props.id);
+			window.listener.dispatch({
+				"type": "SELECT", 
+				"key": classInstance.props.id
+			});
 		}
 	}
 	

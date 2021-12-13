@@ -1,6 +1,8 @@
 <link rel="stylesheet" type="text/css" href="/main.css">
 <script type="module">
 
+import SSAssembly from "./classes/SSAssembly.js";
+import SSListener from "./classes/SSListener.js";
 import SSEditor from "./classes/UserInterfaces/SSEditor.js";
 import * as items from "./classes/Items/All.js";
 
@@ -8,16 +10,6 @@ import {h, Component, render} from "./libraries/preact.js";
 import htm from "./libraries/htm.js";
 
 const html = htm.bind(h);
-
-window.visitKey = function (key) {
-	console.log("Visit Key: " + key);
-}
-
-window.selectElement = function (key) {
-	console.log("Select Element: " + key);
-	if (document.getElementById(key).red === "0") document.getElementById(key).red = "1";
-	if (document.getElementById(key).red === "1") document.getElementById(key).red = "0";
-}
 
 window.simulate = function (input) {
 	var virtualElement = document.createElement("pre");
@@ -64,7 +56,9 @@ window.send = async function (command) {
 }
 
 const renderFunction = async function () {
-	window.editor = new SSEditor("fzYkA7sH", window.send);
+	window.assembly = new SSAssembly();
+	window.listener = new SSListener(window.assembly);
+	window.editor = new SSEditor("fzYkA7sH", window.send, window.assembly);
 	await window.editor.add();
 	render(html`<div>${await window.editor.load()}</div>`, document.getElementById("renderZone"));
 }
@@ -92,6 +86,7 @@ window.openUuid = async function (uuid) {
 	await output.loadDependencies(dependencies);
 	console.log(output);
 }
+
 </script>
 
 <!--button onclick="openUuid('fzYkA7sH');">Press</button-->
