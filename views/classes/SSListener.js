@@ -8,8 +8,6 @@ export default class SSListener {
 	dispatch (action = {}) {
 		if (action.type === "SELECT") {
 			console.log("Select Element: " + action.key);
-			if (document.getElementById(action.key).red === "0") document.getElementById(action.key).red = "1";
-			if (document.getElementById(action.key).red === "1") document.getElementById(action.key).red = "0";
 		} else if (action.type === "OPEN") {
 			console.log("Open Key: " + action.key);
 		} else if (action.type === "SAVE") {

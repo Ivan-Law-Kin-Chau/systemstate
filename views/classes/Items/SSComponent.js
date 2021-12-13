@@ -10,8 +10,8 @@ export default class SSComponent extends Component {
 	generateHTMFromTemplate (identityString, item, templateThis, templateArray) {
 		var itemAddRemove = function (identityString, item) {
 			var output = "";
-			if (item._add === true) output += html` <${SSAdd} id="${identityString}_add" red="0"/>`;
-			if (item._remove === true) output += html` <${SSRemove} id="${identityString}_remove" red="0"/>`;
+			if (item._add === true) output += html` <${SSAdd} id="${identityString}_add"/>`;
+			if (item._remove === true) output += html` <${SSRemove} id="${identityString}_remove"/>`;
 			return output;
 		}
 		
@@ -35,9 +35,9 @@ export default class SSComponent extends Component {
 			if (Array.isArray(templateArray[j])) {
 				const elementName = convertor.convertCamelCaseToSS(templateArray[j][1]);
 				if (templateArray[j][0] === true) {
-					processArray.push(html`<${classes[elementName]} id=${identityString} value=${item["_" + templateArray[j][2]]} red="0"/>`);
+					processArray.push(html`<${classes[elementName]} id=${identityString} value=${item["_" + templateArray[j][2]]}/>`);
 				} else if (templateArray[j][0] === false) {
-					processArray.push(html`<${classes[elementName]} id=${identityString} red="0"/>`);
+					processArray.push(html`<${classes[elementName]} id=${identityString}/>`);
 				}
 			}
 			

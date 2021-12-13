@@ -39,12 +39,7 @@ export default class SSKey extends Component {
 			value: props.value
 		});
 		
-		let style = "min-width: 72px; max-width: 72px; padding: 0px;";
-		if (props.red === "0") {
-			style += " color: #000000;";
-		} else if (props.red === "1") {
-			style += " color: #FF0000;";
-		}
+		let style = "color: #000000; min-width: 72px; max-width: 72px; padding: 0px;";
 		
 		return html`<input id=${props.id} type="input" value=${props.value} maxLength="8" onChange=${this.onChange(this)} onClick=${this.onClick(this)} style=${style}></input>`;
 	}

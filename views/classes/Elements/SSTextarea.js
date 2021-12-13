@@ -30,13 +30,7 @@ export default class SSTextarea extends Component {
 			value: props.value
 		});
 		
-		let style = "display: inline-block; position: relative; top: -2px;";
-		if (props.red === "0") {
-			style += " color: #000000;";
-		} else if (props.red === "1") {
-			style += " color: #FF0000;";
-		}
-		
+		let style = "color: #000000; display: inline-block; position: relative; top: -2px;";
 		let dimensions = window.simulate(this.state.value ? this.state.value : "");
 		style += " width: " + dimensions.width + ";";
 		style += " height: " + dimensions.height + ";";

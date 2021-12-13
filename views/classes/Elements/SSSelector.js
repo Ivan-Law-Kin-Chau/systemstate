@@ -8,6 +8,7 @@ const html = htm.bind(h);
 export default class SSSelector extends Component {
 	constructor () {
 		super();
+		this.setState({ "red": false });
 	}
 	
 	onClick (classInstance) {
@@ -16,14 +17,17 @@ export default class SSSelector extends Component {
 				"type": "SELECT", 
 				"key": classInstance.props.id
 			});
+			
+			if (classInstance.state.red === false) classInstance.setState({ "red": true });
+			if (classInstance.state.red === true) classInstance.setState({ "red": false });
 		}
 	}
 	
 	render (props, state) {
 		let style;
-		if (props.red === "0") {
+		if (state.red === false) {
 			style = "color: #000000;";
-		} else if (props.red === "1") {
+		} else if (state.red === true) {
 			style = "color: #FF0000;";
 		}
 		

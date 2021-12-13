@@ -39,12 +39,7 @@ export default class Button extends Component {
 			value: convertor.convertHTMLToBoolean(props.value)
 		});
 		
-		let style = "";
-		if (props.red === "0") {
-			style += " color: #000000;";
-		} else if (props.red === "1") {
-			style += " color: #FF0000;";
-		}
+		let style = "color: #000000;";
 		
 		return html`<button id=${props.id} onClick=${this.onClick(this)} style=${style}>${convertor.convertBooleanToDirection(convertor.convertHTMLToBoolean(props.value))}</button>`;
 	}
