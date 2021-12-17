@@ -75,9 +75,7 @@ export default class SSAssembly {
 		
 		if (typeof this.state[type][identityString] === "undefined") {
 			var item = await send(loadString);
-			if (item._success === true) {
-				item = item;
-			} else if (item._success === false) {
+			if (item._success === false) {
 				item = this.defaults[type];
 				item._type = type;
 				item._add = true;
@@ -86,11 +84,14 @@ export default class SSAssembly {
 			item = this.state[type][identityString];
 		}
 		
-		for (let key in content) {
-			item[key] = content[key];
-		}
-		
 		if (content === null) item._remove = true;
+		
+		for (let key in content) {
+			if (!(item[key] === content[key])) {
+				item[key] = content[key];
+				if (!(item._add === true || item._remove === true)) item._save = true;
+			}
+		}
 		
 		let itemInstance = eval("(new items[\"" + convertor.convertCamelCaseToSS(type) + "\"]())");
 		let validationResult = itemInstance.validate(item);
@@ -116,7 +117,7 @@ export default class SSAssembly {
 						} else if (item._type === "group") {
 							script.push("add_" + type + "(\"" + item._uuid + "\", \"" + item._parent + "\")");
 						} else if (item._type === "link") {
-							script.push("add_" + type + "(\"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + convertor.convertBooleanToDirection(item._direction) + ")");
+							script.push("add_" + type + "(\"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + item._direction + ")");
 						} else if (item._type === "property") {
 							script.push("add_" + type + "(\"" + item._uuid + "\", \"" + item._parent + "\", \"" + item._name + "\", \"" + item._content + "\")");
 						}
@@ -133,14 +134,14 @@ export default class SSAssembly {
 							script.push("remove_" + type + "(\"" + item._uuid + "\")");
 						}
 					}
-				} else {
+				} else if (item._save === true) {
 					const identity = identifier.identityFromString(type, identityString);
 					if (item._type === "object") {
 						script.push("save_" + type + "(\"" + identity._uuid + "\", \"" + item._uuid + "\")");
 					} else if (item._type === "group") {
 						script.push("save_" + type + "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + identity._parent + "\", \"" + item._parent + "\")");
 					} else if (item._type === "link") {
-						script.push("save_" + type + "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + convertor.convertBooleanToDirection(item._direction) + ")");
+						script.push("save_" + type + "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + item._direction + ")");
 					} else if (item._type === "property") {
 						script.push("save_" + type + "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + item._parent + "\", \"" + item._name + "\", \"" + item._content + "\")");
 					}
@@ -150,6 +151,9 @@ export default class SSAssembly {
 						(function () {
 							var identityStringToDelete = identifier.identityToString(type, identity);
 							var identityStringToAdd = identifier.identityToString(type, item);
+							
+							if (item._save) delete item._save;
+							
 							if (identityStringToDelete !== identityStringToAdd) {
 								delete this.state[type][identityStringToDelete];
 								this.state[type][identityStringToAdd] = item;

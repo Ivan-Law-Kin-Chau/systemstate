@@ -7,6 +7,10 @@ body {
 	overflow: hidden;
 	font-family: "Consolas";
 	display: inline-block;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
 }
 
 input, textarea, button, pre {
@@ -21,6 +25,7 @@ input, textarea, button, pre {
 	resize: none;
 	font-family: "Consolas";
 	font-size: 16px;
+	cursor: text;
 }
 
 input:focus, textarea:focus, button:focus, button::-moz-focus-inner {

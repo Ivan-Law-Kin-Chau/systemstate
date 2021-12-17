@@ -13,34 +13,36 @@ export default class Button extends Component {
 	onClick (classInstance) {
 		return function (event) {
 			var newValue;
-			if (classInstance.state.value === null) {
+			if (classInstance.state.elementValue === null) {
 				newValue = true;
-			} else if (classInstance.state.value === true) {
+			} else if (classInstance.state.elementValue === true) {
 				newValue = false;
-			} else if (classInstance.state.value === false) {
+			} else if (classInstance.state.elementValue === false) {
 				newValue = null;
 			}
 			
 			window.listener.dispatch({
 				"type": "SAVE", 
-				"id": event.target.id, 
+				"targetType": classInstance.props.type, 
+				"targetId": event.target.id, 
+				"key": classInstance.props.elementKey, 
 				"value": newValue
 			});
 			
-			classInstance.props.value = convertor.convertBooleanToHTML(newValue);
+			classInstance.props.elementValue = convertor.convertBooleanToHTML(newValue);
 			classInstance.setState({
-				value: newValue
+				elementValue: newValue
 			});
 		}
 	}
 	
 	render (props, state) {
-		if (typeof this.state.value === "undefined") this.setState({
-			value: convertor.convertHTMLToBoolean(props.value)
+		if (typeof this.state.elementValue === "undefined") this.setState({
+			elementValue: convertor.convertHTMLToBoolean(props.elementValue)
 		});
 		
 		let style = "color: #000000;";
 		
-		return html`<button id=${props.id} onClick=${this.onClick(this)} style=${style}>${convertor.convertBooleanToDirection(convertor.convertHTMLToBoolean(props.value))}</button>`;
+		return html`<button id=${props.id} onClick=${this.onClick(this)} style=${style}>${convertor.convertBooleanToDirection(convertor.convertHTMLToBoolean(props.elementValue))}</button>`;
 	}
 }

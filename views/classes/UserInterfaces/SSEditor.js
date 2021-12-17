@@ -10,13 +10,14 @@ const html = htm.bind(h);
 
 export default class SSEditor {
 	constructor (uuid, send, assembly) {
-		// The head UUID of the Editor class instance
+		// The head UUID of the class instance
 		this.uuid = uuid;
 		
 		this.send = send;
 		this.assembly = assembly;
 		this.packaging = new SSPackaging(send);
 		this.state = {};
+		this.loaded = false;
 	}
 	
 	async add (action = {}) {
@@ -52,12 +53,16 @@ export default class SSEditor {
 			}
 		}
 		
-		this.dependenciesLoaded = true;
-		return this.assembly;
+		if (await this.validate(this.assembly, this.uuid) === true) {
+			this.loaded = true;
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	async load (action = {}) {
-		if (await this.validate(this.assembly, this.uuid) === true) {
+		if (this.loaded === true) {
 			let orderOfArrays = ["group_parent", "object_uuid", "group_uuid", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent", "property_name", "property_content"];
 			let renderOutput = [];
 			
@@ -99,16 +104,19 @@ export default class SSEditor {
 				renderOutput = [...renderOutput, ...arrayOutput];
 			}
 			
-			return renderOutput;
+			return html`${renderOutput}`;
+		} else {
+			console.log("User interface class not yet initiated properly! Call the add() method first");
+			return html``;
 		}
 	}
 	
 	async save (action = {}) {
-		return this.assembly;
+		return true;
 	}
 	
 	async remove (action = {}) {
-		return this.assembly;
+		return true;
 	}
 	
 	async validate (assembly, uuid) {

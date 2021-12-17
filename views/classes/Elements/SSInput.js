@@ -14,27 +14,29 @@ export default class SSInput extends Component {
 		return function (event) {
 			window.listener.dispatch({
 				"type": "SAVE", 
-				"id": event.target.id, 
-				"value": event.target.value, 
+				"targetType": classInstance.props.type, 
+				"targetId": event.target.id, 
+				"key": classInstance.props.elementKey, 
+				"value": event.target.value
 			});
 			
-			classInstance.props.value = event.target.value;
+			classInstance.props.elementValue = event.target.value;
 			classInstance.setState({
-				value: event.target.value
+				elementValue: event.target.value
 			});
 		}
 	}
 	
 	render (props, state) {
-		if (typeof this.state.value === "undefined") this.setState({
-			value: props.value
+		if (typeof this.state.elementValue === "undefined") this.setState({
+			elementValue: props.elementValue
 		});
 		
 		let style = "color: #000000;";
-		let dimensions = window.simulate(this.state.value ? this.state.value : "");
+		let dimensions = window.simulate(this.state.elementValue ? this.state.elementValue : "");
 		style += " width: " + dimensions.width + ";";
 		style += " height: " + dimensions.height + ";";
 		
-		return html`<input id=${props.id} type="text" value=${props.value} onInput=${this.onInputOrChange(this)} onChange=${this.onInputOrChange(this)} style=${style}></input>`;
+		return html`<input id=${props.id} type="text" value=${props.elementValue} onInput=${this.onInputOrChange(this)} onChange=${this.onInputOrChange(this)} style=${style}></input>`;
 	}
 }

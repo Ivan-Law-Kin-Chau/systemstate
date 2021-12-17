@@ -10,17 +10,19 @@ export default class SSKey extends Component {
 		super();
 	}
 	
-	onChange (classInstance) {
+	onInputOrChange (classInstance) {
 		return function (event) {
 			window.listener.dispatch({
 				"type": "SAVE", 
-				"id": event.target.id, 
-				"value": event.target.value, 
+				"targetType": classInstance.props.type, 
+				"targetId": event.target.id, 
+				"key": classInstance.props.elementKey, 
+				"value": event.target.value
 			});
 			
-			classInstance.props.value = event.target.value;
+			classInstance.props.elementValue = event.target.value;
 			classInstance.setState({
-				value: event.target.value
+				elementValue: event.target.value
 			});
 		}
 	}
@@ -29,18 +31,18 @@ export default class SSKey extends Component {
 		return function (event) {
 			window.listener.dispatch({
 				"type": "OPEN", 
-				"key": classInstance.state.value
+				"key": classInstance.state.elementValue
 			});
 		}
 	}
 	
 	render (props, state) {
-		if (typeof this.state.value === "undefined") this.setState({
-			value: props.value
+		if (typeof this.state.elementValue === "undefined") this.setState({
+			elementValue: props.elementValue
 		});
 		
 		let style = "color: #000000; min-width: 72px; max-width: 72px; padding: 0px;";
 		
-		return html`<input id=${props.id} type="input" value=${props.value} maxLength="8" onChange=${this.onChange(this)} onClick=${this.onClick(this)} style=${style}></input>`;
+		return html`<input id=${props.id} type="input" value=${props.elementValue} maxLength="8" onInput=${this.onInputOrChange(this)} onChange=${this.onInputOrChange(this)} onClick=${this.onClick(this)} style=${style}></input>`;
 	}
 }
