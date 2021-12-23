@@ -1,11 +1,12 @@
 import * as convertor from "../../scripts/convertor.js";
+import SSElement from "./SSElement.js";
 
 import {h, Component, render} from "../../libraries/preact.js";
 import htm from "../../libraries/htm.js";
 
 const html = htm.bind(h);
 
-export default class SSTextarea extends Component {
+export default class SSTextarea extends SSElement {
 	constructor () {
 		super();
 	}
@@ -33,7 +34,7 @@ export default class SSTextarea extends Component {
 		});
 		
 		let style = "color: #000000; display: inline-block; position: relative; top: -2px;";
-		let dimensions = window.simulate(this.state.elementValue ? this.state.elementValue : "");
+		let dimensions = this.simulate(this.state.elementValue ? this.state.elementValue : "");
 		style += " width: " + dimensions.width + ";";
 		style += " height: " + dimensions.height + ";";
 		

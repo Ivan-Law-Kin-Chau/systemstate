@@ -9,13 +9,12 @@ import htm from "../../libraries/htm.js";
 const html = htm.bind(h);
 
 export default class SSEditor {
-	constructor (uuid, send, assembly) {
+	constructor (uuid, assembly) {
 		// The head UUID of the class instance
 		this.uuid = uuid;
 		
-		this.send = send;
 		this.assembly = assembly;
-		this.packaging = new SSPackaging(send);
+		this.packaging = new SSPackaging(this.assembly.send);
 		this.state = {};
 		this.loaded = false;
 	}

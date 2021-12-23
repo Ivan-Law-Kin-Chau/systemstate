@@ -40,6 +40,26 @@ export default class SSAssembly {
 		};
 	}
 	
+	async send (command) {
+		console.log(command);
+		return new Promise ((resolve, reject) => {
+			var terminal = new XMLHttpRequest();
+			terminal.onreadystatechange = async function () {
+				if (this.readyState == 4 && this.status == 200) {
+					resolve(JSON.parse(this.responseText));
+				}
+			}
+			terminal.open("POST", "http://localhost:800/terminal", true);
+			terminal.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			
+			// encodeURIComponent does not turn percentage signs into "%25" correctly
+			// So I have to do that manually
+			command = command.split("%").join("%25");
+			
+			terminal.send("command=" + encodeURIComponent(command));
+		});
+	}
+	
 	async getState (type, identity) {
 		var identityString = identifier.identityToString(type, identity);
 		if (type === "group") {
@@ -49,7 +69,7 @@ export default class SSAssembly {
 		}
 		
 		if (typeof this.state[type][identityString] === "undefined") {
-			var item = await send(loadString);
+			var item = await this.send(loadString);
 			if (item._success === true) {
 				let validatorClass = eval("(new items[\"" + convertor.convertCamelCaseToSS(type) + "\"]())");
 				if (validatorClass.validate(item) === true) {
@@ -74,7 +94,7 @@ export default class SSAssembly {
 		}
 		
 		if (typeof this.state[type][identityString] === "undefined") {
-			var item = await send(loadString);
+			var item = await this.send(loadString);
 			if (item._success === false) {
 				item = this.defaults[type];
 				item._type = type;
@@ -166,7 +186,7 @@ export default class SSAssembly {
 		
 		for (let line in script) {
 			if (typeof script[line] === "string") {
-				await send(script[line]);
+				await this.send(script[line]);
 			} else if (typeof script[line] === "function") {
 				script[line]();
 			}

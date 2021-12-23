@@ -1,12 +1,12 @@
 import * as validator from "../../scripts/validator.js";
-import SSComponent from "./SSComponent.js";
+import SSItem from "./SSItem.js";
 
 import {h, Component, render} from "../../../libraries/preact.js";
 import htm from "../../../libraries/htm.js";
 
 const html = htm.bind(h);
 
-export default class SSProperty extends SSComponent {
+export default class SSProperty extends SSItem {
 	constructor () {
 		super();
 	}

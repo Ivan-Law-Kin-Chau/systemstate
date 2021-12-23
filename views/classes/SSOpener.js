@@ -1,0 +1,41 @@
+export default class SSOpener {
+	constructor (assembly) {
+		this.assembly = assembly;
+	}
+	
+	async read (url) {
+		return new Promise ((resolve, reject) => {
+			var terminal = new XMLHttpRequest();
+			terminal.onreadystatechange = async function () {
+				if (this.readyState == 4 && this.status == 200) {
+					resolve(this.responseText);
+				}
+			}
+			terminal.open("GET", "http://localhost:800/" + url, true);
+			terminal.send();
+		});
+	}
+	
+	/*
+	
+	openUuid loops through the array of all user interfaces available, 
+	and runs the validate function of each user interface, 
+	then renders the first one whose validate function returned true. 
+	SSEditor will the the last user interface, 
+	and its validate function will always return true, 
+	so if the validate functions of all other user interfaces returned false, 
+	SSEditor will be the user interface used in the end. 
+	
+	*/
+	async openUuid (uuid) {
+		this.state = JSON.parse(await this.read("classes/UserInterfaces/settings.json"));
+		for (let i = 0; i < this.state.userInterfaceList.length; i++) {
+			const loadedClass = await import("./UserInterfaces/SS" + this.state.userInterfaceList[i] + ".js");
+			const loadedClassInstance = new (loadedClass.default)(uuid, this.assembly);
+			if (await loadedClassInstance.validate(this.assembly, uuid) === true) {
+				console.log(this.state.userInterfaceList[i]);
+				break;
+			}
+		}
+	}
+}

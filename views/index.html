@@ -2,6 +2,7 @@
 <script type="module">
 
 import SSAssembly from "./classes/SSAssembly.js";
+import SSOpener from "./classes/SSOpener.js";
 import SSListener from "./classes/SSListener.js";
 import SSEditor from "./classes/UserInterfaces/SSEditor.js";
 import * as items from "./classes/Items/All.js";
@@ -11,83 +12,16 @@ import htm from "./libraries/htm.js";
 
 const html = htm.bind(h);
 
-window.simulate = function (input) {
-	var virtualElement = document.createElement("pre");
-	virtualElement.style.display = "inline-block";
-	virtualElement.style.visibility = "hidden";
-	virtualElement.style.width = "auto";
-	virtualElement.style.height = "auto";
-	virtualElement.innerHTML = input;
-	document.getElementsByTagName("body")[0].appendChild(virtualElement);
-	if (input.split("\n")[input.split("\n").length - 1] == "") {
-		var output = {
-			"width": (virtualElement.getBoundingClientRect().width) + "px", 
-			"height": (virtualElement.getBoundingClientRect().height + 20) + "px"
-		};
-	} else {
-		var output = {
-			"width": (virtualElement.getBoundingClientRect().width) + "px", 
-			"height": (virtualElement.getBoundingClientRect().height + 1) + "px"
-		};
-	}
-	virtualElement.outerHTML = "";
-	virtualElement.remove();
-	return output;
-}
-
-window.send = async function (command) {
-	console.log(command);
-	return new Promise ((resolve, reject) => {
-		var terminal = new XMLHttpRequest();
-		terminal.onreadystatechange = async function () {
-			if (this.readyState == 4 && this.status == 200) {
-				resolve(JSON.parse(this.responseText));
-			}
-		}
-		terminal.open("POST", "http://localhost:800/terminal", true);
-		terminal.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		
-		// encodeURIComponent does not turn percentage signs into "%25" correctly
-		// So I have to do that manually
-		command = command.split("%").join("%25");
-		
-		terminal.send("command=" + encodeURIComponent(command));
-	});
-}
-
 const renderFunction = async function () {
 	window.assembly = new SSAssembly();
+	window.opener = new SSOpener(window.assembly);
 	window.listener = new SSListener(window.assembly);
-	window.editor = new SSEditor("fzYkA7sH", window.send, window.assembly);
+	window.editor = new SSEditor("fzYkA7sH", window.assembly);
 	await window.editor.add();
 	render(html`<div>${await window.editor.load()}</div>`, document.getElementById("renderZone"));
 }
 
 renderFunction();
 
-/*
-
-openUuid should be changed in the future. 
-It should loop through the array of all user interfaces available, 
-and run the validate function of each user interface, 
-then render first the one that returned true at the validate function. 
-SSEditor will the the last user interface, 
-and its validate function will always return true, 
-so if all other user interfaces rendered false at their validate functions, 
-SSEditor will be the user interface used in the end. 
-
-*/
-window.openUuid = async function (uuid) {
-	// First, get the dependencies of the editor with the UUID as the editor's head
-	var dependencies = await send("check(\"" + uuid + "\")");
-	var output = new SSEditor(uuid);
-	
-	// Then, for each dependency, load the element that corresponds to it
-	await output.loadDependencies(dependencies);
-	console.log(output);
-}
-
 </script>
-
-<!--button onclick="openUuid('fzYkA7sH');">Press</button-->
 <div id="renderZone"></div>

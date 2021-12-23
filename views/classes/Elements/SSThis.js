@@ -1,11 +1,12 @@
 import * as convertor from "../../scripts/convertor.js";
+import SSElement from "./SSElement.js";
 
 import {h, Component, render} from "../../libraries/preact.js";
 import htm from "../../libraries/htm.js";
 
 const html = htm.bind(h);
 
-export default class SSThis extends Component {
+export default class SSThis extends SSElement {
 	constructor () {
 		super();
 		this.setState({ "red": false });
