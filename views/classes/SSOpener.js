@@ -33,8 +33,13 @@ export default class SSOpener {
 			const loadedClass = await import("./UserInterfaces/SS" + this.state.userInterfaceList[i] + ".js");
 			const loadedClassInstance = new (loadedClass.default)(uuid, this.assembly);
 			if (await loadedClassInstance.validate(this.assembly, uuid) === true) {
-				console.log(this.state.userInterfaceList[i]);
-				break;
+				if (await loadedClassInstance.add() === true) {
+					return await loadedClassInstance.load();
+				} else {
+					throw "Failed to add user interface class";
+				}
+			} else {
+				continue;
 			}
 		}
 	}

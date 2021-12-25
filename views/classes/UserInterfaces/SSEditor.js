@@ -1,4 +1,4 @@
-import SSPackaging from "../SSPackaging.js";
+import SSExpander from "../SSExpander.js";
 
 import * as items from "../Items/All.js";
 import * as convertor from "../../scripts/convertor.js";
@@ -14,14 +14,14 @@ export default class SSEditor {
 		this.uuid = uuid;
 		
 		this.assembly = assembly;
-		this.packaging = new SSPackaging(this.assembly.send);
+		this.expander = new SSExpander(this.assembly.send);
 		this.state = {};
 		this.loaded = false;
 	}
 	
 	async add (action = {}) {
 		// First, get the dependencies of the editor with the UUID as the editor's head
-		var dependencies = await this.packaging.check(this.uuid);
+		var dependencies = await this.expander.expand(this.uuid);
 		
 		// Then, for each dependency, load the element that corresponds to it
 		for (let array in dependencies) {
@@ -52,12 +52,8 @@ export default class SSEditor {
 			}
 		}
 		
-		if (await this.validate(this.assembly, this.uuid) === true) {
-			this.loaded = true;
-			return true;
-		} else {
-			return false;
-		}
+		this.loaded = true;
+		return true;
 	}
 	
 	async load (action = {}) {

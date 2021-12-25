@@ -1,4 +1,4 @@
-import SSPackaging from "../SSPackaging.js";
+import SSExpander from "../SSExpander.js";
 
 import * as items from "../Items/All.js";
 import * as convertor from "../../scripts/convertor.js";
@@ -9,23 +9,33 @@ import htm from "../../libraries/htm.js";
 
 const html = htm.bind(h);
 
-export default class SSAlliase {
+export default class SSAliase {
 	constructor (uuid, assembly) {
 		// The head UUID of the class instance
 		this.uuid = uuid;
 		
 		this.assembly = assembly;
-		this.packaging = new SSPackaging(this.assembly.send);
+		this.expander = new SSExpander(this.assembly.send);
 		this.state = {};
 		this.loaded = false;
 	}
 	
 	async add (action = {}) {
-		for (let i = 0; i < this.assembly.state.property.length; i++) {
-			if (this.assembly.state.property[i]._uuid === this.uuid) {
-				var uuid = (await this.assembly.send(`search("uuid", "${this.uuid}", "property")`))._uuid[0];
-				this.loaded = true;
-				return true;
+		var dependencies = await this.expander.expand(this.uuid);
+		if (dependencies["property_parent"]) {
+			for (let uuid of dependencies["property_parent"]) {
+				await this.assembly.getState("property", {
+					_uuid: uuid
+				});
+				
+				const item = this.assembly.state.property[uuid];
+				if (item._success === true && item._name === "Target") {
+					if (validator.isValidKey(item._content) === true) {
+						this.state.uuid = item._uuid;
+						this.loaded = true;
+						return true;
+					}
+				}
 			}
 		}
 		
@@ -37,7 +47,7 @@ export default class SSAlliase {
 			return html`<span onclick=${() => {
 				window.listener.dispatch({
 					"type": "OPEN", 
-					"key": this.uuid
+					"key": this.state.uuid
 				})
 			}}>[aliase]</span>`;
 		} else {
@@ -55,6 +65,22 @@ export default class SSAlliase {
 	}
 	
 	async validate (assembly, uuid) {
-		return true;
+		var dependencies = await this.expander.expand(uuid);
+		if (dependencies["property_parent"]) {
+			for (let uuid of dependencies["property_parent"]) {
+				await this.assembly.getState("property", {
+					_uuid: uuid
+				});
+				
+				const item = this.assembly.state.property[uuid];
+				if (item._success === true && item._name === "Target") {
+					if (validator.isValidKey(item._content) === true) {
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
 	}
 }

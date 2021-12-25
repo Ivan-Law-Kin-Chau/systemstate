@@ -2,10 +2,8 @@
 <script type="module">
 
 import SSAssembly from "./classes/SSAssembly.js";
-import SSOpener from "./classes/SSOpener.js";
 import SSListener from "./classes/SSListener.js";
-import SSEditor from "./classes/UserInterfaces/SSEditor.js";
-import * as items from "./classes/Items/All.js";
+import SSOpener from "./classes/SSOpener.js";
 
 import {h, Component, render} from "./libraries/preact.js";
 import htm from "./libraries/htm.js";
@@ -14,11 +12,9 @@ const html = htm.bind(h);
 
 const renderFunction = async function () {
 	window.assembly = new SSAssembly();
-	window.opener = new SSOpener(window.assembly);
 	window.listener = new SSListener(window.assembly);
-	window.editor = new SSEditor("fzYkA7sH", window.assembly);
-	await window.editor.add();
-	render(html`<div>${await window.editor.load()}</div>`, document.getElementById("renderZone"));
+	window.opener = new SSOpener(window.assembly);
+	render(html`<div>${await window.opener.openUuid("fzYkA7sH")}</div>`, document.getElementById("renderZone"));
 }
 
 renderFunction();
