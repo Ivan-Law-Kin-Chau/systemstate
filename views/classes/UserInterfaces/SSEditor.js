@@ -14,7 +14,7 @@ export default class SSEditor {
 		this.uuid = uuid;
 		
 		this.assembly = assembly;
-		this.expander = new SSExpander(this.assembly.send);
+		this.expander = new SSExpander(this.assembly.sender);
 		this.state = {};
 		this.loaded = false;
 	}

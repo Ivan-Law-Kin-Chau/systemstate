@@ -1,9 +1,13 @@
+import SSSender from "./SSSender.js";
+
 import * as items from "./Items/All.js";
 import * as convertor from "../../scripts/convertor.js";
 import * as identifier from "../../scripts/identifier.js";
 
 export default class SSAssembly {
 	constructor () {
+		this.sender = new SSSender();
+		
 		this.itemPrototype = {
 			_add: false, 
 			_remove: false, 
@@ -40,36 +44,19 @@ export default class SSAssembly {
 		};
 	}
 	
-	async send (command) {
-		console.log(command);
-		return new Promise ((resolve, reject) => {
-			var terminal = new XMLHttpRequest();
-			terminal.onreadystatechange = async function () {
-				if (this.readyState == 4 && this.status == 200) {
-					resolve(JSON.parse(this.responseText));
-				}
-			}
-			terminal.open("POST", "http://localhost:800/terminal", true);
-			terminal.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			
-			// encodeURIComponent does not turn percentage signs into "%25" correctly
-			// So I have to do that manually
-			command = command.split("%").join("%25");
-			
-			terminal.send("command=" + encodeURIComponent(command));
-		});
+	identityToLoadCommand (type, identity) {
+		if (type === "group") {
+			return ["load_" + type, "(\"" + identity._uuid + "\", \"" + identity._parent + "\")"];
+		} else {
+			return ["load_" + type, "(\"" + identity._uuid + "\")"];
+		}
 	}
 	
 	async getState (type, identity) {
 		var identityString = identifier.identityToString(type, identity);
-		if (type === "group") {
-			var loadString = "load_" + type + "(\"" + identity._uuid + "\", \"" + identity._parent + "\")";
-		} else {
-			var loadString = "load_" + type + "(\"" + identity._uuid + "\")";
-		}
-		
 		if (typeof this.state[type][identityString] === "undefined") {
-			var item = await this.send(loadString);
+			var loadCommand = this.identityToLoadCommand(type, identity);
+			var item = await this.sender.send(loadCommand[0], loadCommand[1]);
 			if (item._success === true) {
 				let validatorClass = eval("(new items[\"" + convertor.convertCamelCaseToSS(type) + "\"]())");
 				if (validatorClass.validate(item) === true) {
@@ -87,14 +74,9 @@ export default class SSAssembly {
 	
 	async setState (type, identity, content = null) {
 		var identityString = identifier.identityToString(type, identity);
-		if (type === "group") {
-			var loadString = "load_" + type + "(\"" + identity._uuid + "\", \"" + identity._parent + "\")";
-		} else {
-			var loadString = "load_" + type + "(\"" + identity._uuid + "\")";
-		}
-		
 		if (typeof this.state[type][identityString] === "undefined") {
-			var item = await this.send(loadString);
+			var loadCommand = this.identityToLoadCommand(type, identity);
+			var item = await this.sender.send(loadCommand[0], loadCommand[1]);
 			if (item._success === false) {
 				item = this.defaults[type];
 				item._type = type;
@@ -125,7 +107,7 @@ export default class SSAssembly {
 	}
 	
 	async syncWithServer () {
-		var script = [];
+		this.sender.clearCache();
 		
 		for (let type in this.state) {
 			for (let identityString in this.state[type]) {
@@ -133,40 +115,40 @@ export default class SSAssembly {
 				if (item._add === true || item._remove === true) {
 					if (item._add === true) {
 						if (item._type === "object") {
-							script.push("add_" + type + "(\"" + item._uuid + "\")");
+							this.sender.push("add_" + type, "(\"" + item._uuid + "\")");
 						} else if (item._type === "group") {
-							script.push("add_" + type + "(\"" + item._uuid + "\", \"" + item._parent + "\")");
+							this.sender.push("add_" + type, "(\"" + item._uuid + "\", \"" + item._parent + "\")");
 						} else if (item._type === "link") {
-							script.push("add_" + type + "(\"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + item._direction + ")");
+							this.sender.push("add_" + type, "(\"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + item._direction + ")");
 						} else if (item._type === "property") {
-							script.push("add_" + type + "(\"" + item._uuid + "\", \"" + item._parent + "\", \"" + item._name + "\", \"" + item._content + "\")");
+							this.sender.push("add_" + type, "(\"" + item._uuid + "\", \"" + item._parent + "\", \"" + item._name + "\", \"" + item._content + "\")");
 						}
 					}
 					
 					if (item._remove === true) {
 						if (item._type === "object") {
-							script.push("remove_" + type + "(\"" + item._uuid + "\")");
+							this.sender.push("remove_" + type, "(\"" + item._uuid + "\")");
 						} else if (item._type === "group") {
-							script.push("remove_" + type + "(\"" + item._uuid + "\", \"" + item._parent + "\")");
+							this.sender.push("remove_" + type, "(\"" + item._uuid + "\", \"" + item._parent + "\")");
 						} else if (item._type === "link") {
-							script.push("remove_" + type + "(\"" + item._uuid + "\")");
+							this.sender.push("remove_" + type, "(\"" + item._uuid + "\")");
 						} else if (item._type === "property") {
-							script.push("remove_" + type + "(\"" + item._uuid + "\")");
+							this.sender.push("remove_" + type, "(\"" + item._uuid + "\")");
 						}
 					}
 				} else if (item._save === true) {
 					const identity = identifier.identityFromString(type, identityString);
 					if (item._type === "object") {
-						script.push("save_" + type + "(\"" + identity._uuid + "\", \"" + item._uuid + "\")");
+						this.sender.push("save_" + type, "(\"" + identity._uuid + "\", \"" + item._uuid + "\")");
 					} else if (item._type === "group") {
-						script.push("save_" + type + "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + identity._parent + "\", \"" + item._parent + "\")");
+						this.sender.push("save_" + type, "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + identity._parent + "\", \"" + item._parent + "\")");
 					} else if (item._type === "link") {
-						script.push("save_" + type + "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + item._direction + ")");
+						this.sender.push("save_" + type, "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + item._direction + ")");
 					} else if (item._type === "property") {
-						script.push("save_" + type + "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + item._parent + "\", \"" + item._name + "\", \"" + item._content + "\")");
+						this.sender.push("save_" + type, "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + item._parent + "\", \"" + item._name + "\", \"" + item._content + "\")");
 					}
 					
-					script.push(
+					this.sender.pushCallback(
 						// Move the item to the updated location according to its new _uuid (and new _parent if the item is a group)
 						(function () {
 							var identityStringToDelete = identifier.identityToString(type, identity);
@@ -184,14 +166,6 @@ export default class SSAssembly {
 			}
 		}
 		
-		for (let line in script) {
-			if (typeof script[line] === "string") {
-				await this.send(script[line]);
-			} else if (typeof script[line] === "function") {
-				script[line]();
-			}
-		}
-		
-		return true;
+		return this.sender.execute();
 	}
 }

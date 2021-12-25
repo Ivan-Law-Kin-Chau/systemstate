@@ -1,6 +1,6 @@
 export default class SSExpander {
-	constructor (send = function () {}) {
-		this.send = send;
+	constructor (sender) {
+		this.sender = sender;
 	}
 	
 	async expand (uuid) {
@@ -12,7 +12,7 @@ export default class SSExpander {
 			const searchArrays = ["object_uuid", "group_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
 			for (let searchArrayIndex = 0; searchArrayIndex < searchArrays.length; searchArrayIndex++) {
 				let array = searchArrays[searchArrayIndex];
-				let searchResult = (await this.send(`search("${array.split("_")[1]}", "${uuid}", "${array.split("_")[0]}")`))._uuid;
+				let searchResult = (await this.sender.send("search", `("${array.split("_")[1]}", "${uuid}", "${array.split("_")[0]}")`))._uuid;
 				
 				if (conditionFunction(searchResult) === true) {
 					var output = true;
