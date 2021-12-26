@@ -20,10 +20,10 @@ export default class SSSender {
 	
 	async execute () {
 		for (let line in this.script) {
-			if (typeof script[line] === "array") {
-				await this.send(script[line][0], script[line][1]);
-			} else if (typeof script[line] === "function") {
-				script[line]();
+			if (Array.isArray(this.script[line]) === true) {
+				await this.send(this.script[line][0], this.script[line][1]);
+			} else if (typeof this.script[line] === "function") {
+				this.script[line]();
 			}
 		}
 		

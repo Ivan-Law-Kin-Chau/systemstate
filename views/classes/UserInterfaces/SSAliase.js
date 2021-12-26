@@ -3,6 +3,7 @@ import SSExpander from "../SSExpander.js";
 import * as items from "../Items/All.js";
 import * as convertor from "../../scripts/convertor.js";
 import * as validator from "../../scripts/validator.js";
+import * as generator from "../../scripts/generator.js";
 
 import {h, Component, render} from "../../libraries/preact.js";
 import htm from "../../libraries/htm.js";
@@ -21,29 +22,41 @@ export default class SSAliase {
 	}
 	
 	async add (action = {}) {
-		var dependencies = await this.expander.expand(this.uuid);
-		if (dependencies["property_parent"]) {
-			for (let uuid of dependencies["property_parent"]) {
-				await this.assembly.getState("property", {
-					_uuid: uuid
-				});
-				
-				const item = this.assembly.state.property[uuid];
-				if (item._success === true && item._name === "Target") {
-					if (validator.isValidKey(item._content) === true) {
-						this.state.uuid = item._uuid;
-						this.loaded = true;
-						return true;
-					}
-				}
-			}
-		}
-		
-		return false;
+		const key1 = generator.generateKey();
+		const key2 = generator.generateKey();
+		return await this.assembly.setState("property", {
+			_uuid: key1
+		}, {
+			_uuid: key1, 
+			_parent: this.uuid, 
+			_name: "Target", 
+			_content: key2
+		});
 	}
 	
 	async load (action = {}) {
-		if (this.loaded === true) {
+		const classInstance = this;
+		if (await (async function () {
+			var dependencies = await classInstance.expander.expand(classInstance.uuid);
+			if (dependencies["property_parent"]) {
+				for (let uuid of dependencies["property_parent"]) {
+					await classInstance.assembly.getState("property", {
+						_uuid: uuid
+					});
+					
+					const item = classInstance.assembly.state.property[uuid];
+					if (item._success === true && item._name === "Target") {
+						if (validator.isValidKey(item._content) === true) {
+							classInstance.state.uuid = item._uuid;
+							classInstance.loaded = true;
+							return true;
+						}
+					}
+				}
+			}
+			
+			return false;
+		})() === true) {
 			return html`<span onclick=${() => {
 				window.listener.dispatch({
 					"type": "OPEN", 
@@ -61,6 +74,24 @@ export default class SSAliase {
 	}
 	
 	async remove (action = {}) {
+		var dependencies = await this.expander.expand(this.uuid);
+		if (dependencies["property_parent"]) {
+			for (let uuid of dependencies["property_parent"]) {
+				await this.assembly.getState("property", {
+					_uuid: uuid
+				});
+				
+				const item = this.assembly.state.property[uuid];
+				if (item._success === true && item._name === "Target") {
+					if (validator.isValidKey(item._content) === true) {
+						await this.assembly.setState("property", {
+							_uuid: uuid
+						});
+					}
+				}
+			}
+		}
+		
 		return true;
 	}
 	

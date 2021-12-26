@@ -15,6 +15,9 @@ const renderFunction = async function () {
 	window.listener = new SSListener(window.assembly);
 	window.opener = new SSOpener(window.assembly);
 	render(html`<div>${await window.opener.openUuid("fzYkA7sH")}</div>`, document.getElementById("renderZone"));
+	
+	// (new (await this.opener.getClass("Aliase"))("fzYkA7sH", window.assembly)).add()
+	// (new (await this.opener.getClass("Aliase"))("fzYkA7sH", window.assembly)).remove()
 }
 
 renderFunction();
