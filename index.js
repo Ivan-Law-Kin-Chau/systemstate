@@ -8,15 +8,6 @@ var urlencodedParser = bodyParser.urlencoded({
 
 app.use("/", express.static(__dirname + "/views/"))
 
-/*
-app.set("view engine", "ejs");
-app.engine("html", require("ejs").renderFile);
-
-app.get("/", function (req, res) {
-	res.render("index.html");
-});
-*/
-
 var database = new (require("sqlite3").verbose()).Database("./database/systemstate.db");
 var commands = new (require("./assembly.js"))(database);
 
