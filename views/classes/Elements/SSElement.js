@@ -24,4 +24,12 @@ export default class SSComponent extends Component {
 		virtualElement.remove();
 		return output;
 	}
+	
+	dispatch (action, dispatch = null) {
+		if (dispatch === null) {
+			window.listener.dispatch(action);
+		} else if (!(dispatch(action) === true)) {
+			window.listener.dispatch(action);
+		}
+	}
 }

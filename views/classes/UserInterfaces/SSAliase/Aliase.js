@@ -1,3 +1,5 @@
+import SSKey from "../../Elements/SSKey.js";
+
 import {h, Component, render} from "../../../libraries/preact.js";
 import htm from "../../../libraries/htm.js";
 
@@ -5,12 +7,12 @@ const html = htm.bind(h);
 
 export default class Aliase extends Component {
 	onInputOrChange (classInstance, saveFunction) {
-		return function (event) {
+		return function (action) {
 			saveFunction({
-				target: event.target.value
+				target: action.value
 			});
 			
-			classInstance.props.target = event.target.value;
+			classInstance.props.target = action.value;
 		}
 	}
 	
@@ -28,12 +30,13 @@ export default class Aliase extends Component {
 				}}>[aliase]</span>
 			</span>`;
 		} else if (this.state.edit === 1) {
-			let style = "color: #000000; min-width: 72px; max-width: 72px; padding: 0px;";
-			
 			return html`<span>
 				<span onclick=${() => {this.setState({
 					edit: 0
-				})}}>E</span>: <input type="input" value=${props.target} maxLength="8" onInput=${this.onInputOrChange(this, props.save)} onChange=${this.onInputOrChange(this, props.save)} style=${style}></input>
+				})}}>E</span>: <${SSKey} id=${this.props.source} elementValue=${this.props.target} dispatch=${(action) => {
+					if (action.type === "SAVE") this.onInputOrChange(this, this.props.save)(action);
+					return true;
+				}}/>
 			</span>`;
 		}
 	}

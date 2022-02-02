@@ -16,8 +16,8 @@ const renderFunction = async function () {
 	window.opener = new SSOpener(window.assembly);
 	render(html`<div>${await window.opener.openUuid("fzYkA7sH")}</div>`, document.getElementById("renderZone"));
 	
-	// (new (await this.opener.getClass("Aliase"))("fzYkA7sH", window.assembly)).add()
-	// (new (await this.opener.getClass("Aliase"))("fzYkA7sH", window.assembly)).remove()
+	// (new (await window.opener.getClass("Aliase"))("fzYkA7sH", window.assembly)).add();
+	// (new (await window.opener.getClass("Aliase"))("fzYkA7sH", window.assembly)).remove();
 }
 
 renderFunction();
@@ -25,7 +25,7 @@ renderFunction();
 </script>
 
 <div style="position: absolute; bottom: 1em; right: 1em;">
-<a href="/development/Documentations.pdf" target="_blank">Documentations</a>
+<a href="/resources/Documentations.pdf" target="_blank">Documentations</a>
 </div>
 
 <div id="renderZone"></div>

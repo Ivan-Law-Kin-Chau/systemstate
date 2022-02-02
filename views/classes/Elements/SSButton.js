@@ -22,13 +22,13 @@ export default class Button extends SSElement {
 				newValue = null;
 			}
 			
-			window.listener.dispatch({
+			classInstance.dispatch({
 				"type": "SAVE", 
 				"targetType": classInstance.props.type, 
 				"targetId": event.target.id, 
 				"key": classInstance.props.elementKey, 
 				"value": newValue
-			});
+			}, classInstance.props.dispatch || null);
 			
 			classInstance.props.elementValue = convertor.convertBooleanToHTML(newValue);
 			classInstance.setState({

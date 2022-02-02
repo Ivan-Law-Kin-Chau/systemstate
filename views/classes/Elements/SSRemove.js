@@ -14,10 +14,10 @@ export default class SSRemove extends SSElement {
 	
 	onClick (classInstance) {
 		return function (event) {
-			window.listener.dispatch({
+			classInstance.dispatch({
 				"type": "SELECT", 
 				"key": classInstance.props.id
-			});
+			}, classInstance.props.dispatch || null);
 			
 			if (classInstance.state.red === false) classInstance.setState({ "red": true });
 			if (classInstance.state.red === true) classInstance.setState({ "red": false });

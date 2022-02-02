@@ -13,13 +13,13 @@ export default class SSKey extends SSElement {
 	
 	onInputOrChange (classInstance) {
 		return function (event) {
-			window.listener.dispatch({
+			classInstance.dispatch({
 				"type": "SAVE", 
 				"targetType": classInstance.props.type, 
 				"targetId": event.target.id, 
 				"key": classInstance.props.elementKey, 
 				"value": event.target.value
-			});
+			}, classInstance.props.dispatch || null);
 			
 			classInstance.props.elementValue = event.target.value;
 			classInstance.setState({
@@ -30,10 +30,10 @@ export default class SSKey extends SSElement {
 	
 	onClick (classInstance) {
 		return function (event) {
-			window.listener.dispatch({
+			classInstance.dispatch({
 				"type": "OPEN", 
 				"key": classInstance.state.elementValue
-			});
+			}, classInstance.props.dispatch || null);
 		}
 	}
 	
