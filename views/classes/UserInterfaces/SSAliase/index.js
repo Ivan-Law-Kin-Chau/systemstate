@@ -24,31 +24,26 @@ export default class SSAliase {
 	}
 	
 	async add (action = {}) {
-		const key1 = generator.generateKey();
-		const key2 = generator.generateKey();
-		return await this.assembly.setState("property", {
-			_uuid: key1
-		}, {
-			_uuid: key1, 
+		return await this.assembly.set("property", {
+			_uuid: {generateKeyCode: 1}, 
 			_parent: this.uuid, 
 			_name: "Target", 
-			_content: key2
+			_content: {generateKeyCode: 2}, 
+			_add: true
 		});
 	}
 	
 	async load (action = {}) {
+		let content;
 		const classInstance = this;
 		if (await (async function () {
 			var dependencies = await classInstance.expander.expand(classInstance.uuid);
 			if (dependencies["property_parent"]) {
 				for (let uuid of dependencies["property_parent"]) {
-					await classInstance.assembly.getState("property", {
-						_uuid: uuid
-					});
-					
-					const item = classInstance.assembly.state.property[uuid];
+					const item = await classInstance.assembly.get("property", {_uuid: uuid});
 					if (item._success === true && item._name === "Target") {
 						if (validator.isValidKey(item._content) === true) {
+							content = item._content;
 							classInstance.state.uuid = item._uuid;
 							classInstance.loaded = true;
 							return true;
@@ -59,7 +54,7 @@ export default class SSAliase {
 			
 			return false;
 		})() === true) {
-			return html`<${Aliase} target=${this.state.uuid} save=${this.save}/>`;
+			return html`<${Aliase} source=${this.state.uuid} target=${content} save=${this.save.bind(this)}/>`;
 		} else {
 			console.log("User interface class not yet initiated properly! Call the add() method first");
 			return html``;
@@ -67,7 +62,23 @@ export default class SSAliase {
 	}
 	
 	async save (action = {}) {
-		console.log(action);
+		var dependencies = await this.expander.expand(this.uuid);
+		if (dependencies["property_parent"]) {
+			for (let uuid of dependencies["property_parent"]) {
+				const item = await this.assembly.get("property", {_uuid: uuid});
+				if (item._success === true && item._name === "Target") {
+					if (validator.isValidKey(action.target) === true) {
+						await this.assembly.set("property", {
+							_uuid: uuid, 
+							_parent: this.uuid, 
+							_name: "Target", 
+							_content: action.target
+						});
+					}
+				}
+			}
+		}
+		
 		return true;
 	}
 	
@@ -75,15 +86,12 @@ export default class SSAliase {
 		var dependencies = await this.expander.expand(this.uuid);
 		if (dependencies["property_parent"]) {
 			for (let uuid of dependencies["property_parent"]) {
-				await this.assembly.getState("property", {
-					_uuid: uuid
-				});
-				
-				const item = this.assembly.state.property[uuid];
+				const item = await this.assembly.get("property", {_uuid: uuid});
 				if (item._success === true && item._name === "Target") {
 					if (validator.isValidKey(item._content) === true) {
-						await this.assembly.setState("property", {
-							_uuid: uuid
+						await this.assembly.set("property", {
+							_uuid: uuid, 
+							_remove: true
 						});
 					}
 				}
@@ -97,11 +105,7 @@ export default class SSAliase {
 		var dependencies = await this.expander.expand(uuid);
 		if (dependencies["property_parent"]) {
 			for (let uuid of dependencies["property_parent"]) {
-				await this.assembly.getState("property", {
-					_uuid: uuid
-				});
-				
-				const item = this.assembly.state.property[uuid];
+				const item = await this.assembly.get("property", {_uuid: uuid});
 				if (item._success === true && item._name === "Target") {
 					if (validator.isValidKey(item._content) === true) {
 						return true;

@@ -3,6 +3,7 @@ import SSSender from "./SSSender.js";
 import * as items from "./Items/All.js";
 import * as convertor from "../../scripts/convertor.js";
 import * as identifier from "../../scripts/identifier.js";
+import * as generator from "../../scripts/generator.js";
 
 export default class SSAssembly {
 	constructor () {
@@ -50,6 +51,62 @@ export default class SSAssembly {
 		} else {
 			return ["load_" + type, "(\"" + identity._uuid + "\")"];
 		}
+	}
+	
+	generateKeys (details) {
+		let generateKeyCodeLibrary = [];
+		for (let property in details) {
+			if (typeof details[property] === "object" && typeof details[property].generateKeyCode === "number") {
+				if (typeof generateKeyCodeLibrary[details[property].generateKeyCode] === "undefined") {
+					generateKeyCodeLibrary[details[property].generateKeyCode] = generator.generateKey();
+				}
+				
+				details[property] = generateKeyCodeLibrary[details[property].generateKeyCode];
+			}
+		}
+		
+		return details;
+	}
+	
+	async get (type, details) {
+		details = this.generateKeys(details);
+		await this.getState(type, details);
+		return this.state[type][identifier.identityToString(type, details)];
+	}
+	
+	async set (type, details) {
+		details = this.generateKeys(details);
+		var identity = JSON.parse(JSON.stringify(details));
+		for (let property in identity) {
+			if (!(property === "_uuid" || (property === "_parent" && type === "group"))) delete identity[property];
+		}
+		
+		var content = JSON.parse(JSON.stringify(details));
+		for (let property in content) {
+			if (content._add === true) {
+				if (property === "_uuidNew") {
+					content._uuid = content._uuidNew;
+					delete content._uuidNew;
+				}
+				
+				if (property === "_parentNew" && type === "group") {
+					content._parent = content._parentNew;
+					delete content._parentNew;
+				}
+			}
+			
+			if (content._remove === true) {
+				content = null;
+				break;
+			}
+		}
+		
+		if (content !== null) {
+			delete content._add;
+			delete content._remove;
+		}
+		
+		await this.setState(type, identity, content);
 	}
 	
 	async getState (type, identity) {
