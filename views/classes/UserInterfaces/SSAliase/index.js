@@ -1,12 +1,14 @@
-import SSExpander from "../SSExpander.js";
+import Aliase from "./Aliase.js";
 
-import * as items from "../Items/All.js";
-import * as convertor from "../../scripts/convertor.js";
-import * as validator from "../../scripts/validator.js";
-import * as generator from "../../scripts/generator.js";
+import SSExpander from "../../SSExpander.js";
 
-import {h, Component, render} from "../../libraries/preact.js";
-import htm from "../../libraries/htm.js";
+import * as items from "../../Items/All.js";
+import * as convertor from "../../../scripts/convertor.js";
+import * as validator from "../../../scripts/validator.js";
+import * as generator from "../../../scripts/generator.js";
+
+import {h, Component, render} from "../../../libraries/preact.js";
+import htm from "../../../libraries/htm.js";
 
 const html = htm.bind(h);
 
@@ -57,12 +59,7 @@ export default class SSAliase {
 			
 			return false;
 		})() === true) {
-			return html`<span onclick=${() => {
-				window.listener.dispatch({
-					"type": "OPEN", 
-					"key": this.state.uuid
-				})
-			}}>[aliase]</span>`;
+			return html`<${Aliase} target=${this.state.uuid} save=${this.save}/>`;
 		} else {
 			console.log("User interface class not yet initiated properly! Call the add() method first");
 			return html``;
@@ -70,6 +67,7 @@ export default class SSAliase {
 	}
 	
 	async save (action = {}) {
+		console.log(action);
 		return true;
 	}
 	

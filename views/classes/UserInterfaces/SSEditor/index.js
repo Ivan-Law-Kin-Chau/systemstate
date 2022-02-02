@@ -1,10 +1,10 @@
-import SSExpander from "../SSExpander.js";
+import SSExpander from "../../SSExpander.js";
 
-import * as items from "../Items/All.js";
-import * as convertor from "../../scripts/convertor.js";
+import * as items from "../../Items/All.js";
+import * as convertor from "../../../scripts/convertor.js";
 
-import {h, Component, render} from "../../libraries/preact.js";
-import htm from "../../libraries/htm.js";
+import {h, Component, render} from "../../../libraries/preact.js";
+import htm from "../../../libraries/htm.js";
 
 const html = htm.bind(h);
 

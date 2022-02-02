@@ -30,7 +30,7 @@ export default class SSOpener {
 	async openUuid (uuid) {
 		this.state = JSON.parse(await this.read("classes/UserInterfaces/settings.json"));
 		for (let i = 0; i < this.state.userInterfaceList.length; i++) {
-			const loadedClass = await import("./UserInterfaces/SS" + this.state.userInterfaceList[i] + ".js");
+			const loadedClass = await import("./UserInterfaces/SS" + this.state.userInterfaceList[i] + "/index.js");
 			const loadedClassInstance = new (loadedClass.default)(uuid, this.assembly);
 			if (await loadedClassInstance.validate(this.assembly, uuid) === true) {
 				return await loadedClassInstance.load();
@@ -44,7 +44,7 @@ export default class SSOpener {
 		this.state = JSON.parse(await this.read("classes/UserInterfaces/settings.json"));
 		for (let i = 0; i < this.state.userInterfaceList.length; i++) {
 			if (this.state.userInterfaceList[i] === name) {
-				return (await import("./UserInterfaces/SS" + this.state.userInterfaceList[i] + ".js")).default;
+				return (await import("./UserInterfaces/SS" + this.state.userInterfaceList[i] + "/index.js")).default;
 			}
 		}
 		
