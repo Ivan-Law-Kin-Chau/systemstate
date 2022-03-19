@@ -13,11 +13,12 @@ import htm from "../../../libraries/htm.js";
 const html = htm.bind(h);
 
 export default class SSAliase {
-	constructor (uuid, assembly) {
+	constructor (uuid, assembly, selected) {
 		// The head UUID of the class instance
 		this.uuid = uuid;
 		
 		this.assembly = assembly;
+		this.selected = selected;
 		this.expander = new SSExpander(this.assembly.sender);
 		this.state = {};
 		this.loaded = false;

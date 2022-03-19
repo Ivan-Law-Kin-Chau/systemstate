@@ -7,11 +7,18 @@ import htm from "../../../libraries/htm.js";
 const html = htm.bind(h);
 
 export default class SSComponent extends Component {
-	generateHTMFromTemplate (identityString, item, templateThis, templateArray) {
+	generateHTMFromTemplate (identityString, selectedObject, item, templateThis, templateArray) {
+		var getRed = function (action = "_element") {
+			if (item._type !== selectedObject.array) return false;
+			if (identityString !== selectedObject.identityString) return false;
+			if (action !== selectedObject.action) return false;
+			return true;
+		}
+		
 		var itemAddRemove = function (identityString, item) {
 			var output = "";
-			if (item._add === true) output += html` <${SSAdd} type=${item._type} id="${identityString}_add"/>`;
-			if (item._remove === true) output += html` <${SSRemove} type=${item._type} id="${identityString}_remove"/>`;
+			if (item._add === true) output += html` <${SSAdd} type=${item._type} id="${identityString}_add" red=${getRed("_add")}/>`;
+			if (item._remove === true) output += html` <${SSRemove} type=${item._type} id="${identityString}_remove" red=${getRed("_remove")}/>`;
 			return output;
 		}
 		
@@ -35,9 +42,9 @@ export default class SSComponent extends Component {
 			if (Array.isArray(templateArray[j])) {
 				const elementName = convertor.convertCamelCaseToSS(templateArray[j][1]);
 				if (templateArray[j][0] === true) {
-					processArray.push(html`<${classes[elementName]} type=${item._type} id=${identityString} elementKey=${"_" + templateArray[j][2]} elementValue=${item["_" + templateArray[j][2]]}/>`);
+					processArray.push(html`<${classes[elementName]} type=${item._type} id=${identityString} elementKey=${"_" + templateArray[j][2]} elementValue=${item["_" + templateArray[j][2]]} red=${getRed()}/>`);
 				} else if (templateArray[j][0] === false) {
-					processArray.push(html`<${classes[elementName]} type=${item._type} id=${identityString}/>`);
+					processArray.push(html`<${classes[elementName]} type=${item._type} id=${identityString} red=${getRed()}/>`);
 				}
 			}
 			

@@ -18,7 +18,7 @@ export default class SSProperty extends SSItem {
 		if (this.validate() === true) {
 			var templateThis = props.templateThis ? props.templateThis : null;
 			var templateArray = [[true, "key", "uuid"], ": ", [true, "key", "parent"], ": ", [true, "input", "name"], ": ", "\n", [true, "textarea", "content"]];
-			return html`${this.generateHTMFromTemplate(props.identityString, this.state, templateThis, templateArray)}`;
+			return html`${this.generateHTMFromTemplate(props.identityString, props.selectedObject, this.state, templateThis, templateArray)}`;
 		} else if (this.validate() === false) {
 			console.log("Invalid SSProperty, current state: ");
 			console.log(this.state);

@@ -18,7 +18,7 @@ export default class SSLink extends SSItem {
 		if (this.validate() === true) {
 			var templateThis = props.templateThis ? props.templateThis : null;
 			var templateArray = [[true, "key", "uuid"], ": ", [true, "key", "start"], " ", [true, "button", "direction"], " ", [true, "key", "end"]];
-			return html`${this.generateHTMFromTemplate(props.identityString, this.state, templateThis, templateArray)}`;
+			return html`${this.generateHTMFromTemplate(props.identityString, props.selectedObject, this.state, templateThis, templateArray)}`;
 		} else if (this.validate() === false) {
 			console.log("Invalid SSLink, current state: ");
 			console.log(this.state);

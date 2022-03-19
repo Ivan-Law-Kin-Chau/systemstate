@@ -1,6 +1,7 @@
 <link rel="stylesheet" type="text/css" href="/main.css">
 <script type="module">
 
+import SSSelected from "./classes/SSSelected.js";
 import SSAssembly from "./classes/SSAssembly.js";
 import SSListener from "./classes/SSListener.js";
 import SSOpener from "./classes/SSOpener.js";
@@ -10,11 +11,14 @@ import htm from "./libraries/htm.js";
 
 const html = htm.bind(h);
 
-const renderFunction = async function () {
-	window.assembly = new SSAssembly();
-	window.listener = new SSListener(window.assembly);
-	window.opener = new SSOpener(window.assembly);
-	render(html`<div>${await window.opener.openUuid("fzYkA7sH")}</div>`, document.getElementById("renderZone"));
+window.selected = new SSSelected(document.getElementById("selected"));
+window.assembly = new SSAssembly();
+window.listener = new SSListener(window.assembly, window.selected);
+window.opener = new SSOpener(window.assembly, window.selected);
+window.renderFunction = async function () {
+	const content = await window.opener.openUuid("fzYkA7sH");
+	document.getElementById("renderZone").innerHTML = "";
+	render(html`<div>${content}</div>`, document.getElementById("renderZone"));
 	
 	// (new (await window.opener.getClass("Aliase"))("fzYkA7sH", window.assembly)).add();
 	// (new (await window.opener.getClass("Aliase"))("fzYkA7sH", window.assembly)).remove();
@@ -28,4 +32,24 @@ renderFunction();
 <a href="/resources/Documentations.pdf" target="_blank">Documentations</a>
 </div>
 
-<div id="renderZone"></div>
+<div id="renderZone">Content will be rendered here<br/></div><br/>
+
+Selected Element: 
+[<span id="selected"></span>]
+<span class="white" onclick="selectionAdd();">(+)</span>
+<span class="white" onclick="selectionRemove();">(-)</span><br>
+
+More Components: 
+<span style="vertical-align: top; display: inline-block;">
+#%%%%%%%%<span class="white" onclick="selectionAdd('group_parent');">(+)</span>: 
+#%%%%%%%%<span class="white" onclick="selectionAdd('object_uuid');">(+)</span> this: 
+#%%%%%%%%<span class="white" onclick="selectionAdd('group_uuid');">(+)</span><br>
+
+#%%%%%%%%<span class="white" onclick="selectionAdd('link_uuid');">(+)</span>: 
+#%%%%%%%%<span class="white" onclick="selectionAdd('link_start');">(+)</span> &lt;-&gt; 
+#%%%%%%%%<span class="white" onclick="selectionAdd('link_end');">(+)</span><br>
+
+#%%%%%%%%<span class="white" onclick="selectionAdd('property_uuid');">(+)</span>: 
+#%%%%%%%%<span class="white" onclick="selectionAdd('property_parent');">(+)</span>: 
+%%%%%%%%: <br>
+%%%%%%%%

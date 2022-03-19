@@ -1,6 +1,6 @@
 import {h, Component, render} from "../../../libraries/preact.js";
 
-export default class SSComponent extends Component {
+export default class SSElement extends Component {
 	simulate (input) {
 		var virtualElement = document.createElement("pre");
 		virtualElement.style.display = "inline-block";

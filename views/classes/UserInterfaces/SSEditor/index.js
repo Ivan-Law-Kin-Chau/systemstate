@@ -9,11 +9,12 @@ import htm from "../../../libraries/htm.js";
 const html = htm.bind(h);
 
 export default class SSEditor {
-	constructor (uuid, assembly) {
+	constructor (uuid, assembly, selected) {
 		// The head UUID of the class instance
 		this.uuid = uuid;
 		
 		this.assembly = assembly;
+		this.selected = selected;
 		this.expander = new SSExpander(this.assembly.sender);
 		this.state = {};
 		this.loaded = false;
@@ -85,7 +86,7 @@ export default class SSEditor {
 				
 				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(html`<br/>`);
 				
-				arrayOutput.push(html`<${items[convertor.convertCamelCaseToSS(type)]} identityString=${identityString} templateThis=${templateThis} assembly=${this.assembly}/>`);
+				arrayOutput.push(html`<${items[convertor.convertCamelCaseToSS(type)]} identityString=${identityString} selectedObject=${this.selected.selected} templateThis=${templateThis} assembly=${this.assembly}/>`);
 				
 				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(", ");
 				

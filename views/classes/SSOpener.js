@@ -1,6 +1,7 @@
 export default class SSOpener {
-	constructor (assembly) {
+	constructor (assembly, selected) {
 		this.assembly = assembly;
+		this.selected = selected;
 	}
 	
 	async read (url) {
@@ -31,7 +32,7 @@ export default class SSOpener {
 		this.state = JSON.parse(await this.read("classes/UserInterfaces/settings.json"));
 		for (let i = 0; i < this.state.userInterfaceList.length; i++) {
 			const loadedClass = await import("./UserInterfaces/SS" + this.state.userInterfaceList[i] + "/index.js");
-			const loadedClassInstance = new (loadedClass.default)(uuid, this.assembly);
+			const loadedClassInstance = new (loadedClass.default)(uuid, this.assembly, this.selected);
 			if (await loadedClassInstance.validate(this.assembly, uuid) === true) {
 				return await loadedClassInstance.load();
 			} else {

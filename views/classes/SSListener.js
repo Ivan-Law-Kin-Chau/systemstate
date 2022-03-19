@@ -1,8 +1,9 @@
 import * as identifier from "../../scripts/identifier.js";
 
 export default class SSListener {
-	constructor (assembly) {
+	constructor (assembly, selected) {
 		this.assembly = assembly;
+		this.selected = selected;
 	}
 	
 	// Called by the element classes in order to change the state in the SSAssembly class
@@ -11,7 +12,9 @@ export default class SSListener {
 	//  - Otherwise, change the state in the SSAssembly class directly
 	async dispatch (action = {}) {
 		if (action.type === "SELECT") {
-			console.log("Select Element: " + action.key);
+			delete action.type;
+			this.selected.updateSelected(action);
+			console.log("Select Element: " + action.identityString);
 		} else if (action.type === "OPEN") {
 			console.log("Open Key: " + action.key);
 		} else if (action.type === "SAVE") {

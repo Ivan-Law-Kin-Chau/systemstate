@@ -9,26 +9,24 @@ const html = htm.bind(h);
 export default class SSThis extends SSElement {
 	constructor () {
 		super();
-		this.setState({ "red": false });
 	}
 	
 	onClick (classInstance) {
 		return function (event) {
 			classInstance.dispatch({
 				"type": "SELECT", 
-				"key": classInstance.props.id
+				"array": classInstance.props.type, 
+				"identityString": classInstance.props.id, 
+				"action": "_element"
 			}, classInstance.props.dispatch || null);
-			
-			if (classInstance.state.red === false) classInstance.setState({ "red": true });
-			if (classInstance.state.red === true) classInstance.setState({ "red": false });
 		}
 	}
 	
 	render (props, state) {
 		let style;
-		if (state.red === false) {
+		if (props.red === false) {
 			style = "color: #000000;";
-		} else if (state.red === true) {
+		} else if (props.red === true) {
 			style = "color: #FF0000;";
 		}
 		

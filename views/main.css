@@ -13,6 +13,11 @@ body {
 	-ms-user-select: none;
 }
 
+.white {
+	text-decoration: none;
+	background-color: #FFFFFF;
+}
+
 input, textarea, button, pre {
 	height: 18px;
 	padding: 0px 1px;
@@ -32,7 +37,7 @@ input:focus, textarea:focus, button:focus, button::-moz-focus-inner {
 	outline: none;
 }
 
-::selection {
+*::selection {
 	background-color: #000000;
 	color: #FFFFFF;
 }
