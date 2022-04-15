@@ -56,6 +56,7 @@ export default class SSSelected {
 		details["_" + templateThis] = this.openedUuid;
 		details._add = true;
 		
+		window.assembly.clientOnlyMode = true;
 		await window.assembly.set(templateType, details);
 		this.updateSelected(this.selected);
 		window.renderFunction();
@@ -66,6 +67,7 @@ export default class SSSelected {
 		var details = identifier.identityFromString(type, this.selected.identityString);
 		details._remove = true;
 		
+		window.assembly.clientOnlyMode = true;
 		await window.assembly.set(type, details);
 		this.updateSelected(this.selected);
 		window.renderFunction();

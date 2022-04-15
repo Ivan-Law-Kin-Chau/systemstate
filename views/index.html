@@ -34,22 +34,25 @@ renderFunction();
 
 <div id="renderZone">Content will be rendered here<br/></div><br/>
 
+Editor Actions: 
+<span class="white" onclick="window.assembly.syncWithServer().then(() => window.renderFunction());">(Save)</span><br/>
+
 Selected Element: 
 [<span id="selected"></span>]
 <span class="white" onclick="window.selected.add();">(+)</span>
-<span class="white" onclick="window.selected.remove();">(-)</span><br>
+<span class="white" onclick="window.selected.remove();">(-)</span><br/>
 
 More Components: 
 <span style="vertical-align: top; display: inline-block;">
 #%%%%%%%%<span class="white" onclick="window.selected.add('group_parent');">(+)</span>: 
 #%%%%%%%%<span class="white" onclick="window.selected.add('object_uuid');">(+)</span> this: 
-#%%%%%%%%<span class="white" onclick="window.selected.add('group_uuid');">(+)</span><br>
+#%%%%%%%%<span class="white" onclick="window.selected.add('group_uuid');">(+)</span><br/>
 
 #%%%%%%%%<span class="white" onclick="window.selected.add('link_uuid');">(+)</span>: 
 #%%%%%%%%<span class="white" onclick="window.selected.add('link_start');">(+)</span> &lt;-&gt; 
-#%%%%%%%%<span class="white" onclick="window.selected.add('link_end');">(+)</span><br>
+#%%%%%%%%<span class="white" onclick="window.selected.add('link_end');">(+)</span><br/>
 
 #%%%%%%%%<span class="white" onclick="window.selected.add('property_uuid');">(+)</span>: 
 #%%%%%%%%<span class="white" onclick="window.selected.add('property_parent');">(+)</span>: 
-%%%%%%%%: <br>
+%%%%%%%%: <br/>
 %%%%%%%%

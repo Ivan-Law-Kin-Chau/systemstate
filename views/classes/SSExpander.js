@@ -1,50 +1,47 @@
+import * as identifier from "../../scripts/identifier.js";
+
 export default class SSExpander {
-	constructor (sender) {
-		this.sender = sender;
+	constructor (assembly) {
+		this.assembly = assembly;
+		this.sender = assembly.sender;
 	}
 	
 	async expand (uuid) {
-		const iterate = (async function (iterateFunction, conditionFunction, uuid, wildCard = false) {
-			if (wildCard === true && uuid !== "%") {
-				uuid = "%" + uuid + "%";
-			}
-			
+		const assembly = this.assembly;
+		const sender = this.sender;
+		const iterate = async function (uuid, iterateFunction) {
 			const searchArrays = ["object_uuid", "group_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
 			for (let searchArrayIndex = 0; searchArrayIndex < searchArrays.length; searchArrayIndex++) {
 				let array = searchArrays[searchArrayIndex];
-				let searchResult = (await this.sender.send("search", `("${array.split("_")[1]}", "${uuid}", "${array.split("_")[0]}")`))._uuid;
 				
-				if (conditionFunction(searchResult) === true) {
-					var output = true;
+				let searchResult = null;
+				if (window.assembly.clientOnlyMode === false) {
+					searchResult = (await sender.send("search", `("${array.split("_")[1]}", "${uuid}", "${array.split("_")[0]}")`))._output;
 				} else {
-					var output = false;
+					searchResult = [];
+					let searchArea = assembly.state[array.split("_")[0]];
+					for (const itemKey in searchArea) {
+						const item = searchArea[itemKey];
+						if (array.split("_")[0] === "group") {
+							if (item["_" + array.split("_")[1]] === uuid) searchResult.push({_uuid: item._uuid, _parent: item._parent});
+						} else {
+							if (item["_" + array.split("_")[1]] === uuid) searchResult.push({_uuid: item._uuid});
+						}
+					}
 				}
 				
-				if (output === true) {
-					await iterateFunction(searchResult, array);
-				}
+				if (searchResult !== null) await iterateFunction(array, searchResult);
 			}
-		}).bind(this);
+		};
 		
 		let output = {};
-		await iterate(async function (searchResult, array) {
+		await iterate(uuid, function (array, searchResult) {
 			output[array] = Object.values(searchResult);
-			for (let i = 0; i < output[array].length; i++) {
-				if (array.split("_")[0] === "group") {
-					delete output[array][i][array.split("_")[1]];
-				}
-				output[array][i] = Object.values(output[array][i])[0];
-			}
-			
-			for (let outputArrayElement of output[array]) {
-				let index = Object.values(outputArrayElement).indexOf(uuid);
-				if (index !== -1) output[array].splice(index, 1);
-			}
-			
 			if (output[array].length === 0) {
 				delete output[array];
 			}
-		}, (searchResult) => (searchResult !== null), uuid);
+		});
+		
 		return output;
 	}
 }

@@ -344,52 +344,24 @@ module.exports = class Assembly {
 	}
 	
 	
-	async search (property, content, type = "object", descriptive = null) {
-		var type = type;
-		
-		if (descriptive === true) {
-			var sql = "SELECT DISTINCT t1.parent, t2.content FROM `property` t1 JOIN `property` t2 ON t1.parent = t2.parent WHERE t1.content LIKE \'" + content + "\' ORDER BY t1.parent, t2.name ASC;";
+	async search (property, content, type = "object") {
+		if (type === "group") {
+			var sql = "SELECT uuid, parent FROM `" + type + "` WHERE " + property + " LIKE \'" + content + "\';";
 		} else {
-			if (type === "group") {
-				var sql = "SELECT uuid, parent FROM `" + type + "` WHERE " + property + " LIKE \'" + content + "\';";
-			} else {
-				var sql = "SELECT uuid FROM `" + type + "` WHERE " + property + " LIKE \'" + content + "\';";
-			}
+			var sql = "SELECT uuid FROM `" + type + "` WHERE " + property + " LIKE \'" + content + "\';";
 		}
 		
 		return this.query(sql, (rows, resolve) => {
+			var output = [];
 			for (const row of rows) {
-				if (descriptive === true) {
-					if (typeof output === "undefined") {
-						var output = [];
-						var parent = "";
-					}
-					
-					if (parent !== row["parent"]) {
-						parent = row["parent"];
-						output[output.length] = [row["parent"], row["content"]];
-					} else {
-						output[output.length] = [row["content"]];
-					}
-				} else {
-					if (typeof output === "undefined") {
-						var output = [];
-					}
-					
-					output[output.length] = {};
-					for (var rowProperty in row) {
-						var rowContent = row[rowProperty];
-						output[output.length - 1][rowProperty] = rowContent;
-					}
+				output[output.length] = {};
+				for (var rowProperty in row) {
+					output[output.length - 1]["_" + rowProperty] = row[rowProperty];
 				}
 			}
 			
-			if (typeof output === "undefined") {
-				var output = [];
-			}
-			
 			resolve(JSON.stringify({
-				_uuid: output, 
+				_output: output, 
 				_success: true, 
 				_type: "search", 
 				_sql: sql

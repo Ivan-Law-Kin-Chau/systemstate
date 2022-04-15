@@ -19,7 +19,7 @@ export default class SSAliase {
 		
 		this.assembly = assembly;
 		this.selected = selected;
-		this.expander = new SSExpander(this.assembly.sender);
+		this.expander = new SSExpander(this.assembly);
 		this.state = {};
 		this.loaded = false;
 	}
@@ -38,10 +38,10 @@ export default class SSAliase {
 		let content;
 		const classInstance = this;
 		if (await (async function () {
-			var dependencies = await classInstance.expander.expand(classInstance.uuid);
+			var dependencies = await classInstance.expander.expand(classInstance.uuid, classInstance.state !== {});
 			if (dependencies["property_parent"]) {
-				for (let uuid of dependencies["property_parent"]) {
-					const item = await classInstance.assembly.get("property", {_uuid: uuid});
+				for (let identity of dependencies["property_parent"]) {
+					const item = await classInstance.assembly.get("property", identity);
 					if (item._success === true && item._name === "Target") {
 						if (validator.isValidKey(item._content) === true) {
 							content = item._content;
@@ -65,8 +65,8 @@ export default class SSAliase {
 	async save (action = {}) {
 		var dependencies = await this.expander.expand(this.uuid);
 		if (dependencies["property_parent"]) {
-			for (let uuid of dependencies["property_parent"]) {
-				const item = await this.assembly.get("property", {_uuid: uuid});
+			for (let identity of dependencies["property_parent"]) {
+				const item = await this.assembly.get("property", identity);
 				if (item._success === true && item._name === "Target") {
 					if (validator.isValidKey(action.target) === true) {
 						await this.assembly.set("property", {
@@ -86,8 +86,8 @@ export default class SSAliase {
 	async remove (action = {}) {
 		var dependencies = await this.expander.expand(this.uuid);
 		if (dependencies["property_parent"]) {
-			for (let uuid of dependencies["property_parent"]) {
-				const item = await this.assembly.get("property", {_uuid: uuid});
+			for (let identity of dependencies["property_parent"]) {
+				const item = await this.assembly.get("property", identity);
 				if (item._success === true && item._name === "Target") {
 					if (validator.isValidKey(item._content) === true) {
 						await this.assembly.set("property", {
@@ -105,8 +105,8 @@ export default class SSAliase {
 	async validate (assembly, uuid) {
 		var dependencies = await this.expander.expand(uuid);
 		if (dependencies["property_parent"]) {
-			for (let uuid of dependencies["property_parent"]) {
-				const item = await this.assembly.get("property", {_uuid: uuid});
+			for (let identity of dependencies["property_parent"]) {
+				const item = await this.assembly.get("property", identity);
 				if (item._success === true && item._name === "Target") {
 					if (validator.isValidKey(item._content) === true) {
 						return true;

@@ -8,6 +8,7 @@ import * as generator from "../../scripts/generator.js";
 export default class SSAssembly {
 	constructor () {
 		this.sender = new SSSender();
+		this.clientOnlyMode = false;
 		
 		this.itemPrototype = {
 			_add: false, 
@@ -182,6 +183,12 @@ export default class SSAssembly {
 						} else if (item._type === "property") {
 							this.sender.push("add_" + type, "(\"" + item._uuid + "\", \"" + item._parent + "\", \"" + item._name + "\", \"" + item._content + "\")");
 						}
+						
+						this.sender.pushCallback(
+							(function () {
+								delete item._add;
+							}).bind(this)
+						);
 					}
 					
 					if (item._remove === true) {
@@ -194,6 +201,12 @@ export default class SSAssembly {
 						} else if (item._type === "property") {
 							this.sender.push("remove_" + type, "(\"" + item._uuid + "\")");
 						}
+						
+						this.sender.pushCallback(
+							(function () {
+								delete this.state[type][identifier.identityToString(type, item)];
+							}).bind(this)
+						);
 					}
 				} else if (item._save === true) {
 					const identity = identifier.identityFromString(type, identityString);
@@ -225,6 +238,11 @@ export default class SSAssembly {
 			}
 		}
 		
-		return this.sender.execute();
+		if (await this.sender.execute() === true) {
+			this.clientOnlyMode = false;
+			return true;
+		} else {
+			throw "Unable to execute script";
+		}
 	}
 }

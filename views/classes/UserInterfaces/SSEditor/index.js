@@ -15,7 +15,7 @@ export default class SSEditor {
 		
 		this.assembly = assembly;
 		this.selected = selected;
-		this.expander = new SSExpander(this.assembly.sender);
+		this.expander = new SSExpander(this.assembly);
 		this.state = {};
 		this.loaded = false;
 	}
@@ -37,20 +37,20 @@ export default class SSEditor {
 					this.state[array].push(
 						await this.assembly.getState(type, {
 							_uuid: this.uuid, 
-							_parent: item
+							_parent: item._parent
 						})
 					);
 				} else if (array === "group_parent") {
 					this.state[array].push(
 						await this.assembly.getState(type, {
-							_uuid: item, 
+							_uuid: item._uuid, 
 							_parent: this.uuid
 						})
 					);
 				} else {
 					this.state[array].push(
 						await this.assembly.getState(type, {
-							_uuid: item
+							_uuid: item._uuid
 						})
 					);
 				}
