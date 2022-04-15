@@ -14,14 +14,14 @@ export default class SSLink extends SSItem {
 	render (props) {
 		this.assembly = props.assembly;
 		this.identityString = props.identityString;
-		this.state = this.assembly.state["link"][this.identityString];
+		this.item = this.assembly.state["link"][this.identityString];
 		if (this.validate() === true) {
 			var templateThis = props.templateThis ? props.templateThis : null;
 			var templateArray = [[true, "key", "uuid"], ": ", [true, "key", "start"], " ", [true, "button", "direction"], " ", [true, "key", "end"]];
-			return html`${this.generateHTMFromTemplate(props.identityString, props.selectedObject, this.state, templateThis, templateArray)}`;
+			return html`${this.generateHTMFromTemplate(props.identityString, props.selectedObject, this.item, templateThis, templateArray)}`;
 		} else if (this.validate() === false) {
-			console.log("Invalid SSLink, current state: ");
-			console.log(this.state);
+			console.log("Invalid SSLink item: ");
+			console.log(this.item);
 			return html``;
 		}
 	}

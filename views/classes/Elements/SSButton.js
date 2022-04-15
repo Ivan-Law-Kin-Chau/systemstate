@@ -24,7 +24,7 @@ export default class Button extends SSElement {
 			
 			classInstance.dispatch({
 				"type": "SAVE", 
-				"targetType": classInstance.props.type, 
+				"targetType": classInstance.props.templateType, 
 				"targetId": event.target.id, 
 				"key": classInstance.props.elementKey, 
 				"value": newValue

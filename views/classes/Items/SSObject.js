@@ -14,14 +14,14 @@ export default class SSObject extends SSItem {
 	render (props) {
 		this.assembly = props.assembly;
 		this.identityString = props.identityString;
-		this.state = this.assembly.state["object"][this.identityString];
+		this.item = this.assembly.state["object"][this.identityString];
 		if (this.validate() === true) {
 			var templateThis = props.templateThis ? props.templateThis : null;
 			var templateArray = [[false, "selector"], [true, "key"], [], " this"];
-			return html`${this.generateHTMFromTemplate(props.identityString, props.selectedObject, this.state, templateThis, templateArray)}`;
+			return html`${this.generateHTMFromTemplate(props.identityString, props.selectedObject, this.item, templateThis, templateArray)}`;
 		} else if (this.validate() === false) {
-			console.log("Invalid SSObject, current state: ");
-			console.log(this.state);
+			console.log("Invalid SSObject item: ");
+			console.log(this.item);
 			return html``;
 		}
 	}

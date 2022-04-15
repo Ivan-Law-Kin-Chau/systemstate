@@ -34,6 +34,7 @@ export default class SSOpener {
 			const loadedClass = await import("./UserInterfaces/SS" + this.state.userInterfaceList[i] + "/index.js");
 			const loadedClassInstance = new (loadedClass.default)(uuid, this.assembly, this.selected);
 			if (await loadedClassInstance.validate(this.assembly, uuid) === true) {
+				this.selected.openedUuid = uuid;
 				return await loadedClassInstance.load();
 			} else {
 				continue;

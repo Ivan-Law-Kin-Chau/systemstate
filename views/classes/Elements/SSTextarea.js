@@ -15,7 +15,7 @@ export default class SSTextarea extends SSElement {
 		return function (event) {
 			classInstance.dispatch({
 				"type": "SAVE", 
-				"targetType": classInstance.props.type, 
+				"targetType": classInstance.props.templateType, 
 				"targetId": event.target.id, 
 				"key": classInstance.props.elementKey, 
 				"value": event.target.value

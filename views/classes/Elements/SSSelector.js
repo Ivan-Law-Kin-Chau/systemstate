@@ -9,14 +9,14 @@ const html = htm.bind(h);
 export default class SSSelector extends SSElement {
 	constructor () {
 		super();
-		this.setState({ "red": false });
+		this.setState({"red": false});
 	}
 	
 	onClick (classInstance) {
 		return function (event) {
 			classInstance.dispatch({
 				"type": "SELECT", 
-				"array": classInstance.props.type, 
+				"array": classInstance.props.templateType + "_" + classInstance.props.templateThis, 
 				"identityString": classInstance.props.id, 
 				"action": "_element"
 			}, classInstance.props.dispatch || null);

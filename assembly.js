@@ -41,7 +41,7 @@ module.exports = class Assembly {
 						_success: false, 
 						_type: "SQL Error", 
 						_sql: sql, 
-						_error: error.code, 
+						_error: error.code
 					}));
 				} else {
 					callback(rows, resolve);
@@ -72,7 +72,7 @@ module.exports = class Assembly {
 					_success: false, 
 					_type: "Systemstate Error", 
 					_sql: sql, 
-					_error: "Not found", 
+					_error: "Not found"
 				}));
 				return;
 			}
@@ -139,7 +139,7 @@ module.exports = class Assembly {
 					_success: false, 
 					_type: "Systemstate Error", 
 					_sql: sql, 
-					_error: "Not found", 
+					_error: "Not found"
 				}));
 				return;
 			}
@@ -212,7 +212,7 @@ module.exports = class Assembly {
 					_success: false, 
 					_type: "Systemstate Error", 
 					_sql: sql, 
-					_error: "Not found", 
+					_error: "Not found"
 				}));
 				return;
 			}
@@ -290,7 +290,7 @@ module.exports = class Assembly {
 					_success: false, 
 					_type: "Systemstate Error", 
 					_sql: sql, 
-					_error: "Not found", 
+					_error: "Not found"
 				}));
 				return;
 			}

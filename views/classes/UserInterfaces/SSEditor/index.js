@@ -26,7 +26,7 @@ export default class SSEditor {
 	
 	async load (action = {}) {
 		// First, get the dependencies of the editor with the UUID as the editor's head
-		var dependencies = await this.expander.expand(this.uuid);
+		var dependencies = await this.expander.expand(this.uuid); // The SSExpander class fetches the data from the server instead of the SSAssembly class, making it necessary to run the syncWithServer function before every rerender
 		
 		// Then, for each dependency, load the element that corresponds to it
 		for (let array in dependencies) {

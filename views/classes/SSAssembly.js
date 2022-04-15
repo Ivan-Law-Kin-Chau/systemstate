@@ -53,12 +53,14 @@ export default class SSAssembly {
 		}
 	}
 	
-	generateKeys (details) {
+	async generateKeys (details) {
 		let generateKeyCodeLibrary = [];
 		for (let property in details) {
 			if (typeof details[property] === "object" && typeof details[property].generateKeyCode === "number") {
 				if (typeof generateKeyCodeLibrary[details[property].generateKeyCode] === "undefined") {
-					generateKeyCodeLibrary[details[property].generateKeyCode] = generator.generateKey();
+					const key = generator.generateKey();
+					generateKeyCodeLibrary[details[property].generateKeyCode] = key;
+					await this.set("object", {_uuid: key});
 				}
 				
 				details[property] = generateKeyCodeLibrary[details[property].generateKeyCode];
@@ -69,13 +71,13 @@ export default class SSAssembly {
 	}
 	
 	async get (type, details) {
-		details = this.generateKeys(details);
+		details = await this.generateKeys(details);
 		await this.getState(type, details);
 		return this.state[type][identifier.identityToString(type, details)];
 	}
 	
 	async set (type, details) {
-		details = this.generateKeys(details);
+		details = await this.generateKeys(details);
 		var identity = JSON.parse(JSON.stringify(details));
 		for (let property in identity) {
 			if (!(property === "_uuid" || (property === "_parent" && type === "group"))) delete identity[property];
@@ -135,7 +137,7 @@ export default class SSAssembly {
 			var loadCommand = this.identityToLoadCommand(type, identity);
 			var item = await this.sender.send(loadCommand[0], loadCommand[1]);
 			if (item._success === false) {
-				item = this.defaults[type];
+				item = JSON.parse(JSON.stringify(this.defaults[type]));
 				item._type = type;
 				item._add = true;
 			}

@@ -14,14 +14,14 @@ export default class SSProperty extends SSItem {
 	render (props) {
 		this.assembly = props.assembly;
 		this.identityString = props.identityString;
-		this.state = this.assembly.state["property"][this.identityString];
+		this.item = this.assembly.state["property"][this.identityString];
 		if (this.validate() === true) {
 			var templateThis = props.templateThis ? props.templateThis : null;
 			var templateArray = [[true, "key", "uuid"], ": ", [true, "key", "parent"], ": ", [true, "input", "name"], ": ", "\n", [true, "textarea", "content"]];
-			return html`${this.generateHTMFromTemplate(props.identityString, props.selectedObject, this.state, templateThis, templateArray)}`;
+			return html`${this.generateHTMFromTemplate(props.identityString, props.selectedObject, this.item, templateThis, templateArray)}`;
 		} else if (this.validate() === false) {
-			console.log("Invalid SSProperty, current state: ");
-			console.log(this.state);
+			console.log("Invalid SSProperty item: ");
+			console.log(this.item);
 			return html``;
 		}
 	}
