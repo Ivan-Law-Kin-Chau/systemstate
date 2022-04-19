@@ -80,7 +80,7 @@ export default class SSEditor {
 				const type = this.state[array][index][0];
 				const identityString = this.state[array][index][1];
 				
-				if (array === "group_uuid" && arrayOutput !== []) {
+				if (array === "group_uuid" && arrayOutput !== [] && index === 0) {
 					arrayOutput.push(": ");
 				}
 				
@@ -90,7 +90,7 @@ export default class SSEditor {
 				
 				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(", ");
 				
-				if (array === "group_parent" && arrayOutput !== []) {
+				if (array === "group_parent" && arrayOutput !== [] && index === this.state[array].length - 1) {
 					arrayOutput.push(": ");
 				}
 			}

@@ -34,7 +34,7 @@ export default class SSTextarea extends SSElement {
 		});
 		
 		let style = "color: #000000; display: inline-block; position: relative; top: -2px;";
-		let dimensions = this.simulate(this.state.elementValue ? this.state.elementValue : "");
+		let dimensions = this.simulate(this.props.elementValue ? this.props.elementValue : "");
 		style += " width: " + dimensions.width + ";";
 		style += " height: " + dimensions.height + ";";
 		

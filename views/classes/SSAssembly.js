@@ -86,27 +86,15 @@ export default class SSAssembly {
 		
 		var content = JSON.parse(JSON.stringify(details));
 		for (let property in content) {
-			if (content._add === true) {
-				if (property === "_uuidNew") {
-					content._uuid = content._uuidNew;
-					delete content._uuidNew;
-				}
-				
-				if (property === "_parentNew" && type === "group") {
-					content._parent = content._parentNew;
-					delete content._parentNew;
-				}
+			if (property === "_uuidNew") {
+				content._uuid = content._uuidNew;
+				delete content._uuidNew;
 			}
 			
-			if (content._remove === true) {
-				content = null;
-				break;
+			if (property === "_parentNew" && type === "group") {
+				content._parent = content._parentNew;
+				delete content._parentNew;
 			}
-		}
-		
-		if (content !== null) {
-			delete content._add;
-			delete content._remove;
 		}
 		
 		await this.setState(type, identity, content);
@@ -132,9 +120,10 @@ export default class SSAssembly {
 		return [type, identityString];
 	}
 	
-	async setState (type, identity, content = null) {
+	async setState (type, identity, content) {
 		var identityString = identifier.identityToString(type, identity);
 		if (typeof this.state[type][identityString] === "undefined") {
+			if (content._remove === true) throw "Unable to remove item that does not exist";
 			var loadCommand = this.identityToLoadCommand(type, identity);
 			var item = await this.sender.send(loadCommand[0], loadCommand[1]);
 			if (item._success === false) {
@@ -143,10 +132,26 @@ export default class SSAssembly {
 				item._add = true;
 			}
 		} else {
+			if (content._add === true) throw "Unable to add item that already exists";
 			item = this.state[type][identityString];
 		}
 		
-		if (content === null) item._remove = true;
+		if (content._removeItem === true) {
+			delete this.state[type][identityString];
+			return [type, identityString];
+		}
+		
+		if (content._removeAdd === true) {
+			delete item._add;
+		}
+		
+		if (content._removeRemove === true) {
+			delete item._remove;
+		}
+		
+		delete content._removeItem;
+		delete content._removeAdd;
+		delete content._removeRemove;
 		
 		for (let key in content) {
 			if (!(item[key] === content[key])) {

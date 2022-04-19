@@ -9,6 +9,7 @@ export default class SSElement extends Component {
 		virtualElement.style.height = "auto";
 		virtualElement.innerHTML = input;
 		document.getElementsByTagName("body")[0].appendChild(virtualElement);
+		
 		if (input.split("\n")[input.split("\n").length - 1] == "") {
 			var output = {
 				"width": (virtualElement.getBoundingClientRect().width) + "px", 
@@ -20,6 +21,7 @@ export default class SSElement extends Component {
 				"height": (virtualElement.getBoundingClientRect().height + 1) + "px"
 			};
 		}
+		
 		virtualElement.outerHTML = "";
 		virtualElement.remove();
 		return output;
