@@ -1,4 +1,6 @@
-<link rel="stylesheet" type="text/css" href="/main.css">
+<title>Systemstate Editor Pre-Alpha v1.0.1</title>
+<link rel="icon" type="image/x-icon" href="/resources/favicon.ico">
+<link rel="stylesheet" type="text/css" href="/resources/main.css">
 <script type="module">
 
 import SSSelected from "./classes/SSSelected.js";
@@ -28,11 +30,10 @@ renderFunction();
 
 </script>
 
-<div style="position: absolute; bottom: 1em; right: 1em;">
-<a href="/resources/Documentations.pdf" target="_blank">Documentations</a>
-</div>
-
 <div id="renderZone">Content will be rendered here<br/></div><br/>
+
+Documentations: 
+<span class="white" onclick="window.open('/resources/documentations.html', '_blank');">(View)</span><br/>
 
 Editor Actions: 
 <span class="white" onclick="window.assembly.syncWithServer().then(() => window.renderFunction());">(Save)</span><br/>
