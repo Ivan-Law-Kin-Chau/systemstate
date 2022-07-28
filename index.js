@@ -6,7 +6,7 @@ var urlencodedParser = bodyParser.urlencoded({
 	extended: false
 });
 
-app.use("/", express.static(__dirname + "/views/"))
+app.use("/", express.static(__dirname + "/views/dist/"));
 
 var database = new (require("sqlite3").verbose()).Database("./database/systemstate.db");
 var commands = new (require("./assembly.js"))(database);
