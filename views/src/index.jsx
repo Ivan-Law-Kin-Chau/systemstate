@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom";
 import SSAssembly from "./classes/SSAssembly.js";
 import SSSelected from "./classes/SSSelected.js";
 import SSListener from "./classes/SSListener.js";
-import SSOpener from "./classes/SSOpener.js";
+import SSWindow from "./classes/SSWindow.jsx";
 
 ReactDOM.render(<div>
 	<div id="renderZone">Content will be rendered here<br/></div><br/>
@@ -16,10 +16,10 @@ ReactDOM.render(<div>
 window.assembly = new SSAssembly();
 window.selected = new SSSelected();
 window.listener = new SSListener(window.assembly, window.selected);
-window.opener = new SSOpener(window.assembly, window.selected, window.listener);
 window.renderFunction = async function () {
-	const content = await window.opener.openUuid("fzYkA7sH");
-	ReactDOM.render(<div>{content}</div>, document.getElementById("renderZone"));
+	//const content = await window.opener.openIdentityString("fzYkA7sH");
+	//ReactDOM.render(<div>{content}</div>, document.getElementById("renderZone"));
+	ReactDOM.render(<SSWindow uuid={"fzYkA7sH"}/>, document.getElementById("renderZone"));
 	
 	// (new (await window.opener.getClass("SSAliase"))("fzYkA7sH", window.assembly)).add();
 	// (new (await window.opener.getClass("SSAliase"))("fzYkA7sH", window.assembly)).remove();

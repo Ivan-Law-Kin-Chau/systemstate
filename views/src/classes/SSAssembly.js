@@ -163,6 +163,7 @@ export default class SSAssembly {
 		let itemInstance = new items[convertor.convertCamelCaseToSS(type)]();
 		let validationResult = itemInstance.validate(item);
 		if (validationResult === true) {
+			item._success = true;
 			this.state[type][identityString] = item;
 		} else if (validationResult === false) {
 			throw "Invalid item";
