@@ -1,9 +1,12 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import * as iterator from "./scripts/iterator.js";
 import SSAssembly from "./classes/SSAssembly.js";
 import SSSelected from "./classes/SSSelected.js";
 import SSListener from "./classes/SSListener.js";
 import SSWindow from "./classes/SSWindow.jsx";
+
+window.iterator = iterator.iteratorFactory();
 
 ReactDOM.render(<div>
 	<div id="renderZone">Content will be rendered here<br/></div><br/>

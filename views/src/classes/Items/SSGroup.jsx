@@ -1,3 +1,5 @@
+import * as elements from "../Elements/All.js";
+import * as convertor from "../../scripts/convertor.js";
 import * as validator from "../../scripts/validator.js";
 import SSItem from "./SSItem.jsx";
 
@@ -14,8 +16,23 @@ export default class SSGroup extends SSItem {
 		this.item = this.assembly.state["group"][this.identityString];
 		if (this.validate() === true) {
 			var templateThis = this.props.templateThis ? this.props.templateThis : null;
-			var templateArray = [[false, "selector"], [true, "key"], []];
-			return this.generateJSXFromTemplate(this.props.identityString, this.props.selectedObject, this.item, templateThis, templateArray);
+			var renderState = {
+				item: this.item, 
+				identityString: this.identityString, 
+				selectedObject: this.props.selectedObject, 
+				templateThis: templateThis
+			};
+			
+			const SSSelector = elements["SSSelector"];
+			const SSKey = elements["SSKey"];
+			
+			return (<>
+				<SSSelector key={this.identityString + "_" + window.iterator.iterate()} templateType={this.item._type} templateThis={templateThis} id={this.identityString} red={this.getRed(renderState)}/>
+				
+				<SSKey key={this.identityString + "_" + window.iterator.iterate()} templateType={this.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_" + templateThis} elementValue={this.item["_" + templateThis]} red={this.getRed(renderState)}/>
+				
+				{this.itemAddRemove(renderState)}
+			</>);
 		} else if (this.validate() === false) {
 			console.log("Invalid SSGroup item: ");
 			console.log(this.item);
