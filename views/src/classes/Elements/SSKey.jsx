@@ -40,7 +40,10 @@ export default class SSKey extends SSElement {
 			color: "#000000", 
 			minWidth: "72px", 
 			maxWidth: "72px", 
-			padding: "0px"
+			height: "22px", 
+			padding: "0px", 
+			position: "relative", 
+			top: "-1px"
 		};
 		
 		return (<SSUserInterface.Consumer>{dispatch => {

@@ -37,7 +37,10 @@ export default class Button extends SSElement {
 	
 	render () {
 		let style = {
-			color: "#000000"
+			color: "#000000", 
+			height: "22px", 
+			position: "relative", 
+			top: "-1px"
 		};
 		
 		return (<SSUserInterface.Consumer>{dispatch => {

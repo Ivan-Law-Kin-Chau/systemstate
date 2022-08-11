@@ -114,33 +114,26 @@ export default class SSWindow extends React.Component {
 		}}>
 			{({data, error, isPending}) => {
 				if (isPending) return "Loading... ";
-				if (data) return (<span style={{
-					border: "1px solid #000000", 
-					display: "inline-block", 
-					position: "relative", 
-					top: "-1px"
-				}}>
-					<div style={{
-						backgroundColor: "#0000FF", 
-						borderBottom: "1px solid #000000", 
-						width: "100%", 
-						height: "20px"
-					}}>
-						<span style={{
-							color: "#FFFFFF", 
-							position: "relative", 
-							top: "1px"
-						}}>{this.state.userInterface}</span>{"\u00a0"}
-						
-						<button style={{
-							float: "right"
-						}}>(#)</button>
-					</div>
-					
-					<span style={{
-						position: "relative", 
-						top: "1px"
-					}}>{data}</span>
+				if (data) return (<span>
+					User Interface: <select defaultValue={this.state.userInterface} onChange={event => this.selected.userInterface = event.target.value}>
+						<option>SSAliase</option>
+						<option>SSEditor</option>
+						<option>SSObject</option>
+						<option>SSGroup</option>
+						<option>SSLink</option>
+						<option>SSProperty</option>
+					</select><br/>
+					Low-Level Mode: <select defaultValue={this.state.lowLevelMode} onChange={event => this.selected.lowLevelMode = event.target.value}>
+						<option value={null}>Default</option>
+						<option value={true}>On</option>
+						<option value={false}>Off</option>
+					</select><br/>
+					<button onClick={this.addUserInterface.bind(this)}>(Add)</button>&nbsp;
+					<button onClick={this.loadUserInterface.bind(this)}>(Load)</button>&nbsp;
+					<button onClick={this.saveUserInterface.bind(this)}>(Save)</button>&nbsp;
+					<button onClick={this.removeUserInterface.bind(this)}>(Remove)</button>&nbsp;
+					<button onClick={this.validateUserInterface.bind(this)}>(Validate)</button><br/><br/>
+					<div>{data}</div>
 				</span>);
 			}}
 		</Async>);

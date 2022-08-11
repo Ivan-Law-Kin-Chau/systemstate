@@ -13,12 +13,12 @@ export default class SSElement extends React.Component {
 		if (input.split("\n")[input.split("\n").length - 1] == "") {
 			var output = {
 				"width": (virtualElement.getBoundingClientRect().width) + "px", 
-				"height": (virtualElement.getBoundingClientRect().height + 20) + "px"
+				"height": (virtualElement.getBoundingClientRect().height + 18) + "px"
 			};
 		} else {
 			var output = {
 				"width": (virtualElement.getBoundingClientRect().width) + "px", 
-				"height": (virtualElement.getBoundingClientRect().height + 1) + "px"
+				"height": (virtualElement.getBoundingClientRect().height) + "px"
 			};
 		}
 		

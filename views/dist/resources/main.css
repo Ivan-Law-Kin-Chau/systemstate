@@ -1,11 +1,11 @@
 body {
-	width: 100vw;
-	height: 100vh;
 	margin: 1em;
 	background-color: #EEEEEE;
 	color: #000000;
-	overflow: hidden;
+	overflow-x: hidden;
 	font-family: "Consolas";
+	font-size: 16px;
+	line-height: 20px;
 	display: inline-block;
 	user-select: none;
 	-moz-user-select: none;
@@ -13,23 +13,19 @@ body {
 	-ms-user-select: none;
 }
 
-.white {
-	text-decoration: none;
-	background-color: #FFFFFF;
-}
-
 input, textarea, button, pre, select {
-	height: 18px;
-	padding: 0px 1px;
-	border: none;
-	margin: 0px;
 	background-color: #FFFFFF;
 	color: #000000;
 	vertical-align: top;
 	overflow: hidden;
-	resize: none;
 	font-family: "Consolas";
 	font-size: 16px;
+	line-height: 20px;
+	height: 20px;
+	border: 1px solid #000000;
+	margin: 0px;
+	padding: 0px;
+	resize: none;
 	cursor: text;
 }
 

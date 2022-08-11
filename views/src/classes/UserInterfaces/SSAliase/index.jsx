@@ -2,7 +2,6 @@ import Aliase from "./Aliase.jsx";
 
 import SSExpander from "../../SSExpander.js";
 
-import * as items from "../../Items/All.js";
 import * as convertor from "../../../scripts/convertor.js";
 import * as validator from "../../../scripts/validator.js";
 import * as generator from "../../../scripts/generator.js";

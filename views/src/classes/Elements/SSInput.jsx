@@ -28,7 +28,9 @@ export default class SSInput extends SSElement {
 	
 	render () {
 		let style = {
-			color: "#000000"
+			color: "#000000", 
+			position: "relative", 
+			top: "-1px"
 		};
 		
 		let dimensions = this.simulate(this.state.elementValue ? this.state.elementValue : "");

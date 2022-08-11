@@ -31,7 +31,7 @@ export default class SSTextarea extends SSElement {
 			color: "#000000", 
 			display: "inline-block", 
 			position: "relative", 
-			top: "-2px"
+			top: "-1px"
 		};
 		
 		let dimensions = this.simulate(this.state.elementValue ? this.state.elementValue : "");

@@ -1,6 +1,6 @@
 import SSExpander from "../../SSExpander.js";
+import SSWindow from "../../SSWindow.jsx";
 
-import * as items from "../../Items/All.js";
 import * as convertor from "../../../scripts/convertor.js";
 
 import * as React from "react";
@@ -78,16 +78,16 @@ export default class SSEditor {
 			
 			for (let index = 0; index < this.state[array].length; index++) {
 				const type = this.state[array][index][0];
-				const identityString = this.state[array][index][1];
+				const uuid = this.state[array][index][1];
 				
 				if (array === "group_uuid" && arrayOutput !== [] && index === 0) {
 					arrayOutput.push(": ");
 				}
 				
-				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={type + "_" + identityString + "_br"}/>);
+				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={type + "_" + uuid + "_br"}/>);
 				
-				const Item = items[convertor.convertCamelCaseToSS(type)];
-				arrayOutput.push(<Item key={type + "_" + identityString + "_item"} identityString={identityString} selectedObject={this.selected.selected} templateThis={templateThis} assembly={this.assembly}/>);
+				const userInterface = convertor.convertCamelCaseToSS(type);
+				arrayOutput.push(<SSWindow key={type + "_" + uuid + "_item"} uuid={uuid} loadAs={userInterface} selectedObject={this.selected.selected} templateThis={templateThis}/>);
 				
 				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(", ");
 				
@@ -99,28 +99,31 @@ export default class SSEditor {
 			renderOutput = [...renderOutput, ...arrayOutput];
 		}
 		
-		return (<div>
+		return (<span>
 			<SSUserInterface.Provider value={action => this.listener.dispatch(action)}>{renderOutput}</SSUserInterface.Provider><br/><br/>
 			
 			Selected Element: [<span>{window.selected.selectedString}</span>]
-			<span className="white" onClick={() => window.selected.add()}>(+)</span>
-			<span className="white" onClick={() => window.selected.remove()}>(-)</span><br/>
+			<button onClick={() => window.selected.add()}>(+)</button>
+			<button onClick={() => window.selected.remove()}>(-)</button><br/>
 			
-			Insert an Item: <span style={{verticalAlign: "top", display: "inline-block"}}>
-			#%%%%%%%%<span className="white" onClick={() => window.selected.add("group_parent")}>(+)</span>: 
-			#%%%%%%%%<span className="white" onClick={() => window.selected.add("object_uuid")}>(+)</span> this: 
-			#%%%%%%%%<span className="white" onClick={() => window.selected.add("group_uuid")}>(+)</span><br/>
-			
-			#%%%%%%%%<span className="white" onClick={() => window.selected.add("link_uuid")}>(+)</span>: 
-			#%%%%%%%%<span className="white" onClick={() => window.selected.add("link_start")}>(+)</span> &lt;-&gt; 
-			#%%%%%%%%<span className="white" onClick={() => window.selected.add("link_end")}>(+)</span><br/>
-			
-			#%%%%%%%%<span className="white" onClick={() => window.selected.add("property_uuid")}>(+)</span>: 
-			#%%%%%%%%<span className="white" onClick={() => window.selected.add("property_parent")}>(+)</span>: 
-			%%%%%%%%: <br/>
-			%%%%%%%%
+			Insert an Item: <span style={{
+				verticalAlign: "top", 
+				display: "inline-block"
+			}}>
+				#%%%%%%%%<button onClick={() => window.selected.add("group_parent")}>(+)</button>: 
+				#%%%%%%%%<button onClick={() => window.selected.add("object_uuid")}>(+)</button> this: 
+				#%%%%%%%%<button onClick={() => window.selected.add("group_uuid")}>(+)</button><br/>
+				
+				#%%%%%%%%<button onClick={() => window.selected.add("link_uuid")}>(+)</button>: 
+				#%%%%%%%%<button onClick={() => window.selected.add("link_start")}>(+)</button> &lt;-&gt; 
+				#%%%%%%%%<button onClick={() => window.selected.add("link_end")}>(+)</button><br/>
+				
+				#%%%%%%%%<button onClick={() => window.selected.add("property_uuid")}>(+)</button>: 
+				#%%%%%%%%<button onClick={() => window.selected.add("property_parent")}>(+)</button>: 
+				%%%%%%%%: <br/>
+				%%%%%%%%
 			</span>
-		</div>);
+		</span>);
 	}
 	
 	async save (action = {}) {

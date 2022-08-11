@@ -2,7 +2,7 @@ import * as identifier from "../scripts/identifier.js";
 
 export default class SSSelected {
 	constructor () {
-		this.openedUuid = null;
+		this.rootUuid = null;
 		this.selectedString = "";
 		this.selected = {
 			array: null, 
@@ -73,7 +73,7 @@ export default class SSSelected {
 			};
 		}
 		
-		details["_" + templateThis] = this.openedUuid;
+		details["_" + templateThis] = this.rootUuid;
 		details._add = true;
 		this.render(templateType, details);
 	}
