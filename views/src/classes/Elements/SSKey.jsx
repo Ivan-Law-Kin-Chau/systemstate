@@ -1,10 +1,10 @@
 import * as convertor from "../../scripts/convertor.js";
-import SSElement from "./SSElement.jsx";
+import SSElement from "../SSElement.js";
 
 import * as React from "react";
-import {SSUserInterface} from "../UserInterfaces/SSEditor/index.jsx";
+import {SSEditorContext} from "../UserInterfaces/SSEditor/index.jsx";
 
-export default class SSKey extends SSElement {
+export default class SSKey extends React.Component {
 	constructor (props) {
 		super(props);
 		this.state = {"elementValue": this.props.elementValue};
@@ -46,9 +46,9 @@ export default class SSKey extends SSElement {
 			top: "-1px"
 		};
 		
-		return (<SSUserInterface.Consumer>{dispatch => {
+		return (<SSEditorContext.Consumer>{dispatch => {
 			if (this.props.dispatch) dispatch = this.props.dispatch;
 			return (<input id={this.props.id} type="input" value={this.state.elementValue} maxLength="8" onInput={this.onInputOrChange(this, dispatch)} onChange={this.onInputOrChange(this, dispatch)} onClick={this.onClick(this, dispatch)} style={style}></input>);
-		}}</SSUserInterface.Consumer>);
+		}}</SSEditorContext.Consumer>);
 	}
 }

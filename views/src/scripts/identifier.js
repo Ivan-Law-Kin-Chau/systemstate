@@ -22,3 +22,13 @@ export function identityFromString (type, identityString) {
 	
 	return identity;
 }
+
+export function assertIdentityStringLength (length, identityString) {
+	if (typeof identityString !== "string") {
+		throw `Identity string is not a string`;
+	}
+	
+	if (identityString.length !== length) {
+		throw `Identity string length is not ${length}`;
+	}
+}

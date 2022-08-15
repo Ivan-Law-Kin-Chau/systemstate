@@ -2,22 +2,19 @@ import SSExpander from "../../SSExpander.js";
 import SSWindow from "../../SSWindow.jsx";
 
 import * as convertor from "../../../scripts/convertor.js";
+import * as identifier from "../../../scripts/identifier.js";
 
 import * as React from "react";
 
-export const SSUserInterface = React.createContext();
+export const SSEditorContext = React.createContext();
 
 export default class SSEditor {
-	constructor (uuid, assembly, selected, listener) {
-		// The head UUID of the class instance
-		this.uuid = uuid;
+	constructor (identityString) {
+		// The head identity string of the class instance
+		identifier.assertIdentityStringLength(8, identityString);
+		this.identityString = identityString;
 		
-		this.assembly = assembly;
-		this.selected = selected;
-		this.listener = listener;
-		this.expander = new SSExpander(this.assembly);
 		this.state = {};
-		this.loaded = false;
 	}
 	
 	async add (action = {}) {
@@ -25,8 +22,9 @@ export default class SSEditor {
 	}
 	
 	async load (action = {}) {
-		// First, get the dependencies of the editor with the UUID as the editor's head
-		var dependencies = await this.expander.expand(this.uuid); // The SSExpander class fetches the data from the server instead of the SSAssembly class, making it necessary to run the syncWithServer function before every rerender
+		// First, get the dependencies of the editor using the editor's head identity string as the key (despite one being an identity string and the another being a key, they can be used interexchangably here because we asserted the length of the identity string in the constructor)
+		var dependencies = await SSExpander.expand(this.identityString);
+		window.assembly.clientOnlyMode = true;
 		
 		// Then, for each dependency, load the element that corresponds to it
 		for (let array in dependencies) {
@@ -35,21 +33,21 @@ export default class SSEditor {
 				const type = array.split("_")[0];
 				if (array === "group_uuid") {
 					this.state[array].push(
-						await this.assembly.getState(type, {
-							_uuid: this.uuid, 
+						await window.assembly.getState(type, {
+							_uuid: this.identityString, 
 							_parent: item._parent
 						})
 					);
 				} else if (array === "group_parent") {
 					this.state[array].push(
-						await this.assembly.getState(type, {
+						await window.assembly.getState(type, {
 							_uuid: item._uuid, 
-							_parent: this.uuid
+							_parent: this.identityString
 						})
 					);
 				} else {
 					this.state[array].push(
-						await this.assembly.getState(type, {
+						await window.assembly.getState(type, {
 							_uuid: item._uuid
 						})
 					);
@@ -78,20 +76,27 @@ export default class SSEditor {
 			
 			for (let index = 0; index < this.state[array].length; index++) {
 				const type = this.state[array][index][0];
-				const uuid = this.state[array][index][1];
+				const identityString = this.state[array][index][1];
 				
-				if (array === "group_uuid" && arrayOutput !== [] && index === 0) {
+				if (array === "group_uuid" && index === 0) {
 					arrayOutput.push(": ");
 				}
 				
-				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={type + "_" + uuid + "_br"}/>);
+				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={`${type}_${identityString}_br`}/>);
 				
+				/*
+				
+				Uses of variables or props named templateThis throughout the entire codebase: 
+					1. When loading a user interface, know which element should be replaced by an SSThis element
+					2. When selecting an element, know the identityString of the parent window to put in the action object when calling the SSListener class
+				
+				*/
 				const userInterface = convertor.convertCamelCaseToSS(type);
-				arrayOutput.push(<SSWindow key={type + "_" + uuid + "_item"} uuid={uuid} loadAs={userInterface} selectedObject={this.selected.selected} templateThis={templateThis}/>);
+				arrayOutput.push(<SSWindow key={`${type}_${identityString}_item`} identityString={identityString} loadAs={userInterface} selectedObject={window.selected.selected} templateThis={templateThis}/>);
 				
 				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(", ");
 				
-				if (array === "group_parent" && arrayOutput !== [] && index === this.state[array].length - 1) {
+				if (array === "group_parent" && index === this.state[array].length - 1) {
 					arrayOutput.push(": ");
 				}
 			}
@@ -100,7 +105,7 @@ export default class SSEditor {
 		}
 		
 		return (<span>
-			<SSUserInterface.Provider value={action => this.listener.dispatch(action)}>{renderOutput}</SSUserInterface.Provider><br/><br/>
+			<SSEditorContext.Provider value={action => window.listener.dispatch(action)}>{renderOutput}</SSEditorContext.Provider><br/><br/>
 			
 			Selected Element: [<span>{window.selected.selectedString}</span>]
 			<button onClick={() => window.selected.add()}>(+)</button>
@@ -134,7 +139,7 @@ export default class SSEditor {
 		return true;
 	}
 	
-	async validate (assembly, uuid) {
+	async validate (identityString) {
 		return true;
 	}
 }

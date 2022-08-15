@@ -1,10 +1,10 @@
 import * as convertor from "../../scripts/convertor.js";
-import SSElement from "./SSElement.jsx";
+import SSElement from "../SSElement.js";
 
 import * as React from "react";
-import {SSUserInterface} from "../UserInterfaces/SSEditor/index.jsx";
+import {SSEditorContext} from "../UserInterfaces/SSEditor/index.jsx";
 
-export default class SSInput extends SSElement {
+export default class SSInput extends React.Component {
 	constructor (props) {
 		super(props);
 		this.state = {"elementValue": this.props.elementValue};
@@ -33,13 +33,13 @@ export default class SSInput extends SSElement {
 			top: "-1px"
 		};
 		
-		let dimensions = this.simulate(this.state.elementValue ? this.state.elementValue : "");
+		let dimensions = SSElement.simulate(this.state.elementValue ? this.state.elementValue : "");
 		style.width = dimensions.width;
 		style.height = dimensions.height;
 		
-		return (<SSUserInterface.Consumer>{dispatch => {
+		return (<SSEditorContext.Consumer>{dispatch => {
 			if (this.props.dispatch) dispatch = this.props.dispatch;
 			return (<input id={this.props.id} type="text" value={this.state.elementValue} onInput={this.onInputOrChange(this, dispatch)} onChange={this.onInputOrChange(this, dispatch)} style={style}></input>);
-		}}</SSUserInterface.Consumer>);
+		}}</SSEditorContext.Consumer>);
 	}
 }

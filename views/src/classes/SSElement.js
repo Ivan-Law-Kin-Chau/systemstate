@@ -1,7 +1,5 @@
-import * as React from "react";
-
-export default class SSElement extends React.Component {
-	simulate (input) {
+export default class SSElement {
+	static simulate (input) {
 		var virtualElement = document.createElement("pre");
 		virtualElement.style.display = "inline-block";
 		virtualElement.style.visibility = "hidden";

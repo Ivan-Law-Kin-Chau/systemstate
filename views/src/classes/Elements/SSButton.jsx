@@ -1,10 +1,10 @@
 import * as convertor from "../../scripts/convertor.js";
-import SSElement from "./SSElement.jsx";
+import SSElement from "../SSElement.js";
 
 import * as React from "react";
-import {SSUserInterface} from "../UserInterfaces/SSEditor/index.jsx";
+import {SSEditorContext} from "../UserInterfaces/SSEditor/index.jsx";
 
-export default class Button extends SSElement {
+export default class SSButton extends React.Component {
 	constructor (props) {
 		super(props);
 		this.state = {"elementValue": convertor.convertHTMLToBoolean(this.props.elementValue)};
@@ -43,9 +43,9 @@ export default class Button extends SSElement {
 			top: "-1px"
 		};
 		
-		return (<SSUserInterface.Consumer>{dispatch => {
+		return (<SSEditorContext.Consumer>{dispatch => {
 			if (this.props.dispatch) dispatch = this.props.dispatch;
 			return (<button id={this.props.id} onClick={this.onClick(this, dispatch)} style={style}>{convertor.convertBooleanToDirection(convertor.convertHTMLToBoolean(this.state.elementValue))}</button>);
-		}}</SSUserInterface.Consumer>);
+		}}</SSEditorContext.Consumer>);
 	}
 }

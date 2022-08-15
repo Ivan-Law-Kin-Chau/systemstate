@@ -8,6 +8,12 @@ import * as generator from "../scripts/generator.js";
 export default class SSAssembly {
 	constructor () {
 		this.sender = new SSSender();
+		
+		/*
+		
+		clientOnlyMode will be set to false when SSAssembly initializes and whenever the syncWithServer function is called, but set to true when the SSItemSelected class rerenders the Systemstate Editor. If clientOnlyMode is false, SSExpander expands by calling the search function on the server. If clientOnlyMode is true, SSExpander expands by searching within the state of SSAssembly
+		
+		*/
 		this.clientOnlyMode = false;
 		
 		this.itemPrototype = {
@@ -48,9 +54,9 @@ export default class SSAssembly {
 	
 	identityToLoadCommand (type, identity) {
 		if (type === "group") {
-			return ["load_" + type, "(\"" + identity._uuid + "\", \"" + identity._parent + "\")"];
+			return [`load_${type}`, `("${identity._uuid}", "${identity._parent}")`];
 		} else {
-			return ["load_" + type, "(\"" + identity._uuid + "\")"];
+			return [`load_${type}`, `("${identity._uuid}")`];
 		}
 	}
 	
@@ -110,10 +116,10 @@ export default class SSAssembly {
 				if (validatorClass.validateItem(item) === true) {
 					this.state[type][identityString] = item;
 				} else {
-					throw "Invalid item: [\"" + type + "\", \"" + identityString + "\"]";
+					throw `Invalid item: ["${type}", "${identityString}"]`;
 				}
 			} else if (item._success === false) {
-				throw "Item not found: [\"" + type + "\", \"" + identityString + "\"]";
+				throw `Item not found: ["${type}", "${identityString}"]`;
 			}
 		}
 		
@@ -180,13 +186,13 @@ export default class SSAssembly {
 				if (item._add === true || item._remove === true) {
 					if (item._add === true) {
 						if (item._type === "object") {
-							this.sender.push("add_" + type, "(\"" + item._uuid + "\")");
+							this.sender.push(`add_${type}`, `("${item._uuid}")`);
 						} else if (item._type === "group") {
-							this.sender.push("add_" + type, "(\"" + item._uuid + "\", \"" + item._parent + "\")");
+							this.sender.push(`add_${type}`, `("${item._uuid}", "${item._parent}")`);
 						} else if (item._type === "link") {
-							this.sender.push("add_" + type, "(\"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + item._direction + ")");
+							this.sender.push(`add_${type}`, `("${item._uuid}", "${item._start}", "${item._end}", ${item._direction})`);
 						} else if (item._type === "property") {
-							this.sender.push("add_" + type, "(\"" + item._uuid + "\", \"" + item._parent + "\", \"" + item._name + "\", \"" + item._content + "\")");
+							this.sender.push(`add_${type}`, `("${item._uuid}", "${item._parent}", "${item._name}", "${item._content}")`);
 						}
 						
 						this.sender.pushCallback(
@@ -198,13 +204,13 @@ export default class SSAssembly {
 					
 					if (item._remove === true) {
 						if (item._type === "object") {
-							this.sender.push("remove_" + type, "(\"" + item._uuid + "\")");
+							this.sender.push(`remove_${type}`, `("${item._uuid}")`);
 						} else if (item._type === "group") {
-							this.sender.push("remove_" + type, "(\"" + item._uuid + "\", \"" + item._parent + "\")");
+							this.sender.push(`remove_${type}`, `("${item._uuid}", "${item._parent}")`);
 						} else if (item._type === "link") {
-							this.sender.push("remove_" + type, "(\"" + item._uuid + "\")");
+							this.sender.push(`remove_${type}`, `("${item._uuid}")`);
 						} else if (item._type === "property") {
-							this.sender.push("remove_" + type, "(\"" + item._uuid + "\")");
+							this.sender.push(`remove_${type}`, `("${item._uuid}")`);
 						}
 						
 						this.sender.pushCallback(
@@ -216,13 +222,13 @@ export default class SSAssembly {
 				} else if (item._save === true) {
 					const identity = identifier.identityFromString(type, identityString);
 					if (item._type === "object") {
-						this.sender.push("save_" + type, "(\"" + identity._uuid + "\", \"" + item._uuid + "\")");
+						this.sender.push(`save_${type}`, `("${identity._uuid}", "${item._uuid}")`);
 					} else if (item._type === "group") {
-						this.sender.push("save_" + type, "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + identity._parent + "\", \"" + item._parent + "\")");
+						this.sender.push(`save_${type}`, `("${identity._uuid}", "${item._uuid}", "${identity._parent}", "${item._parent}")`);
 					} else if (item._type === "link") {
-						this.sender.push("save_" + type, "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + item._start + "\", \"" + item._end + "\", " + item._direction + ")");
+						this.sender.push(`save_${type}`, `("${identity._uuid}", "${item._uuid}", "${item._start}", "${item._end}", ${item._direction})`);
 					} else if (item._type === "property") {
-						this.sender.push("save_" + type, "(\"" + identity._uuid + "\", \"" + item._uuid + "\", \"" + item._parent + "\", \"" + item._name + "\", \"" + item._content + "\")");
+						this.sender.push(`save_${type}`, `("${identity._uuid}", "${item._uuid}", "${item._parent}", "${item._name}", "${item._content}")`);
 					}
 					
 					this.sender.pushCallback(

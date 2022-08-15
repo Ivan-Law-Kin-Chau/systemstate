@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import SSAssembly from "./classes/SSAssembly.js";
-import SSSelected from "./classes/SSSelected.js";
+import SSItemSelected from "./classes/SSItemSelected.js";
 import SSListener from "./classes/SSListener.js";
 import SSWindow from "./classes/SSWindow.jsx";
 
@@ -11,13 +11,13 @@ ReactDOM.render(<div>
 	Documentations: <button onClick={() => window.open("/resources/documentations.html", "_blank")}>(View)</button><br/>
 	
 	Editor Actions: <button onClick={() => window.assembly.syncWithServer().then(() => window.renderFunction())}>(Save)</button><br/>
-</div>, document.body);
+</div>, document.getElementById("app"));
 
 window.assembly = new SSAssembly();
-window.selected = new SSSelected();
+window.selected = new SSItemSelected();
 window.listener = new SSListener(window.assembly, window.selected);
 window.renderFunction = async function () {
-	ReactDOM.render(<SSWindow uuid={"fzYkA7sH"} isRoot/>, document.getElementById("renderZone"));
+	ReactDOM.render(<SSWindow identityString={"fzYkA7sH"} isRoot/>, document.getElementById("renderZone"));
 }
 
 window.onload = renderFunction();

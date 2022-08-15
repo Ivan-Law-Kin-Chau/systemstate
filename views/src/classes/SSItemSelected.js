@@ -1,8 +1,8 @@
 import * as identifier from "../scripts/identifier.js";
 
-export default class SSSelected {
+export default class SSItemSelected {
 	constructor () {
-		this.rootUuid = null;
+		this.rootIdentityString = null;
 		this.selectedString = "";
 		this.selected = {
 			array: null, 
@@ -73,7 +73,7 @@ export default class SSSelected {
 			};
 		}
 		
-		details["_" + templateThis] = this.rootUuid;
+		details["_" + templateThis] = this.rootIdentityString;
 		details._add = true;
 		this.render(templateType, details);
 	}

@@ -1,17 +1,27 @@
+import SSItem from "../../SSItem.jsx";
+
 import * as elements from "../../Elements/All.js";
 import * as validator from "../../../scripts/validator.js";
-import SSItem from "../SSItem/index.jsx";
+import * as identifier from "../../../scripts/identifier.js";
 
 import * as React from "react";
 
-export default class SSProperty extends SSItem {
-	constructor (identityString, assembly, selected, listener) {
-		super(identityString, assembly, selected, listener);
+export default class SSProperty {
+	constructor (identityString) {
+		// The head identity string of the class instance
+		identifier.assertIdentityStringLength(8, identityString);
+		this.identityString = identityString;
+		
+		this.state = {};
+	}
+	
+	async add (action = {}) {
+		return true;
 	}
 	
 	async load (action = {}) {
-		this.state.item = this.assembly.state["property"][this.identityString];
-		if (await this.validate(this.assembly, this.identityString) === false) {
+		this.state.item = window.assembly.state["property"][this.identityString];
+		if (await this.validate(this.identityString) === false) {
 			console.log("Invalid SSProperty item: ");
 			console.log(this.state.item);
 			return "";
@@ -32,30 +42,38 @@ export default class SSProperty extends SSItem {
 		
 		return (<>
 			{"uuid" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={this.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
 				
-				{this.itemAddRemove(renderState)}
+				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={this.state.item["_uuid"]} red={this.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={this.state.item["_uuid"]} red={SSItem.getRed(renderState)}/>
 			</>}:{"\u00a0"}
 			
 			{"parent" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={this.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
 				
-				{this.itemAddRemove(renderState)}
+				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_parent"} elementValue={this.state.item["_parent"]} red={this.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_parent"} elementValue={this.state.item["_parent"]} red={SSItem.getRed(renderState)}/>
 			</>}:{"\u00a0"}
 			
-			<SSInput templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_name"} elementValue={this.state.item["_name"]} red={this.getRed(renderState)}/>:{"\u00a0"}<br/>
+			<SSInput templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_name"} elementValue={this.state.item["_name"]} red={SSItem.getRed(renderState)}/>:{"\u00a0"}<br/>
 			
-			<SSTextarea templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_content"} elementValue={this.state.item["_content"]} red={this.getRed(renderState)}/>
+			<SSTextarea templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_content"} elementValue={this.state.item["_content"]} red={SSItem.getRed(renderState)}/>
 		</>);
 	}
 	
-	async validate (assembly, identityString) {
+	async save (action = {}) {
+		return true;
+	}
+	
+	async remove (action = {}) {
+		return true;
+	}
+	
+	async validate (identityString) {
 		if (typeof identityString === "undefined") identityString = this.identityString;
-		const item = assembly.state["property"][identityString];
+		const item = window.assembly.state["property"][identityString];
 		if (typeof item === "undefined") throw `Item not loaded: ["property", "${identityString}"]`;
 		return SSProperty.validateItem(item);
 	}

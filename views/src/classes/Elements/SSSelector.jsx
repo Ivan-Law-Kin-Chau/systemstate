@@ -1,10 +1,10 @@
 import * as convertor from "../../scripts/convertor.js";
-import SSElement from "./SSElement.jsx";
+import SSElement from "../SSElement.js";
 
 import * as React from "react";
-import {SSUserInterface} from "../UserInterfaces/SSEditor/index.jsx";
+import {SSEditorContext} from "../UserInterfaces/SSEditor/index.jsx";
 
-export default class SSSelector extends SSElement {
+export default class SSSelector extends React.Component {
 	constructor (props) {
 		super(props);
 		this.state = {"red": false};
@@ -29,9 +29,9 @@ export default class SSSelector extends SSElement {
 			style.color = "#FF0000";
 		}
 		
-		return (<SSUserInterface.Consumer>{dispatch => {
+		return (<SSEditorContext.Consumer>{dispatch => {
 			if (this.props.dispatch) dispatch = this.props.dispatch;
 			return (<span id={this.props.id} onClick={this.onClick(this, dispatch)} style={style}>#</span>);
-		}}</SSUserInterface.Consumer>);
+		}}</SSEditorContext.Consumer>);
 	}
 }

@@ -1,17 +1,27 @@
+import SSItem from "../../SSItem.jsx";
+
 import * as elements from "../../Elements/All.js";
 import * as validator from "../../../scripts/validator.js";
-import SSItem from "../SSItem/index.jsx";
+import * as identifier from "../../../scripts/identifier.js";
 
 import * as React from "react";
 
-export default class SSLink extends SSItem {
-	constructor (identityString, assembly, selected, listener) {
-		super(identityString, assembly, selected, listener);
+export default class SSLink {
+	constructor (identityString) {
+		// The head identity string of the class instance
+		identifier.assertIdentityStringLength(8, identityString);
+		this.identityString = identityString;
+		
+		this.state = {};
+	}
+	
+	async add (action = {}) {
+		return true;
 	}
 	
 	async load (action = {}) {
-		this.state.item = this.assembly.state["link"][this.identityString];
-		if (await this.validate(this.assembly, this.identityString) !== true) {
+		this.state.item = window.assembly.state["link"][this.identityString];
+		if (await this.validate(this.identityString) !== true) {
 			console.log("Invalid SSLink item: ");
 			console.log(this.state.item);
 			return "";
@@ -31,36 +41,44 @@ export default class SSLink extends SSItem {
 		
 		return (<>
 			{"uuid" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={this.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
 				
-				{this.itemAddRemove(renderState)}
+				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={renderState.item["_uuid"]} red={this.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={renderState.item["_uuid"]} red={SSItem.getRed(renderState)}/>
 			</>}:{"\u00a0"}
 			
 			{"start" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={this.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
 				
-				{this.itemAddRemove(renderState)}
+				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_start"} elementValue={renderState.item["_start"]} red={this.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_start"} elementValue={renderState.item["_start"]} red={SSItem.getRed(renderState)}/>
 			</>}{"\u00a0"}
 			
-			<SSButton templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_direction"} elementValue={renderState.item["_direction"]} red={this.getRed(renderState)}/>{"\u00a0"}
+			<SSButton templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_direction"} elementValue={renderState.item["_direction"]} red={SSItem.getRed(renderState)}/>{"\u00a0"}
 			
 			{"end" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={this.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
 				
-				{this.itemAddRemove(renderState)}
+				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_end"} elementValue={renderState.item["_end"]} red={this.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_end"} elementValue={renderState.item["_end"]} red={SSItem.getRed(renderState)}/>
 			</>}
 		</>);
 	}
 	
-	async validate (assembly, identityString) {
+	async save (action = {}) {
+		return true;
+	}
+	
+	async remove (action = {}) {
+		return true;
+	}
+	
+	async validate (identityString) {
 		if (typeof identityString === "undefined") identityString = this.identityString;
-		const item = assembly.state["link"][identityString];
+		const item = window.assembly.state["link"][identityString];
 		if (typeof item === "undefined") throw `Item not loaded: ["link", "${identityString}"]`;
 		return SSLink.validateItem(item);
 	}

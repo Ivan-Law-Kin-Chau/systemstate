@@ -12,11 +12,11 @@ export default class SSWindow extends React.Component {
 		
 		this.state = {
 			loadAs: props.loadAs ? props.loadAs : null, 
-			uuid: props.uuid, 
+			identityString: props.identityString, 
 			userInterfaceKeys: ["SSAliase", "SSEditor", "SSObject", "SSGroup", "SSLink", "SSProperty"], 
 			userInterfaceClass: null, 
 			userInterface: null, 
-			currentLowLevelMode: false
+			lowLevelMode: false
 		};
 	}
 	
@@ -24,8 +24,8 @@ export default class SSWindow extends React.Component {
 		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
 			if (this.state.userInterfaceKeys[i] !== this.selected.userInterface) continue;
 			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
-			const loadedClassInstance = new loadedClass(this.state.uuid, window.assembly, window.selected, window.listener);
-			if (await loadedClassInstance.validate(window.assembly, this.state.uuid) === false) {
+			const loadedClassInstance = new loadedClass(this.state.identityString);
+			if (await loadedClassInstance.validate(this.state.identityString) === false) {
 				await loadedClassInstance.add();
 				console.log("User interface added");
 			} else {
@@ -42,8 +42,8 @@ export default class SSWindow extends React.Component {
 		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
 			if (this.state.userInterfaceKeys[i] !== this.selected.userInterface) continue;
 			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
-			const loadedClassInstance = new loadedClass(this.state.uuid, window.assembly, window.selected, window.listener);
-			if (await loadedClassInstance.validate(window.assembly, this.state.uuid) === true) {
+			const loadedClassInstance = new loadedClass(this.state.identityString);
+			if (await loadedClassInstance.validate(this.state.identityString) === true) {
 				await loadedClassInstance.save();
 				console.log("User interface saved");
 			} else {
@@ -56,8 +56,8 @@ export default class SSWindow extends React.Component {
 		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
 			if (this.state.userInterfaceKeys[i] !== this.selected.userInterface) continue;
 			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
-			const loadedClassInstance = new loadedClass(this.state.uuid, window.assembly, window.selected, window.listener);
-			if (await loadedClassInstance.validate(window.assembly, this.state.uuid) === true) {
+			const loadedClassInstance = new loadedClass(this.state.identityString);
+			if (await loadedClassInstance.validate(this.state.identityString) === true) {
 				await loadedClassInstance.remove();
 				console.log("User interface removed");
 			} else {
@@ -70,8 +70,8 @@ export default class SSWindow extends React.Component {
 		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
 			if (this.state.userInterfaceKeys[i] !== this.selected.userInterface) continue;
 			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
-			const loadedClassInstance = new loadedClass(this.state.uuid, window.assembly, window.selected, window.listener);
-			if (await loadedClassInstance.validate(window.assembly, this.state.uuid) === true) {
+			const loadedClassInstance = new loadedClass(this.state.identityString);
+			if (await loadedClassInstance.validate(this.state.identityString) === true) {
 				console.log("User interface valid");
 			} else {
 				throw "User interface invalid";
@@ -81,12 +81,17 @@ export default class SSWindow extends React.Component {
 	
 	render () {
 		return (<Async promiseFn={async () => {
+			/*
+			
+			When the load functions are called in the code below, this.props will be passed as an argument so that the item class instance can access the templateThis prop through the action argument. This is important because without access to templateThis, SSGroups will not know whether to render in its "group_parent" form or its "group_uuid" form
+			
+			*/
 			if (this.state.loadAs === null) {
 				for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
 					const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
-					const loadedClassInstance = new loadedClass(this.state.uuid, window.assembly, window.selected, window.listener);
-					if (await loadedClassInstance.validate(window.assembly, this.state.uuid) === true) {
-						if (this.props.isRoot === true) window.selected.rootUuid = this.state.uuid;
+					const loadedClassInstance = new loadedClass(this.state.identityString);
+					if (await loadedClassInstance.validate(this.state.identityString) === true) {
+						if (this.props.isRoot === true) window.selected.rootIdentityString = this.state.identityString;
 						this.state.userInterface = this.state.userInterfaceKeys[i];
 						this.state.userInterfaceClass = loadedClassInstance;
 						this.selected.userInterface = this.state.userInterfaceKeys[i];
@@ -98,22 +103,23 @@ export default class SSWindow extends React.Component {
 				}
 			} else {
 				const loadedClass = userInterfaces[this.state.loadAs];
-				const loadedClassInstance = new loadedClass(this.state.uuid, window.assembly, window.selected, window.listener);
-				if (await loadedClassInstance.validate(window.assembly, this.state.uuid) === true) {
-					if (this.props.isRoot === true) window.selected.rootUuid = this.state.uuid;
+				const loadedClassInstance = new loadedClass(this.state.identityString);
+				if (await loadedClassInstance.validate(this.state.identityString) === true) {
+					if (this.props.isRoot === true) window.selected.rootIdentityString = this.state.identityString;
 					this.state.userInterface = this.state.loadAs;
 					this.state.userInterfaceClass = loadedClassInstance;
 					this.selected.userInterface = this.state.loadAs;
 					this.selected.userInterfaceClass = loadedClassInstance;
 					return await loadedClassInstance.load(this.props);
 				} else {
-					console.error("User interface invalid");
 					this.setState({loadAs: null});
+					throw "User interface invalid";
 				}
 			}
 		}}>
 			{({data, error, isPending}) => {
 				if (isPending) return "Loading... ";
+				if (error) throw "SSWindow render failed: " + error;
 				if (data) return (<span style={{
 					border: "1px solid #000000", 
 					display: "inline-block", 

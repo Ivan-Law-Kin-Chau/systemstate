@@ -5,28 +5,25 @@ import SSExpander from "../../SSExpander.js";
 import * as convertor from "../../../scripts/convertor.js";
 import * as validator from "../../../scripts/validator.js";
 import * as generator from "../../../scripts/generator.js";
+import * as identifier from "../../../scripts/identifier.js";
 
 import * as React from "react";
 
-export const SSUserInterface = React.createContext();
+export const SSEditorContext = React.createContext();
 
 export default class SSAliase {
-	constructor (uuid, assembly, selected, listener) {
-		// The head UUID of the class instance
-		this.uuid = uuid;
+	constructor (identityString) {
+		// The head identity string of the class instance
+		identifier.assertIdentityStringLength(8, identityString);
+		this.identityString = identityString;
 		
-		this.assembly = assembly;
-		this.selected = selected;
-		this.listener = listener;
-		this.expander = new SSExpander(this.assembly);
 		this.state = {};
-		this.loaded = false;
 	}
 	
 	async add (action = {}) {
-		return await this.assembly.set("property", {
+		return await window.assembly.set("property", {
 			_uuid: {generateKeyCode: 1}, 
-			_parent: this.uuid, 
+			_parent: this.identityString, 
 			_name: "Target", 
 			_content: {generateKeyCode: 2}, 
 			_add: true
@@ -37,15 +34,14 @@ export default class SSAliase {
 		let content;
 		const classInstance = this;
 		if (await (async function () {
-			var dependencies = await classInstance.expander.expand(classInstance.uuid, classInstance.state !== {});
+			var dependencies = await SSExpander.expand(classInstance.identityString);
 			if (dependencies["property_parent"]) {
 				for (let identity of dependencies["property_parent"]) {
 					const item = await classInstance.assembly.get("property", identity);
 					if (item._success === true && item._name === "Target") {
 						if (validator.isValidKey(item._content) === true) {
 							content = item._content;
-							classInstance.state.uuid = item._uuid;
-							classInstance.loaded = true;
+							classInstance.state.identityString = item._uuid;
 							return true;
 						}
 					}
@@ -54,9 +50,9 @@ export default class SSAliase {
 			
 			return false;
 		})() === true) {
-			return (<SSUserInterface.Provider value={action => this.listener.dispatch(action)}>
-				<Aliase source={this.state.uuid} target={content} save={this.save.bind(this)}/>
-			</SSUserInterface.Provider>);
+			return (<SSEditorContext.Provider value={action => window.listener.dispatch(action)}>
+				<Aliase source={this.state.identityString} target={content} save={this.save.bind(this)}/>
+			</SSEditorContext.Provider>);
 		} else {
 			console.log("User interface class not yet initiated properly! Call the add() method first");
 			return "";
@@ -64,15 +60,15 @@ export default class SSAliase {
 	}
 	
 	async save (action = {}) {
-		var dependencies = await this.expander.expand(this.uuid);
+		var dependencies = await SSExpander.expand(this.identityString);
 		if (dependencies["property_parent"]) {
 			for (let identity of dependencies["property_parent"]) {
-				const item = await this.assembly.get("property", identity);
+				const item = await window.assembly.get("property", identity);
 				if (item._success === true && item._name === "Target") {
 					if (validator.isValidKey(action.target) === true) {
-						await this.assembly.set("property", {
+						await window.assembly.set("property", {
 							_uuid: item._uuid, 
-							_parent: this.uuid, 
+							_parent: this.identityString, 
 							_name: "Target", 
 							_content: action.target
 						});
@@ -85,13 +81,13 @@ export default class SSAliase {
 	}
 	
 	async remove (action = {}) {
-		var dependencies = await this.expander.expand(this.uuid);
+		var dependencies = await SSExpander.expand(this.identityString);
 		if (dependencies["property_parent"]) {
 			for (let identity of dependencies["property_parent"]) {
-				const item = await this.assembly.get("property", identity);
+				const item = await window.assembly.get("property", identity);
 				if (item._success === true && item._name === "Target") {
 					if (validator.isValidKey(item._content) === true) {
-						await this.assembly.set("property", {
+						await window.assembly.set("property", {
 							_uuid: item._uuid, 
 							_remove: true
 						});
@@ -103,11 +99,11 @@ export default class SSAliase {
 		return true;
 	}
 	
-	async validate (assembly, uuid) {
-		var dependencies = await this.expander.expand(uuid);
+	async validate (identityString) {
+		var dependencies = await SSExpander.expand(identityString);
 		if (dependencies["property_parent"]) {
 			for (let identity of dependencies["property_parent"]) {
-				const item = await this.assembly.get("property", identity);
+				const item = await window.assembly.get("property", identity);
 				if (item._success === true && item._name === "Target") {
 					if (validator.isValidKey(item._content) === true) {
 						return true;
