@@ -50,8 +50,7 @@ export default class SSSender {
 				terminal.open("POST", "http://localhost:800/terminal", true);
 				terminal.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 				
-				// encodeURIComponent does not turn percentage signs into "%25" correctly
-				// So I have to do that manually
+				// encodeURIComponent does not turn percentage signs into "%25" correctly, so we have to do that manually
 				command = command.split("%").join("%25");
 				
 				terminal.send("command=" + encodeURIComponent(command));

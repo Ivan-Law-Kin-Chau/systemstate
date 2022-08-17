@@ -1,4 +1,5 @@
 import SSExpander from "../../SSExpander.js";
+import SSListener from "../../SSListener.js";
 import SSWindow from "../../SSWindow.jsx";
 
 import * as convertor from "../../../scripts/convertor.js";
@@ -58,8 +59,7 @@ export default class SSEditor {
 		let orderOfArrays = ["group_parent", "object_uuid", "group_uuid", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent", "property_name", "property_content"];
 		let renderOutput = [];
 		
-		for (var i = 0; i < orderOfArrays.length; i++) {
-			const array = orderOfArrays[i];
+		for (const array of orderOfArrays) {
 			if (!(this.state[array])) continue;
 			let arrayOutput = [];
 			
@@ -88,7 +88,7 @@ export default class SSEditor {
 				
 				Uses of variables or props named templateThis throughout the entire codebase: 
 					1. When loading a user interface, know which element should be replaced by an SSThis element
-					2. When selecting an element, know the identityString of the parent window to put in the action object when calling the SSListener class
+					2. When selecting an element, know the identityString of the parent window to put in the action object when calling the dispatch function in the SSListener class
 				
 				*/
 				const userInterface = convertor.convertCamelCaseToSS(type);
@@ -106,7 +106,7 @@ export default class SSEditor {
 		}
 		
 		return (<span>
-			<SSEditorContext.Provider value={action => window.listener.dispatch(action)}>{renderOutput}</SSEditorContext.Provider><br/><br/>
+			<SSEditorContext.Provider value={action => SSListener.dispatch(action)}>{renderOutput}</SSEditorContext.Provider><br/><br/>
 			
 			Selected Element: [<span>{window.selected.selectedString}</span>]
 			<button onClick={() => window.selected.add()}>(+)</button>

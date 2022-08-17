@@ -1,6 +1,7 @@
 import Aliase from "./Aliase.jsx";
 
 import SSExpander from "../../SSExpander.js";
+import SSListener from "../../SSListener.js";
 
 import * as convertor from "../../../scripts/convertor.js";
 import * as validator from "../../../scripts/validator.js";
@@ -50,7 +51,7 @@ export default class SSAliase {
 			
 			return false;
 		})() === true) {
-			return (<SSEditorContext.Provider value={action => window.listener.dispatch(action)}>
+			return (<SSEditorContext.Provider value={action => SSListener.dispatch(action)}>
 				<Aliase source={this.state.identityString} target={content} save={this.save.bind(this)}/>
 			</SSEditorContext.Provider>);
 		} else {

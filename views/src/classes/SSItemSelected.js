@@ -42,7 +42,7 @@ export default class SSItemSelected {
 		}
 	}
 	
-	async addAddAction (array = "") {
+	addAddAction (array = "") {
 		if (array === "") {
 			var templateType = this.selected.array.split("_")[0];
 			var templateThis = this.selected.array.split("_")[1];
@@ -78,21 +78,21 @@ export default class SSItemSelected {
 		this.render(templateType, details);
 	}
 	
-	async removeAddAction () {
+	removeAddAction () {
 		var type = this.selected.array.split("_")[0];
 		var details = identifier.identityFromString(type, this.selected.identityString);
 		details._removeItem = true;
 		this.render(type, details);
 	}
 	
-	async addRemoveAction () {
+	addRemoveAction () {
 		var type = this.selected.array.split("_")[0];
 		var details = identifier.identityFromString(type, this.selected.identityString);
 		details._remove = true;
 		this.render(type, details);
 	}
 	
-	async removeRemoveAction () {
+	removeRemoveAction () {
 		var type = this.selected.array.split("_")[0];
 		var details = identifier.identityFromString(type, this.selected.identityString);
 		details._removeRemove = true;

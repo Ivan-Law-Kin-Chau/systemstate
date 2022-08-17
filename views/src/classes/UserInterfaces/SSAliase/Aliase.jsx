@@ -1,5 +1,7 @@
 import SSKey from "../../Elements/SSKey.jsx";
 
+import SSListener from "../../SSListener.js";
+
 import * as React from "react";
 
 export default class Aliase extends React.Component {
@@ -33,7 +35,7 @@ export default class Aliase extends React.Component {
 				<span onClick={() => {this.setState({
 					edit: 1
 				})}}>V</span>: <span onClick={() => {
-					window.listener.dispatch({
+					SSListener.dispatch({
 						"type": "OPEN", 
 						"key": this.state.target
 					})
