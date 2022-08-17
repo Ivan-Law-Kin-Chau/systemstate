@@ -16,7 +16,8 @@ export default class SSWindow extends React.Component {
 			userInterfaceKeys: ["SSAliase", "SSEditor", "SSObject", "SSGroup", "SSLink", "SSProperty"], 
 			userInterfaceClass: null, 
 			userInterface: null, 
-			lowLevelMode: false
+			lowLevelMode: false, 
+			isSelectedWindow: false
 		};
 	}
 	
@@ -127,7 +128,7 @@ export default class SSWindow extends React.Component {
 					top: "-1px"
 				}}>
 					<div style={{
-						backgroundColor: "#0000FF", 
+						backgroundColor: (this.props.selected ? "#FF0000" : "#0000FF"), 
 						borderBottom: "1px solid #000000", 
 						width: "100%", 
 						height: "20px"
@@ -140,7 +141,7 @@ export default class SSWindow extends React.Component {
 						
 						<button style={{
 							float: "right"
-						}}>(#)</button>
+						}} onClick={() => this.props.setSelectedWindow(this.props.windowString, this)}>(#)</button>
 					</div>
 					
 					<span style={{

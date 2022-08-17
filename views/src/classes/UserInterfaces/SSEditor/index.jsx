@@ -82,7 +82,7 @@ export default class SSEditor {
 					arrayOutput.push(": ");
 				}
 				
-				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={`${type}_${identityString}_br`}/>);
+				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={`${action.windowString}_${type}_${identityString}_br`}/>);
 				
 				/*
 				
@@ -92,7 +92,8 @@ export default class SSEditor {
 				
 				*/
 				const userInterface = convertor.convertCamelCaseToSS(type);
-				arrayOutput.push(<SSWindow key={`${type}_${identityString}_item`} identityString={identityString} loadAs={userInterface} selectedObject={window.selected.selected} templateThis={templateThis}/>);
+				const windowString = `${action.windowString}_${type}_${identityString}_item`;
+				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selected={windowString === action.selectedWindow} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} loadAs={userInterface} selectedObject={window.selected.selected} templateThis={templateThis}/>);
 				
 				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(", ");
 				

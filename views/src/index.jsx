@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom";
 import SSAssembly from "./classes/SSAssembly.js";
 import SSItemSelected from "./classes/SSItemSelected.js";
 import SSListener from "./classes/SSListener.js";
-import SSWindow from "./classes/SSWindow.jsx";
+import SSWindowSelected from "./classes/SSWindowSelected.jsx";
 
 ReactDOM.render(<div>
 	<div id="renderZone">Content will be rendered here<br/></div><br/>
@@ -17,7 +17,7 @@ window.assembly = new SSAssembly();
 window.selected = new SSItemSelected();
 window.listener = new SSListener(window.assembly, window.selected);
 window.renderFunction = async function () {
-	ReactDOM.render(<SSWindow identityString={"fzYkA7sH"} isRoot/>, document.getElementById("renderZone"));
+	ReactDOM.render(<SSWindowSelected/>, document.getElementById("renderZone"));
 }
 
 window.onload = renderFunction();
