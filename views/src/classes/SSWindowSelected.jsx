@@ -6,11 +6,33 @@ export default class SSWindowSelected extends React.Component {
 		super(props);
 		this.state = {
 			selectedWindow: null, 
-			selectedWindowClassInstance: null
+			selectedWindowClassInstance: null, 
+			selectedUserInterface: null, 
+			selectedLowLevelMode: false
 		};
 	}
 	
 	render () {
+		const ref = React.createRef();
+		const windowSelected = this;
+		const setSelectedWindow = (windowString, ref) => () => {
+			if (windowSelected.state.selectedWindow === windowString) {
+				windowSelected.setState({
+					selectedWindow: null, 
+					selectedWindowClassInstance: null, 
+					selectedUserInterface: null, 
+					selectedLowLevelMode: false
+				});
+			} else {
+				windowSelected.setState({
+					selectedWindow: windowString, 
+					selectedWindowClassInstance: ref.current, 
+					selectedUserInterface: ref.current.state.userInterface, 
+					selectedLowLevelMode: ref.current.state.lowLevelMode
+				});
+			}
+		}
+		
 		return (<span>
 			{(this.state.selectedWindow === null) ? (<>
 				User Interface: <select/><br/>
@@ -21,8 +43,8 @@ export default class SSWindowSelected extends React.Component {
 				<button>(Remove)</button>&nbsp;
 				<button>(Validate)</button><br/>
 			</>) : (<>
-				User Interface: <select value={this.state.selectedWindowClassInstance.selected.userInterface} onChange={event => {
-					this.state.selectedWindowClassInstance.selected.userInterface = event.target.value;
+				User Interface: <select value={this.state.selectedUserInterface} onChange={event => {
+					this.setState({selectedUserInterface: event.target.value});
 					window.renderFunction();
 				}}>
 					<option>SSAliase</option>
@@ -32,33 +54,39 @@ export default class SSWindowSelected extends React.Component {
 					<option>SSLink</option>
 					<option>SSProperty</option>
 				</select><br/>
-				Low-Level Mode: <select value={this.state.selectedWindowClassInstance.selected.lowLevelMode} onChange={event => {
-					this.state.selectedWindowClassInstance.selected.lowLevelMode = event.target.value;
+				Low-Level Mode: <select value={this.state.selectedLowLevelMode} onChange={event => {
+					this.setState({selectedLowLevelMode: event.target.value});
 					window.renderFunction();
 				}}>
 					<option value={null}>Default</option>
 					<option value={true}>On</option>
 					<option value={false}>Off</option>
 				</select><br/>
-				<button onClick={this.state.selectedWindowClassInstance.addUserInterface.bind(this.state.selectedWindowClassInstance)}>(Add)</button>&nbsp;
-				<button onClick={this.state.selectedWindowClassInstance.loadUserInterface.bind(this.state.selectedWindowClassInstance)}>(Load)</button>&nbsp;
-				<button onClick={this.state.selectedWindowClassInstance.saveUserInterface.bind(this.state.selectedWindowClassInstance)}>(Save)</button>&nbsp;
-				<button onClick={this.state.selectedWindowClassInstance.removeUserInterface.bind(this.state.selectedWindowClassInstance)}>(Remove)</button>&nbsp;
-				<button onClick={this.state.selectedWindowClassInstance.validateUserInterface.bind(this.state.selectedWindowClassInstance)}>(Validate)</button><br/>
+				<button onClick={() => this.state.selectedWindowClassInstance.addUserInterface(this.state.selectedUserInterface)}>(Add)</button>&nbsp;
+				<button onClick={() => this.state.selectedWindowClassInstance.loadUserInterface(this.state.selectedUserInterface)}>(Load)</button>&nbsp;
+				<button onClick={() => this.state.selectedWindowClassInstance.saveUserInterface(this.state.selectedUserInterface)}>(Save)</button>&nbsp;
+				<button onClick={() => this.state.selectedWindowClassInstance.removeUserInterface(this.state.selectedUserInterface)}>(Remove)</button>&nbsp;
+				<button onClick={() => this.state.selectedWindowClassInstance.validateUserInterface(this.state.selectedUserInterface)}>(Validate)</button><br/>
 			</>)}<br/>
-			<SSWindow identityString="fzYkA7sH" windowString="root" selected={"root" === this.state.selectedWindow} selectedWindow={this.state.selectedWindow} setSelectedWindow={(selectedWindow, selectedWindowClassInstance) => {
-				if (this.state.selectedWindow === selectedWindow) {
-					this.setState({
+			<SSWindow identityString="fzYkA7sH" key="root" windowString="root" selected={"root" === this.state.selectedWindow} selectedWindow={this.state.selectedWindow} setSelectedWindow={setSelectedWindow} setSelectedWindowWithRef={setSelectedWindow("root", ref)} ref={ref} isRoot/><br/><br/>
+			
+			Documentations: <button onClick={() => window.open("/resources/documentations.html", "_blank")}>(View)</button><br/>
+			
+			Editor Actions: <button onClick={() => {
+				this.setState(
+					{
 						selectedWindow: null, 
-						selectedWindowClassInstance: null
-					});
-				} else {
-					this.setState({
-						selectedWindow: selectedWindow, 
-						selectedWindowClassInstance: selectedWindowClassInstance
-					});
-				}
-			}} isRoot/>
+						selectedWindowClassInstance: null, 
+						selectedUserInterface: null, 
+						selectedLowLevelMode: false
+					}, 
+					() => {
+						window.assembly.syncWithServer().then(
+							() => window.renderFunction()
+						)
+					}
+				);
+			}}>(Save)</button><br/>
 		</span>);
 	}
 }

@@ -5,10 +5,6 @@ import Async from "react-async";
 export default class SSWindow extends React.Component {
 	constructor (props) {
 		super(props);
-		this.selected = {
-			userInterface: null, 
-			lowLevelMode: false
-		};
 		
 		this.state = {
 			loadAs: props.loadAs ? props.loadAs : null, 
@@ -21,9 +17,9 @@ export default class SSWindow extends React.Component {
 		};
 	}
 	
-	async addUserInterface () {
+	async addUserInterface (selectedUserInterface) {
 		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
-			if (this.state.userInterfaceKeys[i] !== this.selected.userInterface) continue;
+			if (this.state.userInterfaceKeys[i] !== selectedUserInterface) continue;
 			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
 			if (await loadedClassInstance.validate(this.state.identityString) === false) {
@@ -35,13 +31,13 @@ export default class SSWindow extends React.Component {
 		}
 	}
 	
-	async loadUserInterface () {
-		this.setState({loadAs: this.selected.userInterface});
+	async loadUserInterface (selectedUserInterface) {
+		this.setState({loadAs: selectedUserInterface});
 	}
 	
-	async saveUserInterface () {
+	async saveUserInterface (selectedUserInterface) {
 		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
-			if (this.state.userInterfaceKeys[i] !== this.selected.userInterface) continue;
+			if (this.state.userInterfaceKeys[i] !== selectedUserInterface) continue;
 			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
 			if (await loadedClassInstance.validate(this.state.identityString) === true) {
@@ -53,9 +49,9 @@ export default class SSWindow extends React.Component {
 		}
 	}
 	
-	async removeUserInterface () {
+	async removeUserInterface (selectedUserInterface) {
 		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
-			if (this.state.userInterfaceKeys[i] !== this.selected.userInterface) continue;
+			if (this.state.userInterfaceKeys[i] !== selectedUserInterface) continue;
 			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
 			if (await loadedClassInstance.validate(this.state.identityString) === true) {
@@ -67,9 +63,9 @@ export default class SSWindow extends React.Component {
 		}
 	}
 	
-	async validateUserInterface () {
+	async validateUserInterface (selectedUserInterface) {
 		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
-			if (this.state.userInterfaceKeys[i] !== this.selected.userInterface) continue;
+			if (this.state.userInterfaceKeys[i] !== selectedUserInterface) continue;
 			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
 			if (await loadedClassInstance.validate(this.state.identityString) === true) {
@@ -94,9 +90,6 @@ export default class SSWindow extends React.Component {
 					if (await loadedClassInstance.validate(this.state.identityString) === true) {
 						if (this.props.isRoot === true) window.selected.rootIdentityString = this.state.identityString;
 						this.state.userInterface = this.state.userInterfaceKeys[i];
-						this.state.userInterfaceClass = loadedClassInstance;
-						this.selected.userInterface = this.state.userInterfaceKeys[i];
-						this.selected.userInterfaceClass = loadedClassInstance;
 						return await loadedClassInstance.load(this.props);
 					} else {
 						continue;
@@ -108,9 +101,6 @@ export default class SSWindow extends React.Component {
 				if (await loadedClassInstance.validate(this.state.identityString) === true) {
 					if (this.props.isRoot === true) window.selected.rootIdentityString = this.state.identityString;
 					this.state.userInterface = this.state.loadAs;
-					this.state.userInterfaceClass = loadedClassInstance;
-					this.selected.userInterface = this.state.loadAs;
-					this.selected.userInterfaceClass = loadedClassInstance;
 					return await loadedClassInstance.load(this.props);
 				} else {
 					this.setState({loadAs: null});
@@ -141,7 +131,7 @@ export default class SSWindow extends React.Component {
 						
 						<button style={{
 							float: "right"
-						}} onClick={() => this.props.setSelectedWindow(this.props.windowString, this)}>(#)</button>
+						}} onClick={() => this.props.setSelectedWindowWithRef()}>(#)</button>
 					</div>
 					
 					<span style={{

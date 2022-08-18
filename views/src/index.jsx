@@ -4,13 +4,7 @@ import SSAssembly from "./classes/SSAssembly.js";
 import SSItemSelected from "./classes/SSItemSelected.js";
 import SSWindowSelected from "./classes/SSWindowSelected.jsx";
 
-ReactDOM.render(<div>
-	<div id="renderZone">Content will be rendered here<br/></div><br/>
-	
-	Documentations: <button onClick={() => window.open("/resources/documentations.html", "_blank")}>(View)</button><br/>
-	
-	Editor Actions: <button onClick={() => window.assembly.syncWithServer().then(() => window.renderFunction())}>(Save)</button><br/>
-</div>, document.getElementById("app"));
+ReactDOM.render(<div id="renderZone">Content will be rendered here</div>, document.getElementById("app"));
 
 window.assembly = new SSAssembly();
 window.selected = new SSItemSelected();

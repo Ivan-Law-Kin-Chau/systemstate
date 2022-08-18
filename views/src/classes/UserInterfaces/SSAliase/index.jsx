@@ -38,7 +38,7 @@ export default class SSAliase {
 			var dependencies = await SSExpander.expand(classInstance.identityString);
 			if (dependencies["property_parent"]) {
 				for (let identity of dependencies["property_parent"]) {
-					const item = await classInstance.assembly.get("property", identity);
+					const item = await window.assembly.get("property", identity);
 					if (item._success === true && item._name === "Target") {
 						if (validator.isValidKey(item._content) === true) {
 							content = item._content;
