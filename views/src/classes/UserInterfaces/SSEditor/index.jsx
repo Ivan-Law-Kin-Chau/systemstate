@@ -82,10 +82,10 @@ export default class SSEditor {
 					arrayOutput.push(": ");
 				}
 				
-				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={`${action.windowString}_${type}_${identityString}_br`}/>);
+				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={`${action.windowString}>${type}_${identityString}_br`}/>);
 				
 				const userInterface = convertor.convertCamelCaseToSS(type);
-				const windowString = `${action.windowString}_${type}_${identityString}_item`;
+				const windowString = `${action.windowString}>${type}_${identityString}_item`;
 				const ref = React.createRef();
 				
 				/*
@@ -95,7 +95,7 @@ export default class SSEditor {
 					2. When selecting an element, know the identityString of the parent window to put in the action object when calling the dispatch function in the SSListener class
 				
 				*/
-				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selected={windowString === action.selectedWindow} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} loadAs={userInterface} selectedObject={window.selected.selected} templateThis={templateThis}/>);
+				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} loadAs={userInterface} selectedObject={window.selected.selected} templateThis={templateThis}/>);
 				
 				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(", ");
 				

@@ -109,36 +109,38 @@ export default class SSWindow extends React.Component {
 			}
 		}}>
 			{({data, error, isPending}) => {
-				if (isPending) return "Loading... ";
+				if (isPending && typeof data === "undefined") return "Loading... ";
 				if (error) throw "SSWindow render failed: " + error;
-				if (data) return (<span style={{
-					border: "1px solid #000000", 
-					display: "inline-block", 
-					position: "relative", 
-					top: "-1px"
-				}}>
-					<div style={{
-						backgroundColor: (this.props.selected ? "#FF0000" : "#0000FF"), 
-						borderBottom: "1px solid #000000", 
-						width: "100%", 
-						height: "20px"
+				if (data) {
+					return (<span style={{
+						border: "1px solid #000000", 
+						display: "inline-block", 
+						position: "relative", 
+						top: "-1px"
 					}}>
+						<div style={{
+							backgroundColor: ((this.props.windowString === this.props.selectedWindow) ? "#FF0000" : "#0000FF"), 
+							borderBottom: "1px solid #000000", 
+							width: "100%", 
+							height: "20px"
+						}}>
+							<span style={{
+								color: "#FFFFFF", 
+								position: "relative", 
+								top: "1px"
+							}}>{this.state.userInterface}</span>{"\u00a0"}
+							
+							<button style={{
+								float: "right"
+							}} onClick={() => this.props.setSelectedWindowWithRef()}>(#)</button>
+						</div>
+						
 						<span style={{
-							color: "#FFFFFF", 
 							position: "relative", 
 							top: "1px"
-						}}>{this.state.userInterface}</span>{"\u00a0"}
-						
-						<button style={{
-							float: "right"
-						}} onClick={() => this.props.setSelectedWindowWithRef()}>(#)</button>
-					</div>
-					
-					<span style={{
-						position: "relative", 
-						top: "1px"
-					}}>{data}</span>
-				</span>);
+						}}>{data}</span>
+					</span>);
+				}
 			}}
 		</Async>);
 	}
