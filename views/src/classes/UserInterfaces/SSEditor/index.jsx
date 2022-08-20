@@ -1,6 +1,7 @@
 import SSExpander from "../../SSExpander.js";
 import SSListener from "../../SSListener.js";
 import SSWindow from "../../SSWindow.jsx";
+import SSItemSelected from "../../SSItemSelected.js";
 
 import * as convertor from "../../../scripts/convertor.js";
 import * as identifier from "../../../scripts/identifier.js";
@@ -15,6 +16,7 @@ export default class SSEditor {
 		identifier.assertIdentityStringLength(8, identityString);
 		this.identityString = identityString;
 		
+		this.selected = new SSItemSelected(identityString);
 		this.state = {};
 	}
 	
@@ -28,6 +30,7 @@ export default class SSEditor {
 		window.assembly.clientOnlyMode = true;
 		
 		// Then, for each dependency, load the element that corresponds to it
+		this.state = {};
 		for (let array in dependencies) {
 			this.state[array] = [];
 			for (let item of dependencies[array]) {
@@ -95,7 +98,7 @@ export default class SSEditor {
 					2. When selecting an element, know the identityString of the parent window to put in the action object when calling the dispatch function in the SSListener class
 				
 				*/
-				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} loadAs={userInterface} selectedObject={window.selected.selected} templateThis={templateThis}/>);
+				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} loadAs={userInterface} selectedObject={this.selected.selected} templateThis={templateThis}/>);
 				
 				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(", ");
 				
@@ -108,26 +111,26 @@ export default class SSEditor {
 		}
 		
 		return (<span>
-			<SSEditorContext.Provider value={action => SSListener.dispatch(action)}>{renderOutput}</SSEditorContext.Provider><br/><br/>
+			<SSEditorContext.Provider value={action => SSListener.dispatch(this.selected, action)}>{renderOutput}</SSEditorContext.Provider><br/><br/>
 			
-			Selected Element: [<span>{window.selected.selectedString}</span>]
-			<button onClick={() => window.selected.add()}>(+)</button>
-			<button onClick={() => window.selected.remove()}>(-)</button><br/>
+			Selected Element: [<span>{this.selected.selectedString}</span>]
+			<button onClick={() => this.selected.add()}>(+)</button>
+			<button onClick={() => this.selected.remove()}>(-)</button><br/>
 			
 			Insert an Item: <span style={{
 				verticalAlign: "top", 
 				display: "inline-block"
 			}}>
-				#%%%%%%%%<button onClick={() => window.selected.add("group_parent")}>(+)</button>: 
-				#%%%%%%%%<button onClick={() => window.selected.add("object_uuid")}>(+)</button> this: 
-				#%%%%%%%%<button onClick={() => window.selected.add("group_uuid")}>(+)</button><br/>
+				#%%%%%%%%<button onClick={() => this.selected.add("group_parent")}>(+)</button>: 
+				#%%%%%%%%<button onClick={() => this.selected.add("object_uuid")}>(+)</button> this: 
+				#%%%%%%%%<button onClick={() => this.selected.add("group_uuid")}>(+)</button><br/>
 				
-				#%%%%%%%%<button onClick={() => window.selected.add("link_uuid")}>(+)</button>: 
-				#%%%%%%%%<button onClick={() => window.selected.add("link_start")}>(+)</button> &lt;-&gt; 
-				#%%%%%%%%<button onClick={() => window.selected.add("link_end")}>(+)</button><br/>
+				#%%%%%%%%<button onClick={() => this.selected.add("link_uuid")}>(+)</button>: 
+				#%%%%%%%%<button onClick={() => this.selected.add("link_start")}>(+)</button> &lt;-&gt; 
+				#%%%%%%%%<button onClick={() => this.selected.add("link_end")}>(+)</button><br/>
 				
-				#%%%%%%%%<button onClick={() => window.selected.add("property_uuid")}>(+)</button>: 
-				#%%%%%%%%<button onClick={() => window.selected.add("property_parent")}>(+)</button>: 
+				#%%%%%%%%<button onClick={() => this.selected.add("property_uuid")}>(+)</button>: 
+				#%%%%%%%%<button onClick={() => this.selected.add("property_parent")}>(+)</button>: 
 				%%%%%%%%: <br/>
 				%%%%%%%%
 			</span>

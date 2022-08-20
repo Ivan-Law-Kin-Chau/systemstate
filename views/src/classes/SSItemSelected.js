@@ -1,8 +1,8 @@
 import * as identifier from "../scripts/identifier.js";
 
 export default class SSItemSelected {
-	constructor () {
-		this.rootIdentityString = null;
+	constructor (identityString) {
+		this.identityString = identityString;
 		this.selectedString = "";
 		this.selected = {
 			array: null, 
@@ -73,7 +73,7 @@ export default class SSItemSelected {
 			};
 		}
 		
-		details["_" + templateThis] = this.rootIdentityString;
+		details["_" + templateThis] = this.identityString;
 		details._add = true;
 		this.render(templateType, details);
 	}

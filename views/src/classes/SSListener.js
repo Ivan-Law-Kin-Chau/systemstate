@@ -1,10 +1,10 @@
 import * as identifier from "../scripts/identifier.js";
 
 export default class SSListener {
-	static async dispatch (action = {}) {
+	static async dispatch (selected, action = {}) {
 		if (action.type === "SELECT") {
 			delete action.type;
-			window.selected.updateSelected(action);
+			selected.updateSelected(action);
 			console.log("Select Element: " + action.identityString);
 		} else if (action.type === "OPEN") {
 			console.log("Open Key: " + action.key);

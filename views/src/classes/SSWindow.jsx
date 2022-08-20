@@ -17,6 +17,15 @@ export default class SSWindow extends React.Component {
 		};
 	}
 	
+	/*
+	
+	According to the official React documentation, to properly set up an error boundary, we also need a getDerivedStateFromError static method (which updates the state of the SSWindow) besides this componentDidCatch method. However, without also writing a fallback UI to replace the current UI that generated the error, after updating the state of the SSWindow, the current UI will just generate the same error again, resulting in an infinite loop. Therefore, we did not write a getDerivedStateFromError static method
+	
+	*/
+	componentDidCatch (errorString, errorObject) {
+		console.log(errorString, errorObject);
+	}
+	
 	async addUserInterface (selectedUserInterface) {
 		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
 			if (this.state.userInterfaceKeys[i] !== selectedUserInterface) continue;
@@ -86,10 +95,15 @@ export default class SSWindow extends React.Component {
 			if (this.state.loadAs === null) {
 				for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
 					const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
-					const loadedClassInstance = new loadedClass(this.state.identityString);
+					let loadedClassInstance = new loadedClass(this.state.identityString);
 					if (await loadedClassInstance.validate(this.state.identityString) === true) {
-						if (this.props.isRoot === true) window.selected.rootIdentityString = this.state.identityString;
-						this.state.userInterface = this.state.userInterfaceKeys[i];
+						if ((this.state.userInterface !== this.state.userInterfaceKeys[i]) || (this.state.userInterface === null)) {
+							this.state.userInterface = this.state.userInterfaceKeys[i];
+							this.state.userInterfaceClass = loadedClassInstance;
+						} else {
+							loadedClassInstance = this.state.userInterfaceClass;
+						}
+						
 						return await loadedClassInstance.load(this.props);
 					} else {
 						continue;
@@ -97,10 +111,15 @@ export default class SSWindow extends React.Component {
 				}
 			} else {
 				const loadedClass = userInterfaces[this.state.loadAs];
-				const loadedClassInstance = new loadedClass(this.state.identityString);
+				let loadedClassInstance = new loadedClass(this.state.identityString);
 				if (await loadedClassInstance.validate(this.state.identityString) === true) {
-					if (this.props.isRoot === true) window.selected.rootIdentityString = this.state.identityString;
-					this.state.userInterface = this.state.loadAs;
+					if ((this.state.userInterface !== this.state.loadAs) || (this.state.userInterface === null)) {
+						this.state.userInterface = this.state.loadAs;
+						this.state.userInterfaceClass = loadedClassInstance;
+					} else {
+						loadedClassInstance = this.state.userInterfaceClass;
+					}
+					
 					return await loadedClassInstance.load(this.props);
 				} else {
 					this.setState({loadAs: null});
