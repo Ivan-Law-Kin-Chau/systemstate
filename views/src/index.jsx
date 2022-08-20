@@ -1,23 +1,15 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import * as ReactDOMClient from "react-dom/client";
+
 import SSAssembly from "./classes/SSAssembly.js";
 import SSWindowSelected from "./classes/SSWindowSelected.jsx";
 
-// import ReactAsyncDevTools from "react-async-devtools";
-
-ReactDOM.render(<>
-	{/*<span style={{
-		zIndex: 256, 
-		position: "absolute", 
-		top: "0px", 
-		right: "0px"
-	}}><ReactAsyncDevTools/></span>*/}
-	<div id="renderZone">Content will be rendered here</div>
-</>, document.getElementById("app"));
+const root = ReactDOMClient.createRoot(document.getElementById("app"));
 
 window.assembly = new SSAssembly();
 window.renderFunction = async function () {
-	ReactDOM.render(<SSWindowSelected/>, document.getElementById("renderZone"));
+	root.render(<SSWindowSelected/>);
 }
 
 window.onload = renderFunction();

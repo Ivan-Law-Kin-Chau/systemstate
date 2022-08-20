@@ -22,6 +22,13 @@ export default class SSAssembly {
 			_contents: null
 		};
 		
+		/*
+		
+		DO NOT REMOVE THIS COMMENT: a comment in the SSExpander class references this
+		
+		In the four arrays below, the identity strings of the items will always be the same as when those items are first being loaded from the server, even if the user changed everything within an item, or removed an item, as long as the syncToServer function has not yet been called. (As for added items, they are added rather than loaded from the server, so there are no "identity strings of the items when they were first being loaded" for the identity strings in the four arrays to be the same with.) This ensures that the identity strings in the four arrays will not deviate from the SSSender cache unless the syncToServer function is called. Then, when the syncToServer function is called, the SSSender cache will be cleared and the identity strings in the four arrays will be updated according to the changes made by the user (if there are any)
+		
+		*/
 		this.state = {
 			object: {}, 
 			group: {}, 

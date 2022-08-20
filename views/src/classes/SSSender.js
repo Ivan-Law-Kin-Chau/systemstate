@@ -8,10 +8,10 @@ export default class SSSender {
 		this.cache = {};
 	}
 	
-	push (functionName, functionParameters) {
-		if (typeof functionName !== "string" || !(functionName.length > 0)) throw "Function name error";
-		if (typeof functionParameters !== "string" || !(functionParameters.length > 0)) throw "Function parameters error";
-		this.script.push([functionName, functionParameters]);
+	push (functionName, functionArguments) {
+		if (typeof functionName !== "string" || !(functionName.length > 0)) throw "Function name invalid";
+		if (typeof functionArguments !== "string" || !(functionArguments.length > 0)) throw "Function arguments invalid";
+		this.script.push([functionName, functionArguments]);
 	}
 	
 	pushCallback (callback) {
@@ -31,8 +31,8 @@ export default class SSSender {
 		return true;
 	}
 	
-	async send (functionName, functionParameters) {
-		var command = functionName + functionParameters;
+	async send (functionName, functionArguments) {
+		var command = functionName + functionArguments;
 		if (this.cache[command]) {
 			return this.cache[command];
 		} else {

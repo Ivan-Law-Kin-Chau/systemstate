@@ -1,6 +1,8 @@
 import * as React from "react";
 import SSWindow from "./SSWindow.jsx";
 
+// import ReactAsyncDevTools from "react-async-devtools";
+
 export default class SSWindowSelected extends React.Component {
 	constructor (props) {
 		super(props);
@@ -13,7 +15,11 @@ export default class SSWindowSelected extends React.Component {
 	}
 	
 	render () {
-		const ref = React.createRef();
+		/*
+		
+		We are trying to give the (#) buttons in all the windows their onClick callback functions that change the state of the SSWindowSelected component (right here). As the windows are descendant components of SSWindowSelected, for the callback functions to change the state of SSWindowSelected, the callback functions have to be created here and passed down as props all the way to the windows the (#) buttons are in, for this to work in React. However, each (#) button's callback function has to set the state according to the ref of that window. If we just create a callback function here and pass it down to those windows as a prop, we cannot add a reference to such a ref. Therefore, we create a factory function called setSelectedWindow here and then pass it down as a prop that every single descendant window can access. When the descendant windows are being rendered, this factory function will be called (with the ref as one of the arguments) to create another setSelectedWindowWithRef function, passed down to that particular window as another prop. Then, when the (#) button in that window is pressed, the setSelectedWindowWithRef function will be called, setting the state here according to the ref of that window
+		
+		*/
 		const windowSelected = this;
 		const setSelectedWindow = (windowString, ref) => () => {
 			if (windowSelected.state.selectedWindow === windowString) {
@@ -33,7 +39,15 @@ export default class SSWindowSelected extends React.Component {
 			}
 		}
 		
+		const ref = React.createRef();
 		return (<span>
+			{/*<span style={{
+				zIndex: 256, 
+				position: "absolute", 
+				top: "0px", 
+				right: "0px"
+			}}><ReactAsyncDevTools/></span>*/}
+			
 			{(this.state.selectedWindow === null) ? (<>
 				User Interface: <select/><br/>
 				Low-Level Mode: <select/><br/>

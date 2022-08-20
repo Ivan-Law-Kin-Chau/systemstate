@@ -1,3 +1,5 @@
+import WindowSpan from "./WindowSpan.jsx";
+
 import SSExpander from "../../SSExpander.js";
 import SSListener from "../../SSListener.js";
 import SSWindow from "../../SSWindow.jsx";
@@ -13,10 +15,8 @@ export const SSEditorContext = React.createContext();
 export default class SSEditor {
 	constructor (identityString) {
 		// The head identity string of the class instance
-		identifier.assertIdentityStringLength(8, identityString);
 		this.identityString = identityString;
 		
-		this.selected = new SSItemSelected(identityString);
 		this.state = {};
 	}
 	
@@ -25,6 +25,33 @@ export default class SSEditor {
 	}
 	
 	async load (action = {}) {
+		/*
+		
+		If this SSEditor window is rendered in the place of a SSGroup window, its identityString is going to be 17 characters long instead of 8. In this case, use the templateThis prop to decide whether the SSGroup's _uuid or its _parent will be used as the head identity string of this SSEditor window (because the SSEditor window can only handle head identity strings that are 8 characters long instead of 17)
+		
+		*/
+		(() => {
+			try {
+				identifier.assertIdentityStringLength(8, this.identityString);
+			} catch (errorString) {
+				if (errorString !== "Identity string length is not 8") throw errorString;
+				identifier.assertIdentityStringLength(17, this.identityString);
+				if (action.defaultUserInterface === "SSGroup") {
+					if (action.templateThis === "uuid") {
+						this.identityString = identifier.identityFromString("group", this.identityString)._uuid;
+					} else if (action.templateThis === "parent") {
+						this.identityString = identifier.identityFromString("group", this.identityString)._parent;
+					} else {
+						throw "SSEditor template this invalid";
+					}
+				} else {
+					throw "SSEditor identity string invalid";
+				}
+			} finally {
+				if (typeof this.selected === "undefined") this.selected = new SSItemSelected(this.identityString);
+			}
+		})();
+		
 		// First, get the dependencies of the editor using the editor's head identity string as the key (despite one being an identity string and the another being a key, they can be used interexchangably here because we asserted the length of the identity string in the constructor)
 		var dependencies = await SSExpander.expand(this.identityString);
 		window.assembly.clientOnlyMode = true;
@@ -80,15 +107,16 @@ export default class SSEditor {
 			for (let index = 0; index < this.state[array].length; index++) {
 				const type = this.state[array][index][0];
 				const identityString = this.state[array][index][1];
+				const keyPrefix = `${action.windowString}>${type}_${identityString}`;
 				
 				if (array === "group_uuid" && index === 0) {
-					arrayOutput.push(": ");
+					arrayOutput.push(<WindowSpan key={`${keyPrefix}_colon_start`}>: </WindowSpan>);
 				}
 				
-				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={`${action.windowString}>${type}_${identityString}_br`}/>);
+				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={`${keyPrefix}_br`}/>);
 				
 				const userInterface = convertor.convertCamelCaseToSS(type);
-				const windowString = `${action.windowString}>${type}_${identityString}_item`;
+				const windowString = `${keyPrefix}_item`;
 				const ref = React.createRef();
 				
 				/*
@@ -98,18 +126,23 @@ export default class SSEditor {
 					2. When selecting an element, know the identityString of the parent window to put in the action object when calling the dispatch function in the SSListener class
 				
 				*/
-				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} loadAs={userInterface} selectedObject={this.selected.selected} templateThis={templateThis}/>);
+				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} defaultUserInterface={userInterface} selectedObject={this.selected.selected} templateThis={templateThis}/>);
 				
-				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(", ");
+				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(<WindowSpan key={`${keyPrefix}_comma`}>, </WindowSpan>);
 				
 				if (array === "group_parent" && index === this.state[array].length - 1) {
-					arrayOutput.push(": ");
+					arrayOutput.push(<WindowSpan key={`${keyPrefix}_colon_end`}>: </WindowSpan>);
 				}
 			}
 			
 			renderOutput = [...renderOutput, ...arrayOutput];
 		}
 		
+		/*
+		
+		The SSElements within this SSEditor have to call a dispatch function that affects this.selected here. Since the SSElements are descendant components of SSEditor, for the dispatch function to be able to affect this.selected, the dispatch function has to be created here and passed down all the way to the SSElements as a prop. Yet, between this SSEditor and the SSElements, there are many levels of components in the virtual DOM (from ancestors to descendants: SSEditor, SSWindow, SSItem, and then the actual SSElement that uses the dispatch function, respectively). Hence, to avoid prop drilling, a React context is created here with the dispatch function as the context provider's value, so that the SSElement can just use a context consumer to gain access to the dispatch function directly, without any prop drilling
+		
+		*/
 		return (<span>
 			<SSEditorContext.Provider value={action => SSListener.dispatch(this.selected, action)}>{renderOutput}</SSEditorContext.Provider><br/><br/>
 			
