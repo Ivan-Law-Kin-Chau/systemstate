@@ -3,7 +3,13 @@ import * as elements from "./Elements/All.js";
 import * as React from "react";
 
 export default class SSItem {
-	static getRed (renderState, action = "_element") {
+	static isSSItem (props) {
+		if (typeof props.selectedObject !== "object") return false;
+		if (typeof props.templateThis !== "string") return false;
+		return true;
+	}
+	
+	static isRed (renderState, action = "_element") {
 		if (renderState.selectedObject.array === null) return false;
 		if (renderState.item._type !== renderState.selectedObject.array.split("_")[0]) return false;
 		if (renderState.identityString !== renderState.selectedObject.identityString) return false;
@@ -17,11 +23,11 @@ export default class SSItem {
 		
 		return (<>
 			{renderState.item._add === true ? <>
-				{"\u00a0"}<SSAdd templateType={renderState.item._type} templateThis={renderState.templateThis} id={renderState.identityString} red={SSItem.getRed(renderState, "_add")}/>
+				{"\u00a0"}<SSAdd templateType={renderState.item._type} templateThis={renderState.templateThis} id={renderState.identityString} red={SSItem.isRed(renderState, "_add")}/>
 			</> : ""}
 			
 			{renderState.item._remove === true ? <>
-				{"\u00a0"}<SSRemove templateType={renderState.item._type} templateThis={renderState.templateThis} id={renderState.identityString} red={SSItem.getRed(renderState, "_remove")}/>
+				{"\u00a0"}<SSRemove templateType={renderState.item._type} templateThis={renderState.templateThis} id={renderState.identityString} red={SSItem.isRed(renderState, "_remove")}/>
 			</> : ""}
 		</>);
 	}

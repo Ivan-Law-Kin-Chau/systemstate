@@ -1,3 +1,4 @@
+import * as userInterfaces from "./UserInterfaces/All.js";
 import * as React from "react";
 import SSWindow from "./SSWindow.jsx";
 
@@ -6,11 +7,14 @@ import SSWindow from "./SSWindow.jsx";
 export default class SSWindowSelected extends React.Component {
 	constructor (props) {
 		super(props);
+		
 		this.state = {
 			selectedWindow: null, 
 			selectedWindowClassInstance: null, 
 			selectedUserInterface: null, 
-			selectedLowLevelMode: false
+			selectedLowLevelMode: false, 
+			userInterfacesAvailable: [], 
+			userInterfaceKeys: ["SSAliase", "SSEditor", "SSObject", "SSGroup", "SSLink", "SSProperty"]
 		};
 	}
 	
@@ -21,20 +25,40 @@ export default class SSWindowSelected extends React.Component {
 		
 		*/
 		const windowSelected = this;
-		const setSelectedWindow = (windowString, ref) => () => {
+		const setSelectedWindow = (windowString, ref) => async () => {
 			if (windowSelected.state.selectedWindow === windowString) {
 				windowSelected.setState({
 					selectedWindow: null, 
 					selectedWindowClassInstance: null, 
 					selectedUserInterface: null, 
-					selectedLowLevelMode: false
+					selectedLowLevelMode: false, 
+					userInterfacesAvailable: []
 				});
 			} else {
+				let userInterfacesAvailable = this.state.userInterfacesAvailable;
+				
+				if (windowString !== null) {
+					userInterfacesAvailable = [];
+					for (const userInterfaceKey of this.state.userInterfaceKeys) {
+						try {
+							const loadedClass = userInterfaces[userInterfaceKey];
+							const loadedClassInstance = new loadedClass(ref.current.state.identityString);
+							if (await loadedClassInstance.validate(ref.current.state.identityString, ref.current.props) === true) {
+								userInterfacesAvailable.push(userInterfaceKey);
+							}
+						} catch (debugError) {
+							// Enable this for debugging purposes
+							// console.log(debugError);
+						}
+					}
+				}
+				
 				windowSelected.setState({
 					selectedWindow: windowString, 
 					selectedWindowClassInstance: ref.current, 
 					selectedUserInterface: ref.current.state.userInterface, 
-					selectedLowLevelMode: ref.current.state.lowLevelMode
+					selectedLowLevelMode: ref.current.state.lowLevelMode, 
+					userInterfacesAvailable: userInterfacesAvailable
 				});
 			}
 		}
@@ -61,12 +85,7 @@ export default class SSWindowSelected extends React.Component {
 					this.setState({selectedUserInterface: event.target.value});
 					window.renderFunction();
 				}}>
-					<option>SSAliase</option>
-					<option>SSEditor</option>
-					<option>SSObject</option>
-					<option>SSGroup</option>
-					<option>SSLink</option>
-					<option>SSProperty</option>
+					{this.state.userInterfacesAvailable.map(userInterface => (<option key={userInterface}>{userInterface}</option>))}
 				</select><br/>
 				Low-Level Mode: <select value={this.state.selectedLowLevelMode} onChange={event => {
 					this.setState({selectedLowLevelMode: event.target.value});

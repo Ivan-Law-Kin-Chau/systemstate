@@ -100,7 +100,7 @@ export default class SSAliase {
 		return true;
 	}
 	
-	async validate (identityString) {
+	async validate (identityString, action = {}) {
 		var dependencies = await SSExpander.expand(identityString);
 		if (dependencies["property_parent"]) {
 			for (let identity of dependencies["property_parent"]) {

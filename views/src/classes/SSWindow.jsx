@@ -27,11 +27,11 @@ export default class SSWindow extends React.Component {
 	}
 	
 	async addUserInterface (selectedUserInterface) {
-		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
-			if (this.state.userInterfaceKeys[i] !== selectedUserInterface) continue;
-			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
+		for (const userInterfaceKey of this.state.userInterfaceKeys) {
+			if (userInterfaceKey !== selectedUserInterface) continue;
+			const loadedClass = userInterfaces[userInterfaceKey];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
-			if (await loadedClassInstance.validate(this.state.identityString) === false) {
+			if (await loadedClassInstance.validate(this.state.identityString, this.props) === false) {
 				await loadedClassInstance.add();
 				console.log("User interface added");
 			} else {
@@ -45,11 +45,11 @@ export default class SSWindow extends React.Component {
 	}
 	
 	async saveUserInterface (selectedUserInterface) {
-		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
-			if (this.state.userInterfaceKeys[i] !== selectedUserInterface) continue;
-			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
+		for (const userInterfaceKey of this.state.userInterfaceKeys) {
+			if (userInterfaceKey !== selectedUserInterface) continue;
+			const loadedClass = userInterfaces[userInterfaceKey];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
-			if (await loadedClassInstance.validate(this.state.identityString) === true) {
+			if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
 				await loadedClassInstance.save();
 				console.log("User interface saved");
 			} else {
@@ -59,11 +59,11 @@ export default class SSWindow extends React.Component {
 	}
 	
 	async removeUserInterface (selectedUserInterface) {
-		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
-			if (this.state.userInterfaceKeys[i] !== selectedUserInterface) continue;
-			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
+		for (const userInterfaceKey of this.state.userInterfaceKeys) {
+			if (userInterfaceKey !== selectedUserInterface) continue;
+			const loadedClass = userInterfaces[userInterfaceKey];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
-			if (await loadedClassInstance.validate(this.state.identityString) === true) {
+			if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
 				await loadedClassInstance.remove();
 				console.log("User interface removed");
 			} else {
@@ -73,11 +73,11 @@ export default class SSWindow extends React.Component {
 	}
 	
 	async validateUserInterface (selectedUserInterface) {
-		for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
-			if (this.state.userInterfaceKeys[i] !== selectedUserInterface) continue;
-			const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
+		for (const userInterfaceKey of this.state.userInterfaceKeys) {
+			if (userInterfaceKey !== selectedUserInterface) continue;
+			const loadedClass = userInterfaces[userInterfaceKey];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
-			if (await loadedClassInstance.validate(this.state.identityString) === true) {
+			if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
 				console.log("User interface valid");
 			} else {
 				throw "User interface invalid";
@@ -93,12 +93,12 @@ export default class SSWindow extends React.Component {
 			
 			*/
 			if (this.state.defaultUserInterface === null) {
-				for (let i = 0; i < this.state.userInterfaceKeys.length; i++) {
-					const loadedClass = userInterfaces[this.state.userInterfaceKeys[i]];
+				for (const userInterfaceKey of this.state.userInterfaceKeys) {
+					const loadedClass = userInterfaces[userInterfaceKey];
 					let loadedClassInstance = new loadedClass(this.state.identityString);
-					if (await loadedClassInstance.validate(this.state.identityString) === true) {
-						if ((this.state.userInterface !== this.state.userInterfaceKeys[i]) || (this.state.userInterface === null)) {
-							this.state.userInterface = this.state.userInterfaceKeys[i];
+					if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
+						if ((this.state.userInterface !== userInterfaceKey) || (this.state.userInterface === null)) {
+							this.state.userInterface = userInterfaceKey;
 							this.state.userInterfaceClass = loadedClassInstance;
 						} else {
 							loadedClassInstance = this.state.userInterfaceClass;
@@ -112,7 +112,7 @@ export default class SSWindow extends React.Component {
 			} else {
 				const loadedClass = userInterfaces[this.state.defaultUserInterface];
 				let loadedClassInstance = new loadedClass(this.state.identityString);
-				if (await loadedClassInstance.validate(this.state.identityString) === true) {
+				if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
 					if ((this.state.userInterface !== this.state.defaultUserInterface) || (this.state.userInterface === null)) {
 						this.state.userInterface = this.state.defaultUserInterface;
 						this.state.userInterfaceClass = loadedClassInstance;

@@ -21,7 +21,7 @@ export default class SSObject {
 	
 	async load (action = {}) {
 		this.state.item = window.assembly.state["object"][this.identityString];
-		if (await this.validate(this.identityString) !== true) {
+		if (await this.validate(this.identityString, action) !== true) {
 			console.log("Invalid SSObject item: ");
 			console.log(this.state.item);
 			return "";
@@ -39,9 +39,9 @@ export default class SSObject {
 		const SSKey = elements["SSKey"];
 		
 		return (<>
-			<SSSelector templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
+			<SSSelector templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
 			
-			<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_" + templateThis} elementValue={this.state.item["_" + templateThis]} red={SSItem.getRed(renderState)}/>
+			<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_" + templateThis} elementValue={this.state.item["_" + templateThis]} red={SSItem.isRed(renderState)}/>
 			
 			{SSItem.itemAddRemove(renderState)}{"\u00a0"}this
 		</>);
@@ -55,7 +55,8 @@ export default class SSObject {
 		return true;
 	}
 	
-	async validate (identityString) {
+	async validate (identityString, action = {}) {
+		if (!SSItem.isSSItem(action)) return false;
 		if (typeof identityString === "undefined") identityString = this.identityString;
 		const item = window.assembly.state["object"][identityString];
 		if (typeof item === "undefined") throw `Item not loaded: ["object", "${identityString}"]`;
@@ -65,7 +66,7 @@ export default class SSObject {
 	// This is separate from the validate function since SSAssembly has to validate items that is not in the SSAssembly state yet
 	static validateItem (item) {
 		if (item._type !== "object") return false;
-		if (!(validator.isValidKey(item._uuid))) return false;
+		if (!validator.isValidKey(item._uuid)) return false;
 		return true;
 	}
 }

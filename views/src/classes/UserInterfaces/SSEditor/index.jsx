@@ -178,7 +178,7 @@ export default class SSEditor {
 		return true;
 	}
 	
-	async validate (identityString) {
+	async validate (identityString, action = {}) {
 		return true;
 	}
 }

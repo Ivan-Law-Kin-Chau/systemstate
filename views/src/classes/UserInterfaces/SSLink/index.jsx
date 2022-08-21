@@ -21,7 +21,7 @@ export default class SSLink {
 	
 	async load (action = {}) {
 		this.state.item = window.assembly.state["link"][this.identityString];
-		if (await this.validate(this.identityString) !== true) {
+		if (await this.validate(this.identityString, action) !== true) {
 			console.log("Invalid SSLink item: ");
 			console.log(this.state.item);
 			return "";
@@ -41,29 +41,29 @@ export default class SSLink {
 		
 		return (<>
 			{"uuid" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={renderState.item["_uuid"]} red={SSItem.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={renderState.item["_uuid"]} red={SSItem.isRed(renderState)}/>
 			</>}:{"\u00a0"}
 			
 			{"start" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_start"} elementValue={renderState.item["_start"]} red={SSItem.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_start"} elementValue={renderState.item["_start"]} red={SSItem.isRed(renderState)}/>
 			</>}{"\u00a0"}
 			
-			<SSButton templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_direction"} elementValue={renderState.item["_direction"]} red={SSItem.getRed(renderState)}/>{"\u00a0"}
+			<SSButton templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_direction"} elementValue={renderState.item["_direction"]} red={SSItem.isRed(renderState)}/>{"\u00a0"}
 			
 			{"end" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_end"} elementValue={renderState.item["_end"]} red={SSItem.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_end"} elementValue={renderState.item["_end"]} red={SSItem.isRed(renderState)}/>
 			</>}
 		</>);
 	}
@@ -76,7 +76,8 @@ export default class SSLink {
 		return true;
 	}
 	
-	async validate (identityString) {
+	async validate (identityString, action = {}) {
+		if (!SSItem.isSSItem(action)) return false;
 		if (typeof identityString === "undefined") identityString = this.identityString;
 		const item = window.assembly.state["link"][identityString];
 		if (typeof item === "undefined") throw `Item not loaded: ["link", "${identityString}"]`;
@@ -86,10 +87,10 @@ export default class SSLink {
 	// This is separate from the validate function since SSAssembly has to validate items that is not in the SSAssembly state yet
 	static validateItem (item) {
 		if (item._type !== "link") return false;
-		if (!(validator.isValidKey(item._uuid))) return false;
-		if (!(validator.isValidKey(item._start))) return false;
-		if (!(validator.isValidKey(item._end))) return false;
-		if (!(validator.isValidDirection(item._direction))) return false;
+		if (!validator.isValidKey(item._uuid)) return false;
+		if (!validator.isValidKey(item._start)) return false;
+		if (!validator.isValidKey(item._end)) return false;
+		if (!validator.isValidDirection(item._direction)) return false;
 		return true;
 	}
 }

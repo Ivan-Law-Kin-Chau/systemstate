@@ -21,7 +21,7 @@ export default class SSProperty {
 	
 	async load (action = {}) {
 		this.state.item = window.assembly.state["property"][this.identityString];
-		if (await this.validate(this.identityString) === false) {
+		if (await this.validate(this.identityString, action) === false) {
 			console.log("Invalid SSProperty item: ");
 			console.log(this.state.item);
 			return "";
@@ -42,24 +42,24 @@ export default class SSProperty {
 		
 		return (<>
 			{"uuid" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={this.state.item["_uuid"]} red={SSItem.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={this.state.item["_uuid"]} red={SSItem.isRed(renderState)}/>
 			</>}:{"\u00a0"}
 			
 			{"parent" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.getRed(renderState)}/>
+				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_parent"} elementValue={this.state.item["_parent"]} red={SSItem.getRed(renderState)}/>
+				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_parent"} elementValue={this.state.item["_parent"]} red={SSItem.isRed(renderState)}/>
 			</>}:{"\u00a0"}
 			
-			<SSInput templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_name"} elementValue={this.state.item["_name"]} red={SSItem.getRed(renderState)}/>:{"\u00a0"}<br/>
+			<SSInput templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_name"} elementValue={this.state.item["_name"]} red={SSItem.isRed(renderState)}/>:{"\u00a0"}<br/>
 			
-			<SSTextarea templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_content"} elementValue={this.state.item["_content"]} red={SSItem.getRed(renderState)}/>
+			<SSTextarea templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_content"} elementValue={this.state.item["_content"]} red={SSItem.isRed(renderState)}/>
 		</>);
 	}
 	
@@ -71,7 +71,8 @@ export default class SSProperty {
 		return true;
 	}
 	
-	async validate (identityString) {
+	async validate (identityString, action = {}) {
+		if (!SSItem.isSSItem(action)) return false;
 		if (typeof identityString === "undefined") identityString = this.identityString;
 		const item = window.assembly.state["property"][identityString];
 		if (typeof item === "undefined") throw `Item not loaded: ["property", "${identityString}"]`;
@@ -81,10 +82,10 @@ export default class SSProperty {
 	// This is separate from the validate function since SSAssembly has to validate items that is not in the SSAssembly state yet
 	static validateItem (item) {
 		if (item._type !== "property") return false;
-		if (!(validator.isValidKey(item._uuid))) return false;
-		if (!(validator.isValidKey(item._parent))) return false;
-		if (!(validator.isValidSingleLineString(item._name))) return false;
-		if (!(validator.isValidMultiLineString(item._content))) return false;
+		if (!validator.isValidKey(item._uuid)) return false;
+		if (!validator.isValidKey(item._parent)) return false;
+		if (!validator.isValidSingleLineString(item._name)) return false;
+		if (!validator.isValidMultiLineString(item._content)) return false;
 		return true;
 	}
 }
