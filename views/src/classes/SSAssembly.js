@@ -69,15 +69,15 @@ export default class SSAssembly {
 	
 	async generateKeys (details) {
 		let generateKeyCodeLibrary = [];
-		for (let property in details) {
-			if (typeof details[property] === "object" && typeof details[property].generateKeyCode === "number") {
-				if (typeof generateKeyCodeLibrary[details[property].generateKeyCode] === "undefined") {
+		for (let attribute in details) {
+			if (typeof details[attribute] === "object" && typeof details[attribute].generateKeyCode === "number") {
+				if (typeof generateKeyCodeLibrary[details[attribute].generateKeyCode] === "undefined") {
 					const key = generator.generateKey();
-					generateKeyCodeLibrary[details[property].generateKeyCode] = key;
+					generateKeyCodeLibrary[details[attribute].generateKeyCode] = key;
 					await this.set("object", {_uuid: key});
 				}
 				
-				details[property] = generateKeyCodeLibrary[details[property].generateKeyCode];
+				details[attribute] = generateKeyCodeLibrary[details[attribute].generateKeyCode];
 			}
 		}
 		
@@ -93,24 +93,24 @@ export default class SSAssembly {
 	async set (type, details) {
 		details = await this.generateKeys(details);
 		var identity = JSON.parse(JSON.stringify(details));
-		for (let property in identity) {
-			if (!(property === "_uuid" || (property === "_parent" && type === "group"))) delete identity[property];
+		for (let attribute in identity) {
+			if (!(attribute === "_uuid" || (attribute === "_parent" && type === "group"))) delete identity[attribute];
 		}
 		
-		var content = JSON.parse(JSON.stringify(details));
-		for (let property in content) {
-			if (property === "_uuidNew") {
-				content._uuid = content._uuidNew;
-				delete content._uuidNew;
+		var value = JSON.parse(JSON.stringify(details));
+		for (let attribute in value) {
+			if (attribute === "_uuidNew") {
+				value._uuid = value._uuidNew;
+				delete value._uuidNew;
 			}
 			
-			if (property === "_parentNew" && type === "group") {
-				content._parent = content._parentNew;
-				delete content._parentNew;
+			if (attribute === "_parentNew" && type === "group") {
+				value._parent = value._parentNew;
+				delete value._parentNew;
 			}
 		}
 		
-		await this.setState(type, identity, content);
+		await this.setState(type, identity, value);
 	}
 	
 	async getState (type, identity) {
@@ -133,10 +133,10 @@ export default class SSAssembly {
 		return [type, identityString];
 	}
 	
-	async setState (type, identity, content) {
+	async setState (type, identity, value) {
 		var identityString = identifier.identityToString(type, identity);
 		if (typeof this.state[type][identityString] === "undefined") {
-			if (content._remove === true) throw "Unable to remove item that does not exist";
+			if (value._remove === true) throw "Unable to remove item that does not exist";
 			var loadCommand = this.identityToLoadCommand(type, identity);
 			var item = await this.sender.send(loadCommand[0], loadCommand[1]);
 			if (item._success === false) {
@@ -145,30 +145,30 @@ export default class SSAssembly {
 				item._add = true;
 			}
 		} else {
-			if (content._add === true) throw "Unable to add item that already exists";
+			if (value._add === true) throw "Unable to add item that already exists";
 			item = this.state[type][identityString];
 		}
 		
-		if (content._removeItem === true) {
+		if (value._removeItem === true) {
 			delete this.state[type][identityString];
 			return [type, identityString];
 		}
 		
-		if (content._removeAdd === true) {
+		if (value._removeAdd === true) {
 			delete item._add;
 		}
 		
-		if (content._removeRemove === true) {
+		if (value._removeRemove === true) {
 			delete item._remove;
 		}
 		
-		delete content._removeItem;
-		delete content._removeAdd;
-		delete content._removeRemove;
+		delete value._removeItem;
+		delete value._removeAdd;
+		delete value._removeRemove;
 		
-		for (let key in content) {
-			if (!(item[key] === content[key])) {
-				item[key] = content[key];
+		for (let attribute in value) {
+			if (!(item[attribute] === value[attribute])) {
+				item[attribute] = value[attribute];
 				if (!(item._add === true || item._remove === true)) item._save = true;
 			}
 		}
@@ -256,6 +256,7 @@ export default class SSAssembly {
 			}
 		}
 		
+		this.sender.push(`undefine`, `()`);
 		if (await this.sender.execute() === true) {
 			this.clientOnlyMode = false;
 			return true;

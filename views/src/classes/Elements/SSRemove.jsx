@@ -14,7 +14,7 @@ export default class SSRemove extends React.Component {
 		return function (event) {
 			dispatchFunction({
 				"type": "SELECT", 
-				"array": classInstance.props.templateType + "_" + classInstance.props.templateThis, 
+				"array": classInstance.props.type + "_" + classInstance.props.headAttribute, 
 				"identityString": classInstance.props.id, 
 				"action": "_remove"
 			});

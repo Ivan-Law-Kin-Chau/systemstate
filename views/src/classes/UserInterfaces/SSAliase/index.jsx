@@ -55,7 +55,7 @@ export default class SSAliase {
 				<Aliase source={this.state.identityString} target={content} save={this.save.bind(this)}/>
 			</SSEditorContext.Provider>);
 		} else {
-			console.log("User interface class not yet initiated properly! Call the add() method first");
+			console.log("User interface not yet initiated properly! Call the add() method first");
 			return "";
 		}
 	}

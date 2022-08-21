@@ -9,15 +9,15 @@ export default class SSListener {
 		} else if (action.type === "OPEN") {
 			console.log("Open Key: " + action.key);
 		} else if (action.type === "SAVE") {
-			let content = {};
-			content[action.key] = action.value;
+			let value = {};
+			value[action.attribute] = action.value;
 			
 			const identity = identifier.identityFromString(action.targetType, action.targetId);
-			if (await window.assembly.setState(action.targetType, identity, content)) {
+			if (await window.assembly.setState(action.targetType, identity, value)) {
 				console.log({
 					"type": action.targetType, 
 					"id": action.targetId, 
-					"key": action.key, 
+					"attribute": action.attribute, 
 					"value": action.value
 				});
 			} else {

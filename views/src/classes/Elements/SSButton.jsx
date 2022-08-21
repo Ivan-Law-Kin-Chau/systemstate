@@ -23,9 +23,9 @@ export default class SSButton extends React.Component {
 			
 			dispatchFunction({
 				"type": "SAVE", 
-				"targetType": classInstance.props.templateType, 
+				"targetType": classInstance.props.type, 
 				"targetId": event.target.id, 
-				"key": classInstance.props.elementKey, 
+				"attribute": classInstance.props.elementAttribute, 
 				"value": newValue
 			});
 			

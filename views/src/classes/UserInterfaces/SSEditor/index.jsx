@@ -27,7 +27,7 @@ export default class SSEditor {
 	async load (action = {}) {
 		/*
 		
-		If this SSEditor window is rendered in the place of a SSGroup window, its identityString is going to be 17 characters long instead of 8. In this case, use the templateThis prop to decide whether the SSGroup's _uuid or its _parent will be used as the head identity string of this SSEditor window (because the SSEditor window can only handle head identity strings that are 8 characters long instead of 17)
+		If this SSEditor window is rendered in the place of a SSGroup window, its identityString is going to be 17 characters long instead of 8. In this case, use the headAttribute prop to decide whether the SSGroup's _uuid or its _parent will be used as the head identity string of this SSEditor window (because the SSEditor window can only handle head identity strings that are 8 characters long instead of 17)
 		
 		*/
 		(() => {
@@ -37,12 +37,12 @@ export default class SSEditor {
 				if (errorString !== "Identity string length is not 8") throw errorString;
 				identifier.assertIdentityStringLength(17, this.identityString);
 				if (action.defaultUserInterface === "SSGroup") {
-					if (action.templateThis === "uuid") {
+					if (action.headAttribute === "uuid") {
 						this.identityString = identifier.identityFromString("group", this.identityString)._uuid;
-					} else if (action.templateThis === "parent") {
+					} else if (action.headAttribute === "parent") {
 						this.identityString = identifier.identityFromString("group", this.identityString)._parent;
 					} else {
-						throw "SSEditor template this invalid";
+						throw "SSEditor head attribute invalid";
 					}
 				} else {
 					throw "SSEditor identity string invalid";
@@ -93,14 +93,14 @@ export default class SSEditor {
 			if (!(this.state[array])) continue;
 			let arrayOutput = [];
 			
-			let templateType = array.split("_")[0];
-			let templateThis = array.split("_")[1];
+			let type = array.split("_")[0];
+			let headAttribute = array.split("_")[1];
 			
-			if (templateType === "group") {
-				if (templateThis === "uuid") {
-					templateThis = "parent";
-				} else if (templateThis === "parent") {
-					templateThis = "uuid";
+			if (type === "group") {
+				if (headAttribute === "uuid") {
+					headAttribute = "parent";
+				} else if (headAttribute === "parent") {
+					headAttribute = "uuid";
 				}
 			}
 			
@@ -110,7 +110,7 @@ export default class SSEditor {
 				const keyPrefix = `${action.windowString}>${type}_${identityString}`;
 				
 				if (array === "group_uuid" && index === 0) {
-					arrayOutput.push(<WindowSpan key={`${keyPrefix}_colon_start`}>: </WindowSpan>);
+					arrayOutput.push(<WindowSpan key={`${keyPrefix}_colon_start`}>:{"\u00a0"}</WindowSpan>);
 				}
 				
 				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={`${keyPrefix}_br`}/>);
@@ -121,17 +121,17 @@ export default class SSEditor {
 				
 				/*
 				
-				Uses of variables or props named templateThis throughout the entire codebase: 
+				Uses of variables or props named headAttribute throughout the entire codebase: 
 					1. When loading a user interface, know which element should be replaced by an SSThis element
 					2. When selecting an element, know the identityString of the parent window to put in the action object when calling the dispatch function in the SSListener class
 				
 				*/
-				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} defaultUserInterface={userInterface} selectedObject={this.selected.selected} templateThis={templateThis}/>);
+				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} defaultUserInterface={userInterface} selectedObject={this.selected.selected} headAttribute={headAttribute}/>);
 				
-				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(<WindowSpan key={`${keyPrefix}_comma`}>, </WindowSpan>);
+				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(<WindowSpan key={`${keyPrefix}_comma`}>,{"\u00a0"}</WindowSpan>);
 				
 				if (array === "group_parent" && index === this.state[array].length - 1) {
-					arrayOutput.push(<WindowSpan key={`${keyPrefix}_colon_end`}>: </WindowSpan>);
+					arrayOutput.push(<WindowSpan key={`${keyPrefix}_colon_end`}>:{"\u00a0"}</WindowSpan>);
 				}
 			}
 			

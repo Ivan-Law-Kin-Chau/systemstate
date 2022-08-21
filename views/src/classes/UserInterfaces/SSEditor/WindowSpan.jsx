@@ -22,6 +22,7 @@ export default class WindowSpan extends React.Component {
 			<span style={{
 				verticalAlign: "top", 
 				position: "relative", 
+				whiteSpace: "pre", 
 				top: "1px"
 			}}>{this.props.children}</span>
 		</span>);

@@ -27,21 +27,21 @@ export default class SSObject {
 			return "";
 		}
 		
-		var templateThis = action.templateThis ? action.templateThis : null;
+		var headAttribute = action.headAttribute ? action.headAttribute : null;
 		var renderState = {
 			item: this.state.item, 
 			identityString: this.identityString, 
 			selectedObject: action.selectedObject, 
-			templateThis: templateThis
+			headAttribute: headAttribute
 		};
 		
 		const SSSelector = elements["SSSelector"];
 		const SSKey = elements["SSKey"];
 		
 		return (<>
-			<SSSelector templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
+			<SSSelector type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
 			
-			<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_" + templateThis} elementValue={this.state.item["_" + templateThis]} red={SSItem.isRed(renderState)}/>
+			<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_" + headAttribute} elementValue={this.state.item["_" + headAttribute]} red={SSItem.isRed(renderState)}/>
 			
 			{SSItem.itemAddRemove(renderState)}{"\u00a0"}this
 		</>);
@@ -57,6 +57,7 @@ export default class SSObject {
 	
 	async validate (identityString, action = {}) {
 		if (!SSItem.isSSItem(action)) return false;
+		if (action.defaultUserInterface !== "SSObject") return false;
 		if (typeof identityString === "undefined") identityString = this.identityString;
 		const item = window.assembly.state["object"][identityString];
 		if (typeof item === "undefined") throw `Item not loaded: ["object", "${identityString}"]`;

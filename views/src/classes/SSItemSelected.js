@@ -44,38 +44,38 @@ export default class SSItemSelected {
 	
 	addAddAction (array = "") {
 		if (array === "") {
-			var templateType = this.selected.array.split("_")[0];
-			var templateThis = this.selected.array.split("_")[1];
+			var type = this.selected.array.split("_")[0];
+			var headAttribute = this.selected.array.split("_")[1];
 		} else {
-			var templateType = array.split("_")[0];
-			var templateThis = array.split("_")[1];
+			var type = array.split("_")[0];
+			var headAttribute = array.split("_")[1];
 		}
 		
-		if (templateType === "object") {
+		if (type === "object") {
 			var details = {
 				_uuid: {generateKeyCode: 1}
 			};
-		} else if (templateType === "group") {
+		} else if (type === "group") {
 			var details = {
 				_uuid: {generateKeyCode: 1}, 
 				_parent: {generateKeyCode: 2}
 			};
-		} else if (templateType === "link") {
+		} else if (type === "link") {
 			var details = {
 				_uuid: {generateKeyCode: 1}, 
 				_start: {generateKeyCode: 2}, 
 				_end: {generateKeyCode: 3}
 			};
-		} else if (templateType === "property") {
+		} else if (type === "property") {
 			var details = {
 				_uuid: {generateKeyCode: 1}, 
 				_parent: {generateKeyCode: 2}
 			};
 		}
 		
-		details["_" + templateThis] = this.identityString;
+		details["_" + headAttribute] = this.identityString;
 		details._add = true;
-		this.render(templateType, details);
+		this.render(type, details);
 	}
 	
 	removeAddAction () {

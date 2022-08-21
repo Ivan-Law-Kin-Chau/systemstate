@@ -35,17 +35,19 @@ module.exports = class Assembly {
 	async query (sql, callback) {
 		var database = this.database;
 		return new Promise ((resolve, reject) => {
-			database.all(sql, (error, rows) => {
-				if (error) {
-					resolve(JSON.stringify({
-						_success: false, 
-						_type: "SQL Error", 
-						_sql: sql, 
-						_error: error.code
-					}));
-				} else {
-					callback(rows, resolve);
-				}
+			database.all("PRAGMA foreign_keys=ON;", (error, rows) => {
+				database.all(sql, (error, rows) => {
+					if (error) {
+						resolve(JSON.stringify({
+							_success: false, 
+							_type: "SQL Error", 
+							_sql: sql, 
+							_error: error.code
+						}));
+					} else {
+						callback(rows, resolve);
+					}
+				});
 			});
 		});
 	}
@@ -344,19 +346,19 @@ module.exports = class Assembly {
 	}
 	
 	
-	async search (property, content, type = "object") {
+	async search (attribute, value, type = "object") {
 		if (type === "group") {
-			var sql = `SELECT uuid, parent FROM "${type}" WHERE ${property} LIKE "${content}";`;
+			var sql = `SELECT uuid, parent FROM "${type}" WHERE ${attribute} LIKE "${value}";`;
 		} else {
-			var sql = `SELECT uuid FROM "${type}" WHERE ${property} LIKE "${content}";`;
+			var sql = `SELECT uuid FROM "${type}" WHERE ${attribute} LIKE "${value}";`;
 		}
 		
 		return this.query(sql, (rows, resolve) => {
 			var output = [];
 			for (const row of rows) {
 				output[output.length] = {};
-				for (var rowProperty in row) {
-					output[output.length - 1]["_" + rowProperty] = row[rowProperty];
+				for (const rowAttribute in row) {
+					output[output.length - 1]["_" + rowAttribute] = row[rowAttribute];
 				}
 			}
 			
@@ -365,6 +367,24 @@ module.exports = class Assembly {
 				_success: true, 
 				_type: "search", 
 				_sql: sql
+			}));
+		});
+	}
+	
+	async undefine () {
+		var type = "object";
+		var sql = [`SELECT uuid FROM "${type}";`];
+		return this.query(sql[0], (rows, resolve) => {
+			for (const row of rows) {
+				var database = this.database;
+				sql.push(`DELETE FROM ${type} WHERE uuid = "${row["uuid"]}";`);
+				database.all(sql[sql.length - 1], (error, rows) => {});
+			}
+			
+			resolve(JSON.stringify({
+				_success: true, 
+				_type: type, 
+				_sql: sql.join(" ")
 			}));
 		});
 	}

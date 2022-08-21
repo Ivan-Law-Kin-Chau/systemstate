@@ -13,13 +13,13 @@ export default class SSExpander {
 		*/
 		for (const array of searchArrays) {
 			const type = array.split("_")[0];
-			const templateThis = array.split("_")[1];
-			const searchResults = JSON.parse(JSON.stringify((await window.assembly.sender.send("search", `("${templateThis}", "${key}", "${type}")`))._output));
+			const headAttribute = array.split("_")[1];
+			const searchResults = JSON.parse(JSON.stringify((await window.assembly.sender.send("search", `("${headAttribute}", "${key}", "${type}")`))._output));
 			
 			let searchArea = window.assembly.state[type];
 			for (const identityString in searchArea) {
 				const item = searchArea[identityString];
-				if (item["_" + templateThis] === key) {
+				if (item["_" + headAttribute] === key) {
 					let isDuplicate = false;
 					for (const identity of searchResults) {
 						if (JSON.stringify(identity) === JSON.stringify(identifier.identityFromString(type, identityString))) {

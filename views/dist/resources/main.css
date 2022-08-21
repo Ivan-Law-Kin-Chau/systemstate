@@ -29,7 +29,7 @@ input, textarea, button, pre, select {
 	cursor: text;
 }
 
-input:focus, textarea:focus, button:focus, button::-moz-focus-inner {
+* {
 	outline: none;
 }
 

@@ -27,12 +27,12 @@ export default class SSProperty {
 			return "";
 		}
 		
-		var templateThis = action.templateThis ? action.templateThis : null;
+		var headAttribute = action.headAttribute ? action.headAttribute : null;
 		var renderState = {
 			item: this.state.item, 
 			identityString: this.identityString, 
 			selectedObject: action.selectedObject, 
-			templateThis: templateThis
+			headAttribute: headAttribute
 		};
 		
 		const SSThis = elements["SSThis"];
@@ -41,25 +41,25 @@ export default class SSProperty {
 		const SSTextarea = elements["SSTextarea"];
 		
 		return (<>
-			{"uuid" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
+			{"uuid" === headAttribute ? <>
+				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={this.state.item["_uuid"]} red={SSItem.isRed(renderState)}/>
+				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_uuid"} elementValue={this.state.item["_uuid"]} red={SSItem.isRed(renderState)}/>
 			</>}:{"\u00a0"}
 			
-			{"parent" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
+			{"parent" === headAttribute ? <>
+				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_parent"} elementValue={this.state.item["_parent"]} red={SSItem.isRed(renderState)}/>
+				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_parent"} elementValue={this.state.item["_parent"]} red={SSItem.isRed(renderState)}/>
 			</>}:{"\u00a0"}
 			
-			<SSInput templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_name"} elementValue={this.state.item["_name"]} red={SSItem.isRed(renderState)}/>:{"\u00a0"}<br/>
+			<SSInput type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_name"} elementValue={this.state.item["_name"]} red={SSItem.isRed(renderState)}/>:{"\u00a0"}<br/>
 			
-			<SSTextarea templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_content"} elementValue={this.state.item["_content"]} red={SSItem.isRed(renderState)}/>
+			<SSTextarea type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_content"} elementValue={this.state.item["_content"]} red={SSItem.isRed(renderState)}/>
 		</>);
 	}
 	
@@ -73,6 +73,7 @@ export default class SSProperty {
 	
 	async validate (identityString, action = {}) {
 		if (!SSItem.isSSItem(action)) return false;
+		if (action.defaultUserInterface !== "SSProperty") return false;
 		if (typeof identityString === "undefined") identityString = this.identityString;
 		const item = window.assembly.state["property"][identityString];
 		if (typeof item === "undefined") throw `Item not loaded: ["property", "${identityString}"]`;

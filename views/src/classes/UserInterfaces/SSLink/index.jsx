@@ -27,12 +27,12 @@ export default class SSLink {
 			return "";
 		}
 		
-		var templateThis = action.templateThis ? action.templateThis : null;
+		var headAttribute = action.headAttribute ? action.headAttribute : null;
 		var renderState = {
 			item: this.state.item, 
 			identityString: this.identityString, 
 			selectedObject: action.selectedObject, 
-			templateThis: templateThis
+			headAttribute: headAttribute
 		};
 		
 		const SSThis = elements["SSThis"];
@@ -40,30 +40,30 @@ export default class SSLink {
 		const SSButton = elements["SSButton"];
 		
 		return (<>
-			{"uuid" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
+			{"uuid" === headAttribute ? <>
+				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_uuid"} elementValue={renderState.item["_uuid"]} red={SSItem.isRed(renderState)}/>
+				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_uuid"} elementValue={renderState.item["_uuid"]} red={SSItem.isRed(renderState)}/>
 			</>}:{"\u00a0"}
 			
-			{"start" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
+			{"start" === headAttribute ? <>
+				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_start"} elementValue={renderState.item["_start"]} red={SSItem.isRed(renderState)}/>
+				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_start"} elementValue={renderState.item["_start"]} red={SSItem.isRed(renderState)}/>
 			</>}{"\u00a0"}
 			
-			<SSButton templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_direction"} elementValue={renderState.item["_direction"]} red={SSItem.isRed(renderState)}/>{"\u00a0"}
+			<SSButton type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_direction"} elementValue={renderState.item["_direction"]} red={SSItem.isRed(renderState)}/>{"\u00a0"}
 			
-			{"end" === templateThis ? <>
-				<SSThis templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} red={SSItem.isRed(renderState)}/>
+			{"end" === headAttribute ? <>
+				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
 				
 				{SSItem.itemAddRemove(renderState)}
 			</> : <>
-				<SSKey templateType={this.state.item._type} templateThis={templateThis} id={this.identityString} elementKey={"_end"} elementValue={renderState.item["_end"]} red={SSItem.isRed(renderState)}/>
+				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_end"} elementValue={renderState.item["_end"]} red={SSItem.isRed(renderState)}/>
 			</>}
 		</>);
 	}
@@ -78,6 +78,7 @@ export default class SSLink {
 	
 	async validate (identityString, action = {}) {
 		if (!SSItem.isSSItem(action)) return false;
+		if (action.defaultUserInterface !== "SSLink") return false;
 		if (typeof identityString === "undefined") identityString = this.identityString;
 		const item = window.assembly.state["link"][identityString];
 		if (typeof item === "undefined") throw `Item not loaded: ["link", "${identityString}"]`;

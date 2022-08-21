@@ -8,8 +8,9 @@ export default class SSWindow extends React.Component {
 		
 		this.state = {
 			defaultUserInterface: props.defaultUserInterface ? props.defaultUserInterface : null, 
+			loadAsUserInterface: props.loadAsUserInterface ? props.loadAsUserInterface : null, 
 			identityString: props.identityString, 
-			userInterfaceKeys: ["SSAliase", "SSEditor", "SSObject", "SSGroup", "SSLink", "SSProperty"], 
+			userInterfaces: ["SSAliase", "SSEditor", "SSObject", "SSGroup", "SSLink", "SSProperty"], 
 			userInterfaceClass: null, 
 			userInterface: null, 
 			lowLevelMode: false, 
@@ -27,9 +28,9 @@ export default class SSWindow extends React.Component {
 	}
 	
 	async addUserInterface (selectedUserInterface) {
-		for (const userInterfaceKey of this.state.userInterfaceKeys) {
-			if (userInterfaceKey !== selectedUserInterface) continue;
-			const loadedClass = userInterfaces[userInterfaceKey];
+		for (const userInterface of this.state.userInterfaces) {
+			if (userInterface !== selectedUserInterface) continue;
+			const loadedClass = userInterfaces[userInterface];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
 			if (await loadedClassInstance.validate(this.state.identityString, this.props) === false) {
 				await loadedClassInstance.add();
@@ -41,13 +42,14 @@ export default class SSWindow extends React.Component {
 	}
 	
 	async loadUserInterface (selectedUserInterface) {
-		this.setState({defaultUserInterface: selectedUserInterface});
+		this.setState({loadAsUserInterface: selectedUserInterface});
+		if (selectedUserInterface === null) throw "User interface invalid";
 	}
 	
 	async saveUserInterface (selectedUserInterface) {
-		for (const userInterfaceKey of this.state.userInterfaceKeys) {
-			if (userInterfaceKey !== selectedUserInterface) continue;
-			const loadedClass = userInterfaces[userInterfaceKey];
+		for (const userInterface of this.state.userInterfaces) {
+			if (userInterface !== selectedUserInterface) continue;
+			const loadedClass = userInterfaces[userInterface];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
 			if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
 				await loadedClassInstance.save();
@@ -59,9 +61,9 @@ export default class SSWindow extends React.Component {
 	}
 	
 	async removeUserInterface (selectedUserInterface) {
-		for (const userInterfaceKey of this.state.userInterfaceKeys) {
-			if (userInterfaceKey !== selectedUserInterface) continue;
-			const loadedClass = userInterfaces[userInterfaceKey];
+		for (const userInterface of this.state.userInterfaces) {
+			if (userInterface !== selectedUserInterface) continue;
+			const loadedClass = userInterfaces[userInterface];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
 			if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
 				await loadedClassInstance.remove();
@@ -73,9 +75,9 @@ export default class SSWindow extends React.Component {
 	}
 	
 	async validateUserInterface (selectedUserInterface) {
-		for (const userInterfaceKey of this.state.userInterfaceKeys) {
-			if (userInterfaceKey !== selectedUserInterface) continue;
-			const loadedClass = userInterfaces[userInterfaceKey];
+		for (const userInterface of this.state.userInterfaces) {
+			if (userInterface !== selectedUserInterface) continue;
+			const loadedClass = userInterfaces[userInterface];
 			const loadedClassInstance = new loadedClass(this.state.identityString);
 			if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
 				console.log("User interface valid");
@@ -89,16 +91,16 @@ export default class SSWindow extends React.Component {
 		return (<Async promiseFn={async () => {
 			/*
 			
-			When the load functions are called in the code below, this.props will be passed as an argument so that the item class instance can access the templateThis prop through the action argument. This is important because without access to templateThis, SSGroups will not know whether to render in its "group_parent" form or its "group_uuid" form
+			When the load functions are called in the code below, this.props will be passed as an argument so that the item class instance can access the headAttribute prop through the action argument. This is important because without access to headAttribute, SSGroups will not know whether to render in its "group_parent" form or its "group_uuid" form
 			
 			*/
-			if (this.state.defaultUserInterface === null) {
-				for (const userInterfaceKey of this.state.userInterfaceKeys) {
-					const loadedClass = userInterfaces[userInterfaceKey];
+			if (this.state.defaultUserInterface === null && this.state.loadAsUserInterface === null) {
+				for (const userInterface of this.state.userInterfaces) {
+					const loadedClass = userInterfaces[userInterface];
 					let loadedClassInstance = new loadedClass(this.state.identityString);
 					if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
-						if ((this.state.userInterface !== userInterfaceKey) || (this.state.userInterface === null)) {
-							this.state.userInterface = userInterfaceKey;
+						if ((this.state.userInterface !== userInterface) || (this.state.userInterface === null)) {
+							this.state.userInterface = userInterface;
 							this.state.userInterfaceClass = loadedClassInstance;
 						} else {
 							loadedClassInstance = this.state.userInterfaceClass;
@@ -110,11 +112,19 @@ export default class SSWindow extends React.Component {
 					}
 				}
 			} else {
-				const loadedClass = userInterfaces[this.state.defaultUserInterface];
+				/*
+				
+				The defaultUserInterface is decided by the user interface class instance that rendered this window, while the loadAsUserInterface is decided by the user through the user interface dropdown menu. If there is a loadAsUserInterface, it overrides the defaultUserInterface, except if it is not a valid user interface for the current window, it would be reset to null so that the defaultUserInterface can take over the current window
+				
+				*/
+				let loadAsUserInterface = this.state.defaultUserInterface;
+				if (this.state.loadAsUserInterface !== null) loadAsUserInterface = this.state.loadAsUserInterface;
+				
+				const loadedClass = userInterfaces[loadAsUserInterface];
 				let loadedClassInstance = new loadedClass(this.state.identityString);
 				if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
-					if ((this.state.userInterface !== this.state.defaultUserInterface) || (this.state.userInterface === null)) {
-						this.state.userInterface = this.state.defaultUserInterface;
+					if ((this.state.userInterface !== loadAsUserInterface) || (this.state.userInterface === null)) {
+						this.state.userInterface = loadAsUserInterface;
 						this.state.userInterfaceClass = loadedClassInstance;
 					} else {
 						loadedClassInstance = this.state.userInterfaceClass;
@@ -122,8 +132,7 @@ export default class SSWindow extends React.Component {
 					
 					return await loadedClassInstance.load(this.props);
 				} else {
-					this.setState({defaultUserInterface: null});
-					throw "User interface invalid";
+					this.loadUserInterface(null);
 				}
 			}
 		}}>

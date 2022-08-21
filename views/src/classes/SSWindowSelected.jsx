@@ -8,61 +8,67 @@ export default class SSWindowSelected extends React.Component {
 	constructor (props) {
 		super(props);
 		
+		this.setSelectedWindow = this.setSelectedWindow.bind(this);
 		this.state = {
 			selectedWindow: null, 
 			selectedWindowClassInstance: null, 
 			selectedUserInterface: null, 
 			selectedLowLevelMode: false, 
-			userInterfacesAvailable: [], 
-			userInterfaceKeys: ["SSAliase", "SSEditor", "SSObject", "SSGroup", "SSLink", "SSProperty"]
+			availableUserInterfaces: [], 
+			allUserInterfaces: ["SSAliase", "SSEditor", "SSObject", "SSGroup", "SSLink", "SSProperty"]
 		};
 	}
 	
-	render () {
-		/*
-		
-		We are trying to give the (#) buttons in all the windows their onClick callback functions that change the state of the SSWindowSelected component (right here). As the windows are descendant components of SSWindowSelected, for the callback functions to change the state of SSWindowSelected, the callback functions have to be created here and passed down as props all the way to the windows the (#) buttons are in, for this to work in React. However, each (#) button's callback function has to set the state according to the ref of that window. If we just create a callback function here and pass it down to those windows as a prop, we cannot add a reference to such a ref. Therefore, we create a factory function called setSelectedWindow here and then pass it down as a prop that every single descendant window can access. When the descendant windows are being rendered, this factory function will be called (with the ref as one of the arguments) to create another setSelectedWindowWithRef function, passed down to that particular window as another prop. Then, when the (#) button in that window is pressed, the setSelectedWindowWithRef function will be called, setting the state here according to the ref of that window
-		
-		*/
-		const windowSelected = this;
-		const setSelectedWindow = (windowString, ref) => async () => {
-			if (windowSelected.state.selectedWindow === windowString) {
-				windowSelected.setState({
+	/*
+	
+	We are trying to give the (#) buttons in all the windows their onClick callback functions that change the state of the SSWindowSelected component (right here). As the windows are descendant components of SSWindowSelected, for the callback functions to change the state of SSWindowSelected, the callback functions have to be created here and passed down as props all the way to the windows the (#) buttons are in, for this to work in React. However, each (#) button's callback function has to set the state according to the ref of that window. If we just create a callback function here and pass it down to those windows as a prop, we cannot add a reference to such a ref. Therefore, we create a factory function called setSelectedWindow here and then pass it down as a prop that every single descendant window can access. When the descendant windows are being rendered, this factory function will be called (with the ref as one of the arguments) to create another setSelectedWindowWithRef function, passed down to that particular window as another prop. Then, when the (#) button in that window is pressed, the setSelectedWindowWithRef function will be called, setting the state here according to the ref of that window
+	
+	*/
+	setSelectedWindow (windowString, ref) {
+		return async () => {
+			if (this.state.selectedWindow === windowString) {
+				this.setState({
 					selectedWindow: null, 
 					selectedWindowClassInstance: null, 
 					selectedUserInterface: null, 
 					selectedLowLevelMode: false, 
-					userInterfacesAvailable: []
+					availableUserInterfaces: []
 				});
 			} else {
-				let userInterfacesAvailable = this.state.userInterfacesAvailable;
-				
-				if (windowString !== null) {
-					userInterfacesAvailable = [];
-					for (const userInterfaceKey of this.state.userInterfaceKeys) {
-						try {
-							const loadedClass = userInterfaces[userInterfaceKey];
-							const loadedClassInstance = new loadedClass(ref.current.state.identityString);
-							if (await loadedClassInstance.validate(ref.current.state.identityString, ref.current.props) === true) {
-								userInterfacesAvailable.push(userInterfaceKey);
-							}
-						} catch (debugError) {
-							// Enable this for debugging purposes
-							// console.log(debugError);
-						}
-					}
-				}
-				
-				windowSelected.setState({
+				this.setState({
 					selectedWindow: windowString, 
 					selectedWindowClassInstance: ref.current, 
 					selectedUserInterface: ref.current.state.userInterface, 
 					selectedLowLevelMode: ref.current.state.lowLevelMode, 
-					userInterfacesAvailable: userInterfacesAvailable
+					availableUserInterfaces: await this.getAvailableUserInterfaces(windowString, ref.current)
 				});
 			}
 		}
+	}
+	
+	async getAvailableUserInterfaces (selectedWindow = this.state.selectedWindow, selectedWindowClassInstance = this.state.selectedWindowClassInstance) {
+		let availableUserInterfaces = this.state.availableUserInterfaces;
 		
+		if (selectedWindow !== null) {
+			availableUserInterfaces = [];
+			for (const userInterface of this.state.allUserInterfaces) {
+				try {
+					const loadedClass = userInterfaces[userInterface];
+					const loadedClassInstance = new loadedClass(selectedWindowClassInstance.state.identityString);
+					if (await loadedClassInstance.validate(selectedWindowClassInstance.state.identityString, selectedWindowClassInstance.props) === true) {
+						availableUserInterfaces.push(userInterface);
+					}
+				} catch (debugError) {
+					// Enable this for debugging purposes
+					// console.log(debugError);
+				}
+			}
+		}
+		
+		return availableUserInterfaces;
+	}
+	
+	render () {
 		const ref = React.createRef();
 		return (<span>
 			{/*<span style={{
@@ -81,12 +87,25 @@ export default class SSWindowSelected extends React.Component {
 				<button>(Remove)</button>&nbsp;
 				<button>(Validate)</button><br/>
 			</>) : (<>
-				User Interface: <select value={this.state.selectedUserInterface} onChange={event => {
+				User Interface: <select value={this.state.selectedUserInterface} onFocus={event => {
+					(async () => this.setState({
+						availableUserInterfaces: await this.getAvailableUserInterfaces()
+					}))();
+				}} onChange={event => {
 					this.setState({selectedUserInterface: event.target.value});
 					window.renderFunction();
 				}}>
-					{this.state.userInterfacesAvailable.map(userInterface => (<option key={userInterface}>{userInterface}</option>))}
+					{this.state.allUserInterfaces.map(userInterface => {
+						if (this.state.availableUserInterfaces.indexOf(userInterface) === -1) {
+							return (<option key={userInterface} style={{
+								color: "#0000FF"
+							}}>{userInterface}</option>);
+						} else {
+							return (<option key={userInterface}>{userInterface}</option>);
+						}
+					})}
 				</select><br/>
+				
 				Low-Level Mode: <select value={this.state.selectedLowLevelMode} onChange={event => {
 					this.setState({selectedLowLevelMode: event.target.value});
 					window.renderFunction();
@@ -95,13 +114,19 @@ export default class SSWindowSelected extends React.Component {
 					<option value={true}>On</option>
 					<option value={false}>Off</option>
 				</select><br/>
+				
 				<button onClick={() => this.state.selectedWindowClassInstance.addUserInterface(this.state.selectedUserInterface)}>(Add)</button>&nbsp;
+				
 				<button onClick={() => this.state.selectedWindowClassInstance.loadUserInterface(this.state.selectedUserInterface)}>(Load)</button>&nbsp;
+				
 				<button onClick={() => this.state.selectedWindowClassInstance.saveUserInterface(this.state.selectedUserInterface)}>(Save)</button>&nbsp;
+				
 				<button onClick={() => this.state.selectedWindowClassInstance.removeUserInterface(this.state.selectedUserInterface)}>(Remove)</button>&nbsp;
+				
 				<button onClick={() => this.state.selectedWindowClassInstance.validateUserInterface(this.state.selectedUserInterface)}>(Validate)</button><br/>
 			</>)}<br/>
-			<SSWindow identityString="fzYkA7sH" key="root" windowString="root" selectedWindow={this.state.selectedWindow} setSelectedWindow={setSelectedWindow} setSelectedWindowWithRef={setSelectedWindow("root", ref)} ref={ref}/><br/><br/>
+			
+			<SSWindow identityString="fzYkA7sH" key="root" windowString="root" selectedWindow={this.state.selectedWindow} setSelectedWindow={this.setSelectedWindow} setSelectedWindowWithRef={this.setSelectedWindow("root", ref)} ref={ref}/><br/><br/>
 			
 			Documentations: <button onClick={() => window.open("/resources/documentations.html", "_blank")}>(View)</button><br/>
 			
@@ -111,7 +136,8 @@ export default class SSWindowSelected extends React.Component {
 						selectedWindow: null, 
 						selectedWindowClassInstance: null, 
 						selectedUserInterface: null, 
-						selectedLowLevelMode: false
+						selectedLowLevelMode: false, 
+						availableUserInterfaces: []
 					}, 
 					() => {
 						window.assembly.syncWithServer().then(
