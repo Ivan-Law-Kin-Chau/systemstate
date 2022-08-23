@@ -11,7 +11,7 @@ export default class SSWindow extends React.Component {
 			loadAsUserInterface: props.loadAsUserInterface ? props.loadAsUserInterface : null, 
 			identityString: props.identityString, 
 			userInterfaces: ["SSAliase", "SSEditor", "SSObject", "SSGroup", "SSLink", "SSProperty"], 
-			userInterfaceClass: null, 
+			userInterfaceClassInstance: null, 
 			userInterface: null, 
 			lowLevelMode: false, 
 			isSelectedWindow: false
@@ -101,9 +101,9 @@ export default class SSWindow extends React.Component {
 					if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
 						if ((this.state.userInterface !== userInterface) || (this.state.userInterface === null)) {
 							this.state.userInterface = userInterface;
-							this.state.userInterfaceClass = loadedClassInstance;
+							this.state.userInterfaceClassInstance = loadedClassInstance;
 						} else {
-							loadedClassInstance = this.state.userInterfaceClass;
+							loadedClassInstance = this.state.userInterfaceClassInstance;
 						}
 						
 						return await loadedClassInstance.load(this.props);
@@ -125,9 +125,9 @@ export default class SSWindow extends React.Component {
 				if (await loadedClassInstance.validate(this.state.identityString, this.props) === true) {
 					if ((this.state.userInterface !== loadAsUserInterface) || (this.state.userInterface === null)) {
 						this.state.userInterface = loadAsUserInterface;
-						this.state.userInterfaceClass = loadedClassInstance;
+						this.state.userInterfaceClassInstance = loadedClassInstance;
 					} else {
-						loadedClassInstance = this.state.userInterfaceClass;
+						loadedClassInstance = this.state.userInterfaceClassInstance;
 					}
 					
 					return await loadedClassInstance.load(this.props);

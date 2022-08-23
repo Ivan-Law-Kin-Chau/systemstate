@@ -14,7 +14,7 @@ export const SSEditorContext = React.createContext();
 
 export default class SSAliase {
 	constructor (identityString) {
-		// The head identity string of the class instance
+		// The head identity string of the user interface
 		identifier.assertIdentityStringLength(8, identityString);
 		this.identityString = identityString;
 		
@@ -33,16 +33,16 @@ export default class SSAliase {
 	
 	async load (action = {}) {
 		let content;
-		const classInstance = this;
+		const userInterfaceClassInstance = this;
 		if (await (async function () {
-			var dependencies = await SSExpander.expand(classInstance.identityString);
+			var dependencies = await SSExpander.expand(userInterfaceClassInstance.identityString);
 			if (dependencies["property_parent"]) {
 				for (let identity of dependencies["property_parent"]) {
 					const item = await window.assembly.get("property", identity);
 					if (item._success === true && item._name === "Target") {
 						if (validator.isValidKey(item._content) === true) {
 							content = item._content;
-							classInstance.state.identityString = item._uuid;
+							userInterfaceClassInstance.state.identityString = item._uuid;
 							return true;
 						}
 					}

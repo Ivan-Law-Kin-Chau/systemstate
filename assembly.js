@@ -3,6 +3,10 @@ module.exports = class Assembly {
 		this.database = database;
 	}
 	
+	delimit (input) {
+		return input.split(`"`).join(`""`);
+	}
+	
 	convert_boolean_to_sql (input) {
 		if (input === null) {
 			return "null";
@@ -54,7 +58,7 @@ module.exports = class Assembly {
 	
 	async add_object (uuid) {
 		var type = "object";
-		var sql = `INSERT INTO "${type}" VALUES ("${uuid}");`;
+		var sql = `INSERT INTO "${type}" VALUES ("${this.delimit(uuid)}");`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -67,7 +71,7 @@ module.exports = class Assembly {
 	
 	async load_object (uuid) {
 		var type = "object";
-		var sql = `SELECT * FROM "${type}" WHERE uuid = "${uuid}";`;
+		var sql = `SELECT * FROM "${type}" WHERE uuid = "${this.delimit(uuid)}";`;
 		return this.query(sql, (rows, resolve) => {
 			if (rows.length === 0) {
 				resolve(JSON.stringify({
@@ -94,7 +98,7 @@ module.exports = class Assembly {
 	
 	async save_object (uuid, uuidNew) {
 		var type = "object";
-		var sql = `UPDATE "${type}" SET uuid = "${uuidNew}" WHERE uuid = "${uuid}";`;
+		var sql = `UPDATE "${type}" SET uuid = "${this.delimit(uuidNew)}" WHERE uuid = "${this.delimit(uuid)}";`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuidNew, 
@@ -107,7 +111,7 @@ module.exports = class Assembly {
 	
 	async remove_object (uuid) {
 		var type = "object";
-		var sql = `DELETE FROM "${type}" WHERE uuid = "${uuid}";`;
+		var sql = `DELETE FROM "${type}" WHERE uuid = "${this.delimit(uuid)}";`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -120,7 +124,7 @@ module.exports = class Assembly {
 	
 	async add_group (uuid, parent) {
 		var type = "group";
-		var sql = `INSERT INTO "${type}" VALUES ("${uuid}", "${parent}");`;
+		var sql = `INSERT INTO "${type}" VALUES ("${this.delimit(uuid)}", "${this.delimit(parent)}");`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -134,7 +138,7 @@ module.exports = class Assembly {
 	
 	async load_group (uuid, parent) {
 		var type = "group";
-		var sql = `SELECT * FROM "${type}" WHERE uuid = "${uuid}" AND parent = "${parent}";`;
+		var sql = `SELECT * FROM "${type}" WHERE uuid = "${this.delimit(uuid)}" AND parent = "${this.delimit(parent)}";`;
 		return this.query(sql, (rows, resolve) => {
 			if (rows.length === 0) {
 				resolve(JSON.stringify({
@@ -163,7 +167,7 @@ module.exports = class Assembly {
 	
 	async save_group (uuid, uuidNew, parent, parentNew) {
 		var type = "group";
-		var sql = `UPDATE "${type}" SET uuid = "${uuidNew}", parent = "${parentNew}" WHERE uuid = "${uuid}" AND parent = "${parent}";`;
+		var sql = `UPDATE "${type}" SET uuid = "${this.delimit(uuidNew)}", parent = "${this.delimit(parentNew)}" WHERE uuid = "${this.delimit(uuid)}" AND parent = "${this.delimit(parent)}";`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuidNew, 
@@ -177,7 +181,7 @@ module.exports = class Assembly {
 	
 	async remove_group (uuid, parent) {
 		var type = "group";
-		var sql = `DELETE FROM "${type}" WHERE uuid = "${uuid}" AND parent = "${parent}";`;
+		var sql = `DELETE FROM "${type}" WHERE uuid = "${this.delimit(uuid)}" AND parent = "${this.delimit(parent)}";`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -191,7 +195,7 @@ module.exports = class Assembly {
 	
 	async add_link (uuid, start, end, direction = null) {
 		var type = "link";
-		var sql = `INSERT INTO "${type}" VALUES ("${uuid}", "${start}", "${end}", ${this.convert_boolean_to_sql(direction)});`;
+		var sql = `INSERT INTO "${type}" VALUES ("${this.delimit(uuid)}", "${this.delimit(start)}", "${this.delimit(end)}", ${this.convert_boolean_to_sql(direction)});`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -207,7 +211,7 @@ module.exports = class Assembly {
 	
 	async load_link (uuid) {
 		var type = "link";
-		var sql = `SELECT * FROM "${type}" WHERE uuid = "${uuid}";`;
+		var sql = `SELECT * FROM "${type}" WHERE uuid = "${this.delimit(uuid)}";`;
 		return this.query(sql, (rows, resolve) => {
 			if (rows.length === 0) {
 				resolve(JSON.stringify({
@@ -240,7 +244,7 @@ module.exports = class Assembly {
 	
 	async save_link (uuid, uuidNew, start, end, direction = null) {
 		var type = "link";
-		var sql = `UPDATE "${type}" SET uuid = "${uuidNew}", start = "${start}", end = "${end}", direction = ${this.convert_boolean_to_sql(direction)} WHERE uuid = "${uuid}";`;
+		var sql = `UPDATE "${type}" SET uuid = "${this.delimit(uuidNew)}", start = "${this.delimit(start)}", end = "${this.delimit(end)}", direction = ${this.convert_boolean_to_sql(direction)} WHERE uuid = "${this.delimit(uuid)}";`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuidNew, 
@@ -256,7 +260,7 @@ module.exports = class Assembly {
 	
 	async remove_link (uuid) {
 		var type = "link";
-		var sql = `DELETE FROM "${type}" WHERE uuid = "${uuid}";`;
+		var sql = `DELETE FROM "${type}" WHERE uuid = "${this.delimit(uuid)}";`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -269,7 +273,7 @@ module.exports = class Assembly {
 	
 	async add_property (uuid, parent, name, content) {
 		var type = "property";
-		var sql = `INSERT INTO "${type}" VALUES ("${uuid}", "${parent}", "${name}", "${content}");`;
+		var sql = `INSERT INTO "${type}" VALUES ("${this.delimit(uuid)}", "${this.delimit(parent)}", "${this.delimit(name)}", "${this.delimit(content)}");`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -285,7 +289,7 @@ module.exports = class Assembly {
 	
 	async load_property (uuid) {
 		var type = "property";
-		var sql = `SELECT * FROM "${type}" WHERE uuid = "${uuid}";`;
+		var sql = `SELECT * FROM "${type}" WHERE uuid = "${this.delimit(uuid)}";`;
 		return this.query(sql, (rows, resolve) => {
 			if (rows.length === 0) {
 				resolve(JSON.stringify({
@@ -318,7 +322,7 @@ module.exports = class Assembly {
 	
 	async save_property (uuid, uuidNew, parent, name, content) {
 		var type = "property";
-		var sql = `UPDATE "${type}" SET uuid = "${uuidNew}", parent = "${parent}", name = "${name}", content = "${content}" WHERE uuid = "${uuid}";`;
+		var sql = `UPDATE "${type}" SET uuid = "${this.delimit(uuidNew)}", parent = "${this.delimit(parent)}", name = "${this.delimit(name)}", content = "${this.delimit(content)}" WHERE uuid = "${this.delimit(uuid)}";`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -334,7 +338,7 @@ module.exports = class Assembly {
 	
 	async remove_property (uuid) {
 		var type = "property";
-		var sql = `DELETE FROM "${type}" WHERE uuid = "${uuid}";`;
+		var sql = `DELETE FROM "${type}" WHERE uuid = "${this.delimit(uuid)}";`;
 		return this.query(sql, (rows, resolve) => {
 			resolve(JSON.stringify({
 				_uuid: uuid, 
@@ -348,9 +352,9 @@ module.exports = class Assembly {
 	
 	async search (attribute, value, type = "object") {
 		if (type === "group") {
-			var sql = `SELECT uuid, parent FROM "${type}" WHERE ${attribute} LIKE "${value}";`;
+			var sql = `SELECT uuid, parent FROM "${type}" WHERE ${this.delimit(attribute)} LIKE "${this.delimit(value)}";`;
 		} else {
-			var sql = `SELECT uuid FROM "${type}" WHERE ${attribute} LIKE "${value}";`;
+			var sql = `SELECT uuid FROM "${type}" WHERE ${this.delimit(attribute)} LIKE "${this.delimit(value)}";`;
 		}
 		
 		return this.query(sql, (rows, resolve) => {
@@ -377,7 +381,7 @@ module.exports = class Assembly {
 		return this.query(sql[0], (rows, resolve) => {
 			for (const row of rows) {
 				var database = this.database;
-				sql.push(`DELETE FROM ${type} WHERE uuid = "${row["uuid"]}";`);
+				sql.push(`DELETE FROM ${type} WHERE uuid = "${this.delimit(row["uuid"])}";`);
 				database.all(sql[sql.length - 1], (error, rows) => {});
 			}
 			

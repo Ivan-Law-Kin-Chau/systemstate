@@ -187,19 +187,22 @@ export default class SSAssembly {
 	async syncWithServer () {
 		this.sender.clearCache();
 		
+		// Escape double quotes
+		const delimit = input => input.split(`"`).join(`\\"`);
+		
 		for (let type in this.state) {
 			for (let identityString in this.state[type]) {
 				const item = this.state[type][identityString];
 				if (item._add === true || item._remove === true) {
 					if (item._add === true) {
 						if (item._type === "object") {
-							this.sender.push(`add_${type}`, `("${item._uuid}")`);
+							this.sender.push(`add_${type}`, `("${delimit(item._uuid)}")`);
 						} else if (item._type === "group") {
-							this.sender.push(`add_${type}`, `("${item._uuid}", "${item._parent}")`);
+							this.sender.push(`add_${type}`, `("${delimit(item._uuid)}", "${delimit(item._parent)}")`);
 						} else if (item._type === "link") {
-							this.sender.push(`add_${type}`, `("${item._uuid}", "${item._start}", "${item._end}", ${item._direction})`);
+							this.sender.push(`add_${type}`, `("${delimit(item._uuid)}", "${delimit(item._start)}", "${delimit(item._end)}", ${item._direction})`);
 						} else if (item._type === "property") {
-							this.sender.push(`add_${type}`, `("${item._uuid}", "${item._parent}", "${item._name}", "${item._content}")`);
+							this.sender.push(`add_${type}`, `("${delimit(item._uuid)}", "${delimit(item._parent)}", "${delimit(item._name)}", "${delimit(item._content)}")`);
 						}
 						
 						this.sender.pushCallback(
@@ -211,13 +214,13 @@ export default class SSAssembly {
 					
 					if (item._remove === true) {
 						if (item._type === "object") {
-							this.sender.push(`remove_${type}`, `("${item._uuid}")`);
+							this.sender.push(`remove_${type}`, `("${delimit(item._uuid)}")`);
 						} else if (item._type === "group") {
-							this.sender.push(`remove_${type}`, `("${item._uuid}", "${item._parent}")`);
+							this.sender.push(`remove_${type}`, `("${delimit(item._uuid)}", "${delimit(item._parent)}")`);
 						} else if (item._type === "link") {
-							this.sender.push(`remove_${type}`, `("${item._uuid}")`);
+							this.sender.push(`remove_${type}`, `("${delimit(item._uuid)}")`);
 						} else if (item._type === "property") {
-							this.sender.push(`remove_${type}`, `("${item._uuid}")`);
+							this.sender.push(`remove_${type}`, `("${delimit(item._uuid)}")`);
 						}
 						
 						this.sender.pushCallback(
@@ -229,13 +232,13 @@ export default class SSAssembly {
 				} else if (item._save === true) {
 					const identity = identifier.identityFromString(type, identityString);
 					if (item._type === "object") {
-						this.sender.push(`save_${type}`, `("${identity._uuid}", "${item._uuid}")`);
+						this.sender.push(`save_${type}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}")`);
 					} else if (item._type === "group") {
-						this.sender.push(`save_${type}`, `("${identity._uuid}", "${item._uuid}", "${identity._parent}", "${item._parent}")`);
+						this.sender.push(`save_${type}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}", "${delimit(identity._parent)}", "${delimit(item._parent)}")`);
 					} else if (item._type === "link") {
-						this.sender.push(`save_${type}`, `("${identity._uuid}", "${item._uuid}", "${item._start}", "${item._end}", ${item._direction})`);
+						this.sender.push(`save_${type}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}", "${delimit(item._start)}", "${delimit(item._end)}", ${item._direction})`);
 					} else if (item._type === "property") {
-						this.sender.push(`save_${type}`, `("${identity._uuid}", "${item._uuid}", "${item._parent}", "${item._name}", "${item._content}")`);
+						this.sender.push(`save_${type}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}", "${delimit(item._parent)}", "${delimit(item._name)}", "${delimit(item._content)}")`);
 					}
 					
 					this.sender.pushCallback(

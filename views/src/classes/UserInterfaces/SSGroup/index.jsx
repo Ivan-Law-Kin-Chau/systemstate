@@ -8,7 +8,7 @@ import * as React from "react";
 
 export default class SSGroup {
 	constructor (identityString) {
-		// The head identity string of the class instance
+		// The head identity string of the user interface
 		identifier.assertIdentityStringLength(17, identityString);
 		this.identityString = identityString;
 		

@@ -126,7 +126,7 @@ export default class SSWindowSelected extends React.Component {
 				<button onClick={() => this.state.selectedWindowClassInstance.validateUserInterface(this.state.selectedUserInterface)}>(Validate)</button><br/>
 			</>)}<br/>
 			
-			<SSWindow identityString="fzYkA7sH" key="root" windowString="root" selectedWindow={this.state.selectedWindow} setSelectedWindow={this.setSelectedWindow} setSelectedWindowWithRef={this.setSelectedWindow("root", ref)} ref={ref}/><br/><br/>
+			<SSWindow identityString={new URLSearchParams(window.location.search).get("key")} key="root" windowString="root" selectedWindow={this.state.selectedWindow} setSelectedWindow={this.setSelectedWindow} setSelectedWindowWithRef={this.setSelectedWindow("root", ref)} ref={ref}/><br/><br/>
 			
 			Documentations: <button onClick={() => window.open("/resources/documentations.html", "_blank")}>(View)</button><br/>
 			

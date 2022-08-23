@@ -14,7 +14,7 @@ export const SSEditorContext = React.createContext();
 
 export default class SSEditor {
 	constructor (identityString) {
-		// The head identity string of the class instance
+		// The head identity string of the user interface
 		this.identityString = identityString;
 		
 		this.state = {};

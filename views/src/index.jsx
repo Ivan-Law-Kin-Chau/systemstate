@@ -12,4 +12,15 @@ window.renderFunction = async function () {
 	root.render(<SSWindowSelected/>);
 }
 
-window.onload = renderFunction();
+window.onload = () => {
+	window.onkeyup = event => {
+		if (event.keyCode === 16) window.shiftPressed = false;
+	}
+	
+	window.onkeydown = event => {
+		if (event.keyCode === 16) window.shiftPressed = true;
+	}
+	
+	window.shiftPressed = false;
+	window.renderFunction();
+}

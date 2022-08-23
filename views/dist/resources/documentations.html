@@ -1,12 +1,24 @@
-<title>Systemstate Editor Pre-Alpha v1.0.1</title>
+<title>Systemstate Editor</title>
 <link rel="icon" type="image/x-icon" href="/resources/favicon.ico">
 <style>
 
 body {
-	margin: 3em;
+	margin: 0px;
+	padding: 3em;
+	text-align: center;
 	background-color: #EEEEEE;
 	color: #000000;
 	font-family: "Consolas";
+}
+
+#container {
+	max-width: 1024px;
+	text-align: left;
+	display: inline-block;
+}
+
+table {
+	margin: auto;
 }
 
 td {
@@ -18,22 +30,17 @@ h1 {
 	font-size: 24.5px;
 }
 
-h2 {
-	margin-top: 21px;
-	font-size: 21px;
-}
-
 h3 {
 	margin-top: 14px;
 	font-size: 17.5px;
 }
 
-p {
+p, ul, li {
 	margin-top: 7px;
 	font-size: 14px;
 }
 
-h1, h2, h3, p {
+h1, h3, p {
 	margin-bottom: 0px;
 }
 
@@ -44,46 +51,100 @@ h1, h2, h3, p {
 
 </style>
 
+<div id="container">
+
 <table>
-<td>
-<img src="Logo.png" style="width: 72px; height: 72px; margin-right: 7px;">
-</td>
-<td>
-<h1 style="margin-top: 0px;">Systemstate Editor Pre-Alpha v1.0.1</h1>
-<p><b>v1.0.1-pre-alpha</b></p>
-</td>
+	<td>
+		<img src="Logo.png" style="width: 48px; height: 48px; margin-right: 12px;">
+	</td>
+	<td>
+		<h3 style="margin-top: 1px;">Systemstate Editor</h3>
+		<p><b>Documentations</b></p>
+	</td>
 </table>
 
-<h2>Key Concepts</h2>
 
-<h3>Types of Classes</h3>
-<p>There are three types of classes: element classes, item classes and user interface classes. </p>
-<p>An element class is the smallest unit of the user interface, which corresponds to one HTML element at the browser side and corresponds to one attribute of one tuple at the database side. <b>SSSelector</b> and <b>SSKey</b> are examples of element classes. </p>
-<p>An item class consists of all the elements whose attributes make up the tuple involved at the database side; hence it corresponds to one tuple at the database side. <b>SSObject</b>, <b>SSGroup</b>, <b>SSLink</b> and <b>SSProperty</b> are the four item classes that are available. </p>
-<p>A user interface class consists of all the items on the screen, which corresponds to all the tuples required to form a coherent whole that the user can think of as one concept when using the Systemstate Editor. <b>SSEditor</b>, <b>SSAliase</b>, and <b>SSStory</b> are examples of user interface classes. </p>
 
-<h3>Types of Identifiers</h3>
-<p>There are two types of identifiers: keys and identity strings. </p>
-<p>Keys are used to identify items. They are eight-character-long alphanumeric strings. Each <b>SSObject</b>, <b>SSLink</b> and <b>SSProperty</b> has one key (its _uuid attribute); hence one key is sufficient to identify them. But each <b>SSGroup</b> has two keys (its _uuid attribute and its _parent attribute), hence two keys are required to identify them. </p>
-<p>Identity strings are used to identify <b>SSSelector</b>s. They work mostly like keys, except for <b>SSGroup</b>s, where they will instead consist of the two keys of the <b>SSGroup</b> joined, with an underscore as the delimiter. This way, one identity string is always sufficient to identify the <b>SSSelector</b>. Also, since the <b>SSAdd</b> element and the <b>SSRemove</b> element also have their own <b>SSSelector</b>s, they can also be identified with identity strings consisting of the keys followed by an underscore, and then either "add" or "remove". </p>
+<h1>Terminology</h1>
 
-<h3>Structure of User Interface Classes</h3>
-<p>Element classes and item classes are more fundamental and are supposed to be managed internally by the Systemstate Editor, while user interface classes are more flexible and are supposed to be managed by the user of the Systemstate Editor. So it is important for users to understand the structure of a user interface class. </p>
-<p>There are six important parts of each user interface class instance: the head, the validate function and the four CRUD functions (called add, load, save and remove). </p>
-<p>The head of a class instance is the key that the class instance will work around. The four CRUD functions, under the hood, manage various items according to those item's relations with this key. Meanwhile, the validate function can be used to validate whether the class instance is valid or not. </p>
+<h3>Representation</h3>
+<p>A user interface is the representation of a concept in your browser. It can contain as many elements as it takes to represent the concept and facilitate your journey of using the Systemstate Editor to do things with various concepts. <b>SSEditor</b>, <b>SSAliase</b>, and <b>SSStory</b> are examples of user interfaces. Each user interface uses six necessary parts to represent a concept: </p><ul>
+	<li>Its head identity string, used by the software as the base point of an instance of that concept</li>
+	<li>Four functions to add, load, save and remove an instance of that concept respectively</li>
+	<li>A validate function to check whether the data at hand is a valid instance of that concept or not</li>
+</ul>
+<p>An item is a special kind of user interface which is low-level enough that it is the representation of an actual tuple from the database in your browser, hence it contains all the elements whose attributes make up the tuple. Since there are four tables in the database, there are four kinds of items as well: <b>SSObject</b>, <b>SSGroup</b>, <b>SSLink</b> and <b>SSProperty</b>. </p>
+<p>An element is the representation of an attribute of a tuple from the database, as an HTML element in your browser, such as <b>SSSelector</b>s and <b>SSKey</b>s. </p>
 
-<h2>Changelog</h2>
+<h3>Identifiers</h3>
+<p>A key is an eight-character-long alphanumeric string for identifying items. <b>SSObject</b>s, <b>SSLink</b>s and <b>SSProperty</b>s can be identified using one key (representing its _uuid attribute), while <b>SSGroup</b>s can be identified using two keys (representing its _uuid and _parent attributes). </p>
+<p>An identity strings is the same as a key, except for each <b>SSGroup</b>, we can get its identity string by joining its two keys together with an underscore. The reason why this is a thing apart from keys is so that we can use identity strings with the assurance that each identity string can always, in itself, be sufficient to identify an item even if that item is an <b>SSGroup</b>. </p>
+
+
+
+<h1>Design Principles</h1>
+
+<h3>Representative Design</h3>
+<p>To make the Systemstate Editor as user-friendly as possible, we established certain recurring heuristics that will be used in the design of the software from now on to help you intuitively understand how to use the Systemstate Editor: </p><ul>
+	<li>Whenever something blue (#0000FF) appears in your browser, it represents something you can perform an action on</li>
+	<li>Whenever something red (#FF0000) appears in your browser, it represents something selected</li>
+	<li>Whenever a hashtag (#) appears in your browser, you can click on the hashtag to select something</li>
+	<li>Whenever eight percentage signs in a row (%%%%%%%%) appears in your browser, it is a placeholder for an arbitrary key</li>
+</ul>
+
+<h3>Unified Terminology</h3>
+<p>The newest version of the Systemstate Editor has a lot of its variable names changed to unify the terminology used throughout the software, and to separate the terminology about the Systemstate Editor from other terminologies, so that every word you can find in the codebase of the Systemstate Editor should mean one and only one thing. Here is a list of all the changes: </p><ul>
+	<li>"Attribute-value pairs" will be how we refer to the data structure. So "property" can only mean an <b>SSProperty</b> and "key" can only mean an <b>SSKey</b> (so elementKey is now called elementAttribute), even though in the past, "property" and "key" were used as synonyms of "attribute". And so "name" and "content" can only mean the two attributes in <b>SSProperty</b>s, even though in the past, this pair of words were used as synonyms of attributes and values, respectively, too</li>
+	<li>The use of the word "template" in variable names is depreciated since we are now using JSX to render things rather than a custom-written template abstraction made in 2020 (so templateType is now called type and templateThis is now called headAttribute instead)</li>
+	<li>The use of the words "class" and "component" to refer to user interfaces, items and elements are depreciated since we are now using React.js, and using "classes" and "components" to refer to both their React.js meanings and to user interfaces, items and elements will be confusing</li>
+	<li>At last, for additional unifications of terminology, we will always say "argument" instead of "parameter" and "throw" instead of "console.error" in the codebase</li>
+</ul>
+<p>However, there are still some terminologies that we have failed to unify so far due to refactoring issues we might solve later: </p><ul>
+	<li>As of now, "this" is used as a synonym of "head" in some places, to refer to the identity string that each user interface has. But we still cannot just unify "head" and "this" into one word because "this" also refers to items at times, in a way that is not totally equivalent to "the head identity string of that item"</li>
+	<li>As of now, the props passed onto user interfaces are referred to as the "action" argument in their corresponding classes, a relic of the time when we tried to use Redux (which has reducers that have actions) in the codebase. But we still cannot just unify "props" and "action" into one word, because the <b>SSAliase</b> class uses "action" to mean an actual action passed onto the dispatch function in the <b>SSListener</b> class, making "action" not totally synonymous with "props"</li>
+</ul>
+
+
+<h1>Changelog</h1>
 
 <h3>2021/12/28: v1.0.0-pre-alpha</h3>
-<p> - Removed all PHP code other than the parts rewritten to be in JavaScript</p>
-<p> - Used an Express JS server instead of one written from scratch</p>
-<p> - Moved some features from the server side to the client side</p>
-<p> - Rewrote the JavaScript code to be in ES6 instead of in ES5</p>
-<p> - Changed the architecture to be object-oriented instead of procedural</p>
-<p> - Used Git thoroughly instead of as a last minute band-aid solution</p>
-<p> - Made a new logo to reflect all these changes</p>
+<ul>
+	<li>Removed all PHP code other than the parts rewritten to be in JavaScript</li>
+	<li>Used an Express JS server instead of one written from scratch</li>
+	<li>Moved some features from the server side to the client side</li>
+	<li>Rewrote the JavaScript code to be in ES6 instead of in ES5</li>
+	<li>Changed the architecture to be object-oriented instead of procedural</li>
+	<li>Used Git thoroughly instead of as a last minute band-aid solution</li>
+	<li>Made a new logo to reflect all these changes</li>
+</ul>
 
 <h3>2022/04/19: v1.0.1-pre-alpha</h3>
-<p> - Added get and set functions to the SSAssembly class</p>
-<p> - Made it possible to select elements</p>
-<p> - Implemented the add action and the remove action</p>
+<ul>
+	<li>Added get and set functions to the <b>SSAssembly</b> class</li>
+	<li>Made it possible to select elements</li>
+	<li>Implemented the add action and the remove action</li>
+</ul>
+
+<h3>2022/08/22: v2.0.0-pre-alpha</h3>
+<ul>
+	<li>Switched from Preact to React by using esbuild as a bundler</li>
+	<li>Introduced the window feature to interact with user interfaces</li>
+	<li>Made items a kind of user interfaces</li>
+	<li>Unified the terminology and Git repositories</li>
+	<li>Changed the software design and the logo</li>
+</ul>
+
+
+
+<h1>About</h1>
+
+<h3>Name</h3>
+<p>Systemstate Editor Pre-Alpha v2.0.0</p>
+
+<h3>Version</h3>
+<p>v2.0.0-pre-alpha</p>
+
+<h3>License</h3>
+<p>Copyright (c) 2019-2022 Ivan Law Kin Chau. All rights reserved. </p>
+
+</div>

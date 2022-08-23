@@ -7,7 +7,10 @@ export default class SSListener {
 			selected.updateSelected(action);
 			console.log("Select Element: " + action.identityString);
 		} else if (action.type === "OPEN") {
-			console.log("Open Key: " + action.key);
+			if (window.shiftPressed === true) {
+				window.location = `http://localhost:800/?key=${action.key}`;
+				console.log("Open Key: " + action.key);
+			}
 		} else if (action.type === "SAVE") {
 			let value = {};
 			value[action.attribute] = action.value;
