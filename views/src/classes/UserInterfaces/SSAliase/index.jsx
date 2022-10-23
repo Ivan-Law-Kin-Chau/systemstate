@@ -22,8 +22,8 @@ export default class SSAliase {
 		this.state = {};
 	}
 	
-	async add (action = {}) {
-		await new SSHead(this.identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+	async add (props = {}) {
+		await new SSHead(this.identityString).forEachRelationshipOf(["property_parent"], async heads => {
 			await heads.pushHead({generateKeyCode: 1}, async head => {
 				await head.set({
 					_uuid: head.identityString, 
@@ -58,18 +58,18 @@ export default class SSAliase {
 		});
 	}
 	
-	async load (action = {}) {
+	async load (props = {}) {
 		return await listener.listen(async print => {
 			let notInstantiated = true;
-			await new SSHead(this.identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+			await new SSHead(this.identityString).forEachRelationshipOf(["property_parent"], async heads => {
 				await heads.forEachAsync(async head => {
 					const item = await head.get();
 					if (item._success === true && item._name === "Target") {
 						if (validator.isValidKey(item._content) === true) {
 							this.state.target = item._content;
-							print(<>
+							print(<span key={`${props.windowString}_user_interface`}>
 								<SSKey id={item._uuid} elementValue={this.state.target} dispatch={this.dispatch.bind(this)}/> <button onClick={this.onClick.bind(this)}>(Aliase)</button>
-							</>);
+							</span>);
 							notInstantiated = false;
 						}
 					}
@@ -82,8 +82,8 @@ export default class SSAliase {
 		});
 	}
 	
-	async save (action = {}) {
-		await new SSHead(this.identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+	async save (props = {}) {
+		await new SSHead(this.identityString).forEachRelationshipOf(["property_parent"], async heads => {
 			await heads.forEachAsync(async head => {
 				const item = await head.get();
 				if (item._success === true && item._name === "Target") {
@@ -97,8 +97,8 @@ export default class SSAliase {
 		return true;
 	}
 	
-	async remove (action = {}) {
-		await new SSHead(this.identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+	async remove (props = {}) {
+		await new SSHead(this.identityString).forEachRelationshipOf(["property_parent"], async heads => {
 			await heads.forEachAsync(async head => {
 				const item = await head.get();
 				if (item._success === true && item._name === "Target") {
@@ -112,9 +112,9 @@ export default class SSAliase {
 		return true;
 	}
 	
-	async validate (identityString, action = {}) {
+	async validate (identityString, props = {}) {
 		return new Promise(async resolve => {
-			await new SSHead(identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+			await new SSHead(identityString).forEachRelationshipOf(["property_parent"], async heads => {
 				await heads.forEachAsync(async head => {
 					const item = await head.get();
 					if (item._success === true && item._name === "Target") {

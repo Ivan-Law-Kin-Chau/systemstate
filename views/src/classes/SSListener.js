@@ -15,10 +15,10 @@ export default class SSListener {
 			let value = {};
 			value[action.attribute] = action.value;
 			
-			const identity = identifier.identityFromString(action.targetType, action.targetId);
-			if (await window.assembly.setState(action.targetType, identity, value)) {
+			const identity = identifier.identityFromString(action.targetTable, action.targetId);
+			if (await window.assembly.setState(action.targetTable, identity, value)) {
 				console.log({
-					"type": action.targetType, 
+					"table": action.targetTable, 
 					"id": action.targetId, 
 					"attribute": action.attribute, 
 					"value": action.value

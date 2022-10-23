@@ -17,53 +17,53 @@ export default class SSObject {
 		this.state = {};
 	}
 	
-	async add (action = {}) {
+	async add (props = {}) {
 		return true;
 	}
 	
-	async load (action = {}) {
+	async load (props = {}) {
 		return await listener.listen(async print => {
-			await new SSHead(this.identityString).forEachTypeOf(["object_uuid"], async (array, heads, parentHead, state) => {
+			await new SSHead(this.identityString).forEachRelationshipOf(["object_uuid"], async heads => {
 				await heads.forEachAsync(async head => {
 					this.state.item = await head.get();
-					if (await this.validate(this.identityString, action) !== true) {
+					if (await this.validate(this.identityString, props) !== true) {
 						console.log("Invalid SSObject item: ", this.state.item);
 					}
 					
-					var headAttribute = action.headAttribute ? action.headAttribute : null;
+					var headAttribute = props.headAttribute ? props.headAttribute : null;
 					var renderState = {
 						item: this.state.item, 
 						identityString: this.identityString, 
-						selectedObject: action.selectedObject, 
+						selectedObject: props.selectedObject, 
 						headAttribute: headAttribute
 					};
 					
 					const SSSelector = elements["SSSelector"];
 					const SSKey = elements["SSKey"];
 					
-					print(<>
-						<SSSelector type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
+					print(<span key={`${props.windowString}_user_interface`}>
+						<SSSelector table={this.state.item._table} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
 						
-						<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_" + headAttribute} elementValue={this.state.item["_" + headAttribute]} red={SSItem.isRed(renderState)}/>
+						<SSKey table={this.state.item._table} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_" + headAttribute} elementValue={this.state.item["_" + headAttribute]} red={SSItem.isRed(renderState)}/>
 						
 						{SSItem.itemAddRemove(renderState)}{"\u00a0"}this
-					</>);
+					</span>);
 				});
 			}, false);
 		});
 	}
 	
-	async save (action = {}) {
+	async save (props = {}) {
 		return true;
 	}
 	
-	async remove (action = {}) {
+	async remove (props = {}) {
 		return true;
 	}
 	
-	async validate (identityString, action = {}) {
-		if (!SSItem.isSSItem(action)) return false;
-		if (action.defaultUserInterface !== "SSObject") return false;
+	async validate (identityString, props = {}) {
+		if (!SSItem.isSSItem(props)) return false;
+		if (props.defaultUserInterface !== "SSObject") return false;
 		if (typeof identityString === "undefined") identityString = this.identityString;
 		const item = window.assembly.state["object"][identityString];
 		if (typeof item === "undefined") throw `Item not loaded: ["object", "${identityString}"]`;
@@ -72,7 +72,7 @@ export default class SSObject {
 	
 	// This is separate from the validate function since SSAssembly has to validate items that is not in the SSAssembly state yet
 	static validateItem (item) {
-		if (item._type !== "object") return false;
+		if (item._table !== "object") return false;
 		if (!validator.isValidKey(item._uuid)) return false;
 		return true;
 	}

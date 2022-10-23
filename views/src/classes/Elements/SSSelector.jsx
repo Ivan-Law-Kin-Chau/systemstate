@@ -14,7 +14,7 @@ export default class SSSelector extends React.Component {
 		return function (event) {
 			dispatchFunction({
 				"type": "SELECT", 
-				"array": classInstance.props.type + "_" + classInstance.props.headAttribute, 
+				"relationship": classInstance.props.table + "_" + classInstance.props.headAttribute, 
 				"identityString": classInstance.props.id, 
 				"action": "_element"
 			});

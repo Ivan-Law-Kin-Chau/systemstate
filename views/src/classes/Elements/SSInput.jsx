@@ -14,7 +14,7 @@ export default class SSInput extends React.Component {
 		return function (event) {
 			dispatchFunction({
 				"type": "SAVE", 
-				"targetType": classInstance.props.type, 
+				"targetTable": classInstance.props.table, 
 				"targetId": event.target.id, 
 				"attribute": classInstance.props.elementAttribute, 
 				"value": event.target.value

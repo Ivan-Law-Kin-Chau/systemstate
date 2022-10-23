@@ -8,18 +8,18 @@ export function generateKey () {
 	return key;
 }
 
-export function generateIdentity (generateKey, type) {
+export function generateIdentity (generateKey, table) {
 	if (typeof generateKey !== "function") throw "Invalid generateKey";
-	if (type === "object" || type === "link" || type === "property") {
+	if (table === "object" || table === "link" || table === "property") {
 		return {
 			_uuid: generateKey()
 		};
-	} else if (type === "group") {
+	} else if (table === "group") {
 		return {
 			_uuid: generateKey(), 
 			_parent: generateKey()
 		};
 	} else {
-		throw "Invalid type";
+		throw "Invalid table";
 	}
 }

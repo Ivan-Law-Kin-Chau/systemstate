@@ -91,7 +91,7 @@ export default class SSWindow extends React.Component {
 		return (<Async promiseFn={async () => {
 			/*
 			
-			When the load functions are called in the code below, this.props will be passed as an argument so that the item class instance can access the headAttribute prop through the action argument. This is important because without access to headAttribute, SSGroups will not know whether to render in its "group_parent" form or its "group_uuid" form
+			When the load functions are called in the code below, this.props will be passed as an argument so that the item class instance can access the headAttribute prop. This is important because without access to headAttribute, SSGroups will not know whether to render in its "group_parent" form or its "group_uuid" form
 			
 			*/
 			if (this.state.defaultUserInterface === null && this.state.loadAsUserInterface === null) {

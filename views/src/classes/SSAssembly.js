@@ -19,7 +19,7 @@ export default class SSAssembly {
 		
 		DO NOT REMOVE THIS COMMENT: a comment in the SSHead class references this
 		
-		In the four arrays below, the identity strings of the items will always be the same as when those items are first being loaded from the server, even if the user changed everything within an item, or removed an item, as long as the syncToServer function has not yet been called. (As for added items, they are added rather than loaded from the server, so there are no "identity strings of the items when they were first being loaded" for the identity strings in the four arrays to be the same with.) This ensures that the identity strings in the four arrays will not deviate from the SSSender cache unless the syncToServer function is called. Then, when the syncToServer function is called, the SSSender cache will be cleared and the identity strings in the four arrays will be updated according to the changes made by the user (if there are any)
+		In the four objects below, the identity strings of the items will always be the same as when those items are first being loaded from the server, even if the user changed everything within an item, or removed an item, as long as the syncToServer function has not yet been called. (As for added items, they are added rather than loaded from the server, so there are no "identity strings of the items when they were first being loaded" for the identity strings in the four objects to be the same with.) This ensures that the identity strings in the four objects will not deviate from the SSSender cache unless the syncToServer function is called. Then, when the syncToServer function is called, the SSSender cache will be cleared and the identity strings in the four objects will be updated according to the changes made by the user (if there are any)
 		
 		*/
 		this.state = {
@@ -52,11 +52,11 @@ export default class SSAssembly {
 		};
 	}
 	
-	identityToLoadCommand (type, identity) {
-		if (type === "group") {
-			return [`load_${type}`, `("${identity._uuid}", "${identity._parent}")`];
+	identityToLoadCommand (table, identity) {
+		if (table === "group") {
+			return [`load_${table}`, `("${identity._uuid}", "${identity._parent}")`];
 		} else {
-			return [`load_${type}`, `("${identity._uuid}")`];
+			return [`load_${table}`, `("${identity._uuid}")`];
 		}
 	}
 	
@@ -87,45 +87,45 @@ export default class SSAssembly {
 		return details;
 	}
 	
-	async getState (type, identity) {
-		var identityString = identifier.identityToString(type, identity);
-		if (typeof this.state[type][identityString] === "undefined") {
-			var loadCommand = this.identityToLoadCommand(type, identity);
+	async getState (table, identity) {
+		var identityString = identifier.identityToString(table, identity);
+		if (typeof this.state[table][identityString] === "undefined") {
+			var loadCommand = this.identityToLoadCommand(table, identity);
 			var item = await this.sender.send(loadCommand[0], loadCommand[1]);
 			if (item._success === true) {
-				let validatorClass = userInterfaces[convertor.convertCamelCaseToSS(type)];
+				let validatorClass = userInterfaces[convertor.convertCamelCaseToSS(table)];
 				if (validatorClass.validateItem(item) === true) {
-					this.state[type][identityString] = item;
+					this.state[table][identityString] = item;
 				} else {
-					throw `Invalid item: ["${type}", "${identityString}"]`;
+					throw `Invalid item: ["${table}", "${identityString}"]`;
 				}
 			} else if (item._success === false) {
-				throw `Item not found: ["${type}", "${identityString}"]`;
+				throw `Item not found: ["${table}", "${identityString}"]`;
 			}
 		}
 		
-		return [type, identityString];
+		return [table, identityString];
 	}
 	
-	async setState (type, identity, value) {
-		var identityString = identifier.identityToString(type, identity);
-		if (typeof this.state[type][identityString] === "undefined") {
+	async setState (table, identity, value) {
+		var identityString = identifier.identityToString(table, identity);
+		if (typeof this.state[table][identityString] === "undefined") {
 			if (value._remove === true) throw "Unable to remove item that does not exist";
-			var loadCommand = this.identityToLoadCommand(type, identity);
+			var loadCommand = this.identityToLoadCommand(table, identity);
 			var item = await this.sender.send(loadCommand[0], loadCommand[1]);
 			if (item._success === false) {
-				item = JSON.parse(JSON.stringify(this.defaults[type]));
-				item._type = type;
+				item = JSON.parse(JSON.stringify(this.defaults[table]));
+				item._table = table;
 				item._add = true;
 			}
 		} else {
 			if (value._add === true) throw "Unable to add item that already exists";
-			item = this.state[type][identityString];
+			item = this.state[table][identityString];
 		}
 		
 		if (value._removeItem === true) {
-			delete this.state[type][identityString];
-			return [type, identityString];
+			delete this.state[table][identityString];
+			return [table, identityString];
 		}
 		
 		if (value._removeAdd === true) {
@@ -147,15 +147,15 @@ export default class SSAssembly {
 			}
 		}
 		
-		let validatorClass = userInterfaces[convertor.convertCamelCaseToSS(type)];
+		let validatorClass = userInterfaces[convertor.convertCamelCaseToSS(table)];
 		if (validatorClass.validateItem(item) === true) {
 			item._success = true;
-			this.state[type][identityString] = item;
+			this.state[table][identityString] = item;
 		} else {
 			throw "Invalid item";
 		}
 		
-		return [type, identityString];
+		return [table, identityString];
 	}
 	
 	async syncWithServer () {
@@ -164,19 +164,19 @@ export default class SSAssembly {
 		// Escape double quotes
 		const delimit = input => input.split(`"`).join(`\\"`);
 		
-		for (let type in this.state) {
-			for (let identityString in this.state[type]) {
-				const item = this.state[type][identityString];
+		for (let table in this.state) {
+			for (let identityString in this.state[table]) {
+				const item = this.state[table][identityString];
 				if (item._add === true || item._remove === true) {
 					if (item._add === true) {
-						if (item._type === "object") {
-							this.sender.push(`add_${type}`, `("${delimit(item._uuid)}")`);
-						} else if (item._type === "group") {
-							this.sender.push(`add_${type}`, `("${delimit(item._uuid)}", "${delimit(item._parent)}")`);
-						} else if (item._type === "link") {
-							this.sender.push(`add_${type}`, `("${delimit(item._uuid)}", "${delimit(item._start)}", "${delimit(item._end)}", ${item._direction})`);
-						} else if (item._type === "property") {
-							this.sender.push(`add_${type}`, `("${delimit(item._uuid)}", "${delimit(item._parent)}", "${delimit(item._name)}", "${delimit(item._content)}")`);
+						if (item._table === "object") {
+							this.sender.push(`add_${table}`, `("${delimit(item._uuid)}")`);
+						} else if (item._table === "group") {
+							this.sender.push(`add_${table}`, `("${delimit(item._uuid)}", "${delimit(item._parent)}")`);
+						} else if (item._table === "link") {
+							this.sender.push(`add_${table}`, `("${delimit(item._uuid)}", "${delimit(item._start)}", "${delimit(item._end)}", ${item._direction})`);
+						} else if (item._table === "property") {
+							this.sender.push(`add_${table}`, `("${delimit(item._uuid)}", "${delimit(item._parent)}", "${delimit(item._name)}", "${delimit(item._content)}")`);
 						}
 						
 						this.sender.pushCallback(
@@ -187,45 +187,45 @@ export default class SSAssembly {
 					}
 					
 					if (item._remove === true) {
-						if (item._type === "object") {
-							this.sender.push(`remove_${type}`, `("${delimit(item._uuid)}")`);
-						} else if (item._type === "group") {
-							this.sender.push(`remove_${type}`, `("${delimit(item._uuid)}", "${delimit(item._parent)}")`);
-						} else if (item._type === "link") {
-							this.sender.push(`remove_${type}`, `("${delimit(item._uuid)}")`);
-						} else if (item._type === "property") {
-							this.sender.push(`remove_${type}`, `("${delimit(item._uuid)}")`);
+						if (item._table === "object") {
+							this.sender.push(`remove_${table}`, `("${delimit(item._uuid)}")`);
+						} else if (item._table === "group") {
+							this.sender.push(`remove_${table}`, `("${delimit(item._uuid)}", "${delimit(item._parent)}")`);
+						} else if (item._table === "link") {
+							this.sender.push(`remove_${table}`, `("${delimit(item._uuid)}")`);
+						} else if (item._table === "property") {
+							this.sender.push(`remove_${table}`, `("${delimit(item._uuid)}")`);
 						}
 						
 						this.sender.pushCallback(
 							(function () {
-								delete this.state[type][identifier.identityToString(type, item)];
+								delete this.state[table][identifier.identityToString(table, item)];
 							}).bind(this)
 						);
 					}
 				} else if (item._save === true) {
-					const identity = identifier.identityFromString(type, identityString);
-					if (item._type === "object") {
-						this.sender.push(`save_${type}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}")`);
-					} else if (item._type === "group") {
-						this.sender.push(`save_${type}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}", "${delimit(identity._parent)}", "${delimit(item._parent)}")`);
-					} else if (item._type === "link") {
-						this.sender.push(`save_${type}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}", "${delimit(item._start)}", "${delimit(item._end)}", ${item._direction})`);
-					} else if (item._type === "property") {
-						this.sender.push(`save_${type}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}", "${delimit(item._parent)}", "${delimit(item._name)}", "${delimit(item._content)}")`);
+					const identity = identifier.identityFromString(table, identityString);
+					if (item._table === "object") {
+						this.sender.push(`save_${table}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}")`);
+					} else if (item._table === "group") {
+						this.sender.push(`save_${table}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}", "${delimit(identity._parent)}", "${delimit(item._parent)}")`);
+					} else if (item._table === "link") {
+						this.sender.push(`save_${table}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}", "${delimit(item._start)}", "${delimit(item._end)}", ${item._direction})`);
+					} else if (item._table === "property") {
+						this.sender.push(`save_${table}`, `("${delimit(identity._uuid)}", "${delimit(item._uuid)}", "${delimit(item._parent)}", "${delimit(item._name)}", "${delimit(item._content)}")`);
 					}
 					
 					this.sender.pushCallback(
 						// Move the item to the updated location according to its new _uuid (and new _parent if the item is a group)
 						(function () {
-							var identityStringToDelete = identifier.identityToString(type, identity);
-							var identityStringToAdd = identifier.identityToString(type, item);
+							var identityStringToDelete = identifier.identityToString(table, identity);
+							var identityStringToAdd = identifier.identityToString(table, item);
 							
 							if (item._save) delete item._save;
 							
 							if (identityStringToDelete !== identityStringToAdd) {
-								delete this.state[type][identityStringToDelete];
-								this.state[type][identityStringToAdd] = item;
+								delete this.state[table][identityStringToDelete];
+								this.state[table][identityStringToAdd] = item;
 							}
 						}).bind(this)
 					);

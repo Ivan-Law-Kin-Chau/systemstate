@@ -5,7 +5,7 @@ export default class SSItemSelected {
 		this.identityString = identityString;
 		this.selectedString = "";
 		this.selected = {
-			array: null, 
+			relationship: null, 
 			identityString: null, 
 			action: null
 		};
@@ -15,20 +15,20 @@ export default class SSItemSelected {
 		if (JSON.stringify(this.selected) === JSON.stringify(selected)) {
 			this.selectedString = "";
 			this.selected = {
-				array: null, 
+				relationship: null, 
 				identityString: null, 
 				action: null
 			};
 		} else {
 			this.selected = selected;
-			this.selectedString = this.selected.array + "_" + this.selected.identityString + this.selected.action;
+			this.selectedString = this.selected.relationship + "_" + this.selected.identityString + this.selected.action;
 		}
 		
 		window.renderFunction();
 	}
 	
-	add (array = "") {
-		this.addAddAction(array);
+	add (relationship = "") {
+		this.addAddAction(relationship);
 	}
 	
 	remove () {
@@ -42,31 +42,31 @@ export default class SSItemSelected {
 		}
 	}
 	
-	async addAddAction (array = "") {
-		if (array === "") {
-			var type = this.selected.array.split("_")[0];
-			var headAttribute = this.selected.array.split("_")[1];
+	async addAddAction (relationship = "") {
+		if (relationship === "") {
+			var table = this.selected.relationship.split("_")[0];
+			var headAttribute = this.selected.relationship.split("_")[1];
 		} else {
-			var type = array.split("_")[0];
-			var headAttribute = array.split("_")[1];
+			var table = relationship.split("_")[0];
+			var headAttribute = relationship.split("_")[1];
 		}
 		
-		if (type === "object") {
+		if (table === "object") {
 			var details = {
 				_uuid: {generateKeyCode: 1}
 			};
-		} else if (type === "group") {
+		} else if (table === "group") {
 			var details = {
 				_uuid: {generateKeyCode: 1}, 
 				_parent: {generateKeyCode: 2}
 			};
-		} else if (type === "link") {
+		} else if (table === "link") {
 			var details = {
 				_uuid: {generateKeyCode: 1}, 
 				_start: {generateKeyCode: 2}, 
 				_end: {generateKeyCode: 3}
 			};
-		} else if (type === "property") {
+		} else if (table === "property") {
 			var details = {
 				_uuid: {generateKeyCode: 1}, 
 				_parent: {generateKeyCode: 2}
@@ -77,30 +77,30 @@ export default class SSItemSelected {
 		details["_" + headAttribute] = this.identityString;
 		details._add = true;
 		
-		var identity = identifier.identityFromString(type, identifier.identityToString(type, details));
-		await this.render(type, identity, details);
+		var identity = identifier.identityFromString(table, identifier.identityToString(table, details));
+		await this.render(table, identity, details);
 	}
 	
 	async removeAddAction () {
-		var type = this.selected.array.split("_")[0];
-		var identity = identifier.identityFromString(type, this.selected.identityString);
-		await this.render(type, identity, {_removeItem: true});
+		var table = this.selected.relationship.split("_")[0];
+		var identity = identifier.identityFromString(table, this.selected.identityString);
+		await this.render(table, identity, {_removeItem: true});
 	}
 	
 	async addRemoveAction () {
-		var type = this.selected.array.split("_")[0];
-		var identity = identifier.identityFromString(type, this.selected.identityString);
-		await this.render(type, identity, {_remove: true});
+		var table = this.selected.relationship.split("_")[0];
+		var identity = identifier.identityFromString(table, this.selected.identityString);
+		await this.render(table, identity, {_remove: true});
 	}
 	
 	async removeRemoveAction () {
-		var type = this.selected.array.split("_")[0];
-		var identity = identifier.identityFromString(type, this.selected.identityString);
-		await this.render(type, identity, {_removeRemove: true});
+		var table = this.selected.relationship.split("_")[0];
+		var identity = identifier.identityFromString(table, this.selected.identityString);
+		await this.render(table, identity, {_removeRemove: true});
 	}
 	
-	async render (type, identity, details) {
-		await window.assembly.setState(type, identity, details);
+	async render (table, identity, details) {
+		await window.assembly.setState(table, identity, details);
 		this.updateSelected(this.selected);
 	}
 }

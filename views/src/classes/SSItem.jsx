@@ -10,8 +10,8 @@ export default class SSItem {
 	}
 	
 	static isRed (renderState, action = "_element") {
-		if (renderState.selectedObject.array === null) return false;
-		if (renderState.item._type !== renderState.selectedObject.array.split("_")[0]) return false;
+		if (renderState.selectedObject.relationship === null) return false;
+		if (renderState.item._table !== renderState.selectedObject.relationship.split("_")[0]) return false;
 		if (renderState.identityString !== renderState.selectedObject.identityString) return false;
 		if (action !== renderState.selectedObject.action) return false;
 		return true;
@@ -23,11 +23,11 @@ export default class SSItem {
 		
 		return (<>
 			{renderState.item._add === true ? <>
-				{"\u00a0"}<SSAdd type={renderState.item._type} headAttribute={renderState.headAttribute} id={renderState.identityString} red={SSItem.isRed(renderState, "_add")}/>
+				{"\u00a0"}<SSAdd table={renderState.item._table} headAttribute={renderState.headAttribute} id={renderState.identityString} red={SSItem.isRed(renderState, "_add")}/>
 			</> : ""}
 			
 			{renderState.item._remove === true ? <>
-				{"\u00a0"}<SSRemove type={renderState.item._type} headAttribute={renderState.headAttribute} id={renderState.identityString} red={SSItem.isRed(renderState, "_remove")}/>
+				{"\u00a0"}<SSRemove table={renderState.item._table} headAttribute={renderState.headAttribute} id={renderState.identityString} red={SSItem.isRed(renderState, "_remove")}/>
 			</> : ""}
 		</>);
 	}
