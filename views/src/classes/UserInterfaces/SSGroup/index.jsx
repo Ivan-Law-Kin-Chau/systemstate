@@ -1,8 +1,10 @@
 import SSItem from "../../SSItem.jsx";
+import SSHead from "../../SSHead.js";
 
 import * as elements from "../../Elements/All.js";
 import * as validator from "../../../scripts/validator.js";
 import * as identifier from "../../../scripts/identifier.js";
+import * as listener from "../../../scripts/listener.js";
 
 import * as React from "react";
 
@@ -20,31 +22,45 @@ export default class SSGroup {
 	}
 	
 	async load (action = {}) {
-		this.state.item = window.assembly.state["group"][this.identityString];
-		if (await this.validate(this.identityString, action) !== true) {
-			console.log("Invalid SSGroup item: ");
-			console.log(this.state.item);
-			return "";
-		}
-		
-		var headAttribute = action.headAttribute ? action.headAttribute : null;
-		var renderState = {
-			item: this.state.item, 
-			identityString: this.identityString, 
-			selectedObject: action.selectedObject, 
-			headAttribute: headAttribute
-		};
-		
-		const SSSelector = elements["SSSelector"];
-		const SSKey = elements["SSKey"];
-		
-		return (<>
-			<SSSelector type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
+		return await listener.listen(async print => {
+			if (action.headAttribute === "parent") {
+				var key = this.identityString.split("_")[0];
+				var array = "group_uuid";
+			} else if (action.headAttribute === "uuid") {
+				var key = this.identityString.split("_")[1];
+				var array = "group_parent";
+			} else {
+				throw "Invalid head attribute: " + action.headAttribute;
+			}
 			
-			<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_" + headAttribute} elementValue={this.state.item["_" + headAttribute]} red={SSItem.isRed(renderState)}/>
-			
-			{SSItem.itemAddRemove(renderState)}
-		</>);
+			await new SSHead(key).forEachTypeOf([array], async (array, heads, parentHead, state) => {
+				await heads.forEachAsync(async head => {
+					this.state.item = await head.get();
+					if (await this.validate(this.identityString, action) !== true) {
+						console.log("Invalid SSGroup item: ", this.state.item);
+					}
+					
+					var headAttribute = action.headAttribute ? action.headAttribute : null;
+					var renderState = {
+						item: this.state.item, 
+						identityString: this.identityString, 
+						selectedObject: action.selectedObject, 
+						headAttribute: headAttribute
+					};
+					
+					const SSSelector = elements["SSSelector"];
+					const SSKey = elements["SSKey"];
+					
+					print(<>
+						<SSSelector type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
+						
+						<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_" + headAttribute} elementValue={this.state.item["_" + headAttribute]} red={SSItem.isRed(renderState)}/>
+						
+						{SSItem.itemAddRemove(renderState)}
+					</>);
+				});
+			}, false);
+		});
 	}
 	
 	async save (action = {}) {

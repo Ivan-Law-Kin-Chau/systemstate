@@ -7,7 +7,7 @@ export default class SSListener {
 			selected.updateSelected(action);
 			console.log("Select Element: " + action.identityString);
 		} else if (action.type === "OPEN") {
-			if (window.shiftPressed === true) {
+			if (window.shiftPressed === true || action.bypassShiftPressedCheck === true) {
 				window.location = `http://localhost:800/?key=${action.key}`;
 				console.log("Open Key: " + action.key);
 			}

@@ -1,8 +1,10 @@
 import SSItem from "../../SSItem.jsx";
+import SSHead from "../../SSHead.js";
 
 import * as elements from "../../Elements/All.js";
 import * as validator from "../../../scripts/validator.js";
 import * as identifier from "../../../scripts/identifier.js";
+import * as listener from "../../../scripts/listener.js";
 
 import * as React from "react";
 
@@ -20,47 +22,51 @@ export default class SSProperty {
 	}
 	
 	async load (action = {}) {
-		this.state.item = window.assembly.state["property"][this.identityString];
-		if (await this.validate(this.identityString, action) === false) {
-			console.log("Invalid SSProperty item: ");
-			console.log(this.state.item);
-			return "";
-		}
-		
-		var headAttribute = action.headAttribute ? action.headAttribute : null;
-		var renderState = {
-			item: this.state.item, 
-			identityString: this.identityString, 
-			selectedObject: action.selectedObject, 
-			headAttribute: headAttribute
-		};
-		
-		const SSThis = elements["SSThis"];
-		const SSKey = elements["SSKey"];
-		const SSInput = elements["SSInput"];
-		const SSTextarea = elements["SSTextarea"];
-		
-		return (<>
-			{"uuid" === headAttribute ? <>
-				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
-				
-				{SSItem.itemAddRemove(renderState)}
-			</> : <>
-				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_uuid"} elementValue={this.state.item["_uuid"]} red={SSItem.isRed(renderState)}/>
-			</>}:{"\u00a0"}
-			
-			{"parent" === headAttribute ? <>
-				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
-				
-				{SSItem.itemAddRemove(renderState)}
-			</> : <>
-				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_parent"} elementValue={this.state.item["_parent"]} red={SSItem.isRed(renderState)}/>
-			</>}:{"\u00a0"}
-			
-			<SSInput type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_name"} elementValue={this.state.item["_name"]} red={SSItem.isRed(renderState)}/>:{"\u00a0"}<br/>
-			
-			<SSTextarea type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_content"} elementValue={this.state.item["_content"]} red={SSItem.isRed(renderState)}/>
-		</>);
+		return await listener.listen(async print => {
+			await new SSHead(this.identityString).forEachTypeOf(["property_uuid"], async (array, heads, parentHead, state) => {
+				await heads.forEachAsync(async head => {
+					this.state.item = await head.get();
+					if (await this.validate(this.identityString, action) === false) {
+						console.log("Invalid SSProperty item: ", this.state.item);
+					}
+					
+					var headAttribute = action.headAttribute ? action.headAttribute : null;
+					var renderState = {
+						item: this.state.item, 
+						identityString: this.identityString, 
+						selectedObject: action.selectedObject, 
+						headAttribute: headAttribute
+					};
+					
+					const SSThis = elements["SSThis"];
+					const SSKey = elements["SSKey"];
+					const SSInput = elements["SSInput"];
+					const SSTextarea = elements["SSTextarea"];
+					
+					print(<>
+						{"uuid" === headAttribute ? <>
+							<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
+							
+							{SSItem.itemAddRemove(renderState)}
+						</> : <>
+							<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_uuid"} elementValue={this.state.item["_uuid"]} red={SSItem.isRed(renderState)}/>
+						</>}:{"\u00a0"}
+						
+						{"parent" === headAttribute ? <>
+							<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
+							
+							{SSItem.itemAddRemove(renderState)}
+						</> : <>
+							<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_parent"} elementValue={this.state.item["_parent"]} red={SSItem.isRed(renderState)}/>
+						</>}:{"\u00a0"}
+						
+						<SSInput type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_name"} elementValue={this.state.item["_name"]} red={SSItem.isRed(renderState)}/>:{"\u00a0"}<br/>
+						
+						<SSTextarea type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_content"} elementValue={this.state.item["_content"]} red={SSItem.isRed(renderState)}/>
+					</>);
+				});
+			}, false);
+		});
 	}
 	
 	async save (action = {}) {

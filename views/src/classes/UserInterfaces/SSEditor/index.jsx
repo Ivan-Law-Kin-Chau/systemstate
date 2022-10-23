@@ -4,9 +4,11 @@ import SSExpander from "../../SSExpander.js";
 import SSListener from "../../SSListener.js";
 import SSWindow from "../../SSWindow.jsx";
 import SSItemSelected from "../../SSItemSelected.js";
+import SSHead from "../../SSHead.js";
 
 import * as convertor from "../../../scripts/convertor.js";
 import * as identifier from "../../../scripts/identifier.js";
+import * as listener from "../../../scripts/listener.js";
 
 import * as React from "react";
 
@@ -52,91 +54,58 @@ export default class SSEditor {
 			}
 		})();
 		
-		// First, get the dependencies of the editor using the editor's head identity string as the key (despite one being an identity string and the another being a key, they can be used interexchangably here because we asserted the length of the identity string in the constructor)
-		var dependencies = await SSExpander.expand(this.identityString);
-		window.assembly.clientOnlyMode = true;
-		
-		// Then, for each dependency, load the element that corresponds to it
-		this.state = {};
-		for (let array in dependencies) {
-			this.state[array] = [];
-			for (let item of dependencies[array]) {
-				const type = array.split("_")[0];
-				if (array === "group_uuid") {
-					this.state[array].push(
-						await window.assembly.getState(type, {
-							_uuid: this.identityString, 
-							_parent: item._parent
-						})
-					);
-				} else if (array === "group_parent") {
-					this.state[array].push(
-						await window.assembly.getState(type, {
-							_uuid: item._uuid, 
-							_parent: this.identityString
-						})
-					);
-				} else {
-					this.state[array].push(
-						await window.assembly.getState(type, {
-							_uuid: item._uuid
-						})
-					);
-				}
-			}
-		}
-		
-		let orderOfArrays = ["group_parent", "object_uuid", "group_uuid", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent", "property_name", "property_content"];
-		let renderOutput = [];
-		
-		for (const array of orderOfArrays) {
-			if (!(this.state[array])) continue;
-			let arrayOutput = [];
-			
-			let type = array.split("_")[0];
-			let headAttribute = array.split("_")[1];
-			
-			if (type === "group") {
-				if (headAttribute === "uuid") {
-					headAttribute = "parent";
-				} else if (headAttribute === "parent") {
-					headAttribute = "uuid";
-				}
-			}
-			
-			for (let index = 0; index < this.state[array].length; index++) {
-				const type = this.state[array][index][0];
-				const identityString = this.state[array][index][1];
-				const keyPrefix = `${action.windowString}>${type}_${identityString}`;
+		const editor = this;
+		const renderOutput = await listener.listen(async print => {
+			// Get the dependencies of the editor using the editor's head identity string as the key (despite one being an identity string and the another being a key, they can be used interexchangably here because we asserted the length of the identity string above)
+			await new SSHead(this.identityString).forEachTypeOf(["group_parent", "object_uuid", "group_uuid", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent", "property_name", "property_content"], async (array, heads, parentHead, state) => {
+				let type = array.split("_")[0];
+				let headAttribute = array.split("_")[1];
 				
-				if (array === "group_uuid" && index === 0) {
-					arrayOutput.push(<WindowSpan key={`${keyPrefix}_colon_start`}>:{"\u00a0"}</WindowSpan>);
+				if (type === "group") {
+					if (headAttribute === "uuid") {
+						headAttribute = "parent";
+					} else if (headAttribute === "parent") {
+						headAttribute = "uuid";
+					}
 				}
 				
-				if (array.split("_")[0] === "link" || array.split("_")[0] === "property") arrayOutput.push(<br key={`${keyPrefix}_br`}/>);
-				
-				const userInterface = convertor.convertCamelCaseToSS(type);
-				const windowString = `${keyPrefix}_item`;
-				const ref = React.createRef();
-				
-				/*
-				
-				Uses of variables or props named headAttribute throughout the entire codebase: 
-					1. When loading a user interface, know which element should be replaced by an SSThis element
-					2. When selecting an element, know the identityString of the parent window to put in the action object when calling the dispatch function in the SSListener class
-				
-				*/
-				arrayOutput.push(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} defaultUserInterface={userInterface} selectedObject={this.selected.selected} headAttribute={headAttribute}/>);
-				
-				if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && index + 1 < this.state[array].length) arrayOutput.push(<WindowSpan key={`${keyPrefix}_comma`}>,{"\u00a0"}</WindowSpan>);
-				
-				if (array === "group_parent" && index === this.state[array].length - 1) {
-					arrayOutput.push(<WindowSpan key={`${keyPrefix}_colon_end`}>:{"\u00a0"}</WindowSpan>);
-				}
-			}
-			
-			renderOutput = [...renderOutput, ...arrayOutput];
-		}
+				state.index = 0;
+				await heads.forEachAsync(async head => {
+					await head.get();
+					
+					const type = head.parentHead.tempType.split("_")[0];
+					const identityString = head.identityString;
+					const keyPrefix = `${action.windowString}>${type}_${identityString}`;
+					
+					if (array === "group_uuid" && state.index === 0) {
+						print(<WindowSpan key={`${keyPrefix}_colon_start`}>:{"\u00a0"}</WindowSpan>);
+					}
+					
+					if (array.split("_")[0] === "link" || array.split("_")[0] === "property") print(<br key={`${keyPrefix}_br`}/>);
+					
+					const userInterface = convertor.convertCamelCaseToSS(type);
+					const windowString = `${keyPrefix}_item`;
+					const ref = React.createRef();
+					
+					/*
+					
+					Uses of variables or props named headAttribute throughout the entire codebase: 
+						1. When loading a user interface, know which element should be replaced by an SSThis element
+						2. When selecting an element, know the identityString of the parent window to put in the action object when calling the dispatch function in the SSListener class
+					
+					*/
+					print(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={action.selectedWindow} setSelectedWindow={action.setSelectedWindow} setSelectedWindowWithRef={action.setSelectedWindow(windowString, ref)} ref={ref} defaultUserInterface={userInterface} selectedObject={editor.selected.selected} headAttribute={headAttribute}/>);
+					
+					if ((array === "group_uuid" || array === "object_uuid" || array === "group_parent") && state.index + 1 < heads.length) print(<WindowSpan key={`${keyPrefix}_comma`}>,{"\u00a0"}</WindowSpan>);
+					
+					if (array === "group_parent" && state.index === heads.length - 1) {
+						print(<WindowSpan key={`${keyPrefix}_colon_end`}>:{"\u00a0"}</WindowSpan>);
+					}
+					
+					state.index++;
+				});
+			});
+		});
 		
 		/*
 		

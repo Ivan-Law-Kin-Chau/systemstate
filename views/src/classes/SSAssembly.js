@@ -9,13 +9,6 @@ export default class SSAssembly {
 	constructor () {
 		this.sender = new SSSender();
 		
-		/*
-		
-		clientOnlyMode will be set to false when SSAssembly initializes and whenever the syncWithServer function is called, but set to true when the SSItemSelected class rerenders the Systemstate Editor. If clientOnlyMode is false, SSExpander expands by calling the search function on the server. If clientOnlyMode is true, SSExpander expands by searching within the state of SSAssembly
-		
-		*/
-		this.clientOnlyMode = false;
-		
 		this.itemPrototype = {
 			_add: false, 
 			_remove: false, 
@@ -67,14 +60,24 @@ export default class SSAssembly {
 		}
 	}
 	
-	async generateKeys (details) {
+	/*
+	
+	When generateKeys is used, new objects will be automatically added with the generated keys. But if generateKeys is used to update the _uuid of an object, the _uuid of the original object is supposed to be updated into the generated key, so no new object should be added. In this case, set suppressObjectAddition to true
+	
+	*/
+	async generateKeys (details, suppressObjectAddition = false) {
 		let generateKeyCodeLibrary = [];
 		for (let attribute in details) {
 			if (typeof details[attribute] === "object" && typeof details[attribute].generateKeyCode === "number") {
 				if (typeof generateKeyCodeLibrary[details[attribute].generateKeyCode] === "undefined") {
 					const key = generator.generateKey();
 					generateKeyCodeLibrary[details[attribute].generateKeyCode] = key;
-					await this.set("object", {_uuid: key});
+					
+					// If suppressObjectAddition is set to true, the new object would be added, and then immediately removed. The reason why the adding is still necessary is because it is the adding that checks whether the generated key is already used by another item or not
+					await this.setState("object", {_uuid: key}, {_uuid: key});
+					if (suppressObjectAddition === true) {
+						await this.setState("object", {_uuid: key}, {_uuid: key, _removeItem: true});
+					}
 				}
 				
 				details[attribute] = generateKeyCodeLibrary[details[attribute].generateKeyCode];
@@ -82,35 +85,6 @@ export default class SSAssembly {
 		}
 		
 		return details;
-	}
-	
-	async get (type, details) {
-		details = await this.generateKeys(details);
-		await this.getState(type, details);
-		return this.state[type][identifier.identityToString(type, details)];
-	}
-	
-	async set (type, details) {
-		details = await this.generateKeys(details);
-		var identity = JSON.parse(JSON.stringify(details));
-		for (let attribute in identity) {
-			if (!(attribute === "_uuid" || (attribute === "_parent" && type === "group"))) delete identity[attribute];
-		}
-		
-		var value = JSON.parse(JSON.stringify(details));
-		for (let attribute in value) {
-			if (attribute === "_uuidNew") {
-				value._uuid = value._uuidNew;
-				delete value._uuidNew;
-			}
-			
-			if (attribute === "_parentNew" && type === "group") {
-				value._parent = value._parentNew;
-				delete value._parentNew;
-			}
-		}
-		
-		await this.setState(type, identity, value);
 	}
 	
 	async getState (type, identity) {
@@ -261,7 +235,6 @@ export default class SSAssembly {
 		
 		this.sender.push(`undefine`, `()`);
 		if (await this.sender.execute() === true) {
-			this.clientOnlyMode = false;
 			return true;
 		} else {
 			throw "Unable to execute script";

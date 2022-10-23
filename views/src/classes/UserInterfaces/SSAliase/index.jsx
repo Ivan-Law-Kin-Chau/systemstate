@@ -1,12 +1,14 @@
-import Aliase from "./Aliase.jsx";
+import SSKey from "../../Elements/SSKey.jsx";
 
 import SSExpander from "../../SSExpander.js";
 import SSListener from "../../SSListener.js";
+import SSHead from "../../SSHead.js";
 
 import * as convertor from "../../../scripts/convertor.js";
 import * as validator from "../../../scripts/validator.js";
 import * as generator from "../../../scripts/generator.js";
 import * as identifier from "../../../scripts/identifier.js";
+import * as listener from "../../../scripts/listener.js";
 
 import * as React from "react";
 
@@ -22,97 +24,109 @@ export default class SSAliase {
 	}
 	
 	async add (action = {}) {
-		return await window.assembly.set("property", {
-			_uuid: {generateKeyCode: 1}, 
-			_parent: this.identityString, 
-			_name: "Target", 
-			_content: {generateKeyCode: 2}, 
-			_add: true
+		await new SSHead(this.identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+			await heads.pushHead({generateKeyCode: 1}, async head => {
+				await head.set({
+					_uuid: head.identityString, 
+					_parent: this.identityString, 
+					_name: "Target", 
+					_content: {generateKeyCode: 2}, 
+					_add: true
+				});
+			});
+		});
+	}
+	
+	dispatch (action) {
+		if (action.type === "OPEN") {
+			SSListener.dispatch(null, action);
+		} else if (action.type === "SAVE") {
+			console.log({
+				type: "CUSTOM_SAVE", 
+				userInterface: "SSAliase", 
+				target: action.value
+			});
+			
+			this.state.target = action.value;
+		}
+	}
+	
+	onClick () {
+		SSListener.dispatch(null, {
+			"type": "OPEN", 
+			"key": this.state.target, 
+			"bypassShiftPressedCheck": true
 		});
 	}
 	
 	async load (action = {}) {
-		let content;
-		const userInterfaceClassInstance = this;
-		if (await (async function () {
-			var dependencies = await SSExpander.expand(userInterfaceClassInstance.identityString);
-			if (dependencies["property_parent"]) {
-				for (let identity of dependencies["property_parent"]) {
-					const item = await window.assembly.get("property", identity);
+		return await listener.listen(async print => {
+			let notInstantiated = true;
+			await new SSHead(this.identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+				await heads.forEachAsync(async head => {
+					const item = await head.get();
 					if (item._success === true && item._name === "Target") {
 						if (validator.isValidKey(item._content) === true) {
-							content = item._content;
-							userInterfaceClassInstance.state.identityString = item._uuid;
-							return true;
+							this.state.target = item._content;
+							print(<>
+								<SSKey id={item._uuid} elementValue={this.state.target} dispatch={this.dispatch.bind(this)}/> <button onClick={this.onClick.bind(this)}>(Aliase)</button>
+							</>);
+							notInstantiated = false;
 						}
 					}
-				}
-			}
+				});
+			});
 			
-			return false;
-		})() === true) {
-			return (<SSEditorContext.Provider value={action => SSListener.dispatch(action)}>
-				<Aliase source={this.state.identityString} target={content} save={this.save.bind(this)}/>
-			</SSEditorContext.Provider>);
-		} else {
-			console.log("User interface not yet initiated properly! Call the add() method first");
-			return "";
-		}
+			if (notInstantiated === true) {
+				console.log("User interface not yet instantiated properly! Call the add() method first");
+			}
+		});
 	}
 	
 	async save (action = {}) {
-		var dependencies = await SSExpander.expand(this.identityString);
-		if (dependencies["property_parent"]) {
-			for (let identity of dependencies["property_parent"]) {
-				const item = await window.assembly.get("property", identity);
+		await new SSHead(this.identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+			await heads.forEachAsync(async head => {
+				const item = await head.get();
 				if (item._success === true && item._name === "Target") {
-					if (validator.isValidKey(action.target) === true) {
-						await window.assembly.set("property", {
-							_uuid: item._uuid, 
-							_parent: this.identityString, 
-							_name: "Target", 
-							_content: action.target
-						});
+					if (validator.isValidKey(this.state.target) === true) {
+						await head.set({_content: this.state.target});
 					}
 				}
-			}
-		}
+			});
+		});
 		
 		return true;
 	}
 	
 	async remove (action = {}) {
-		var dependencies = await SSExpander.expand(this.identityString);
-		if (dependencies["property_parent"]) {
-			for (let identity of dependencies["property_parent"]) {
-				const item = await window.assembly.get("property", identity);
+		await new SSHead(this.identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+			await heads.forEachAsync(async head => {
+				const item = await head.get();
 				if (item._success === true && item._name === "Target") {
 					if (validator.isValidKey(item._content) === true) {
-						await window.assembly.set("property", {
-							_uuid: item._uuid, 
-							_remove: true
-						});
+						await head.set({_remove: true});
 					}
 				}
-			}
-		}
+			});
+		});
 		
 		return true;
 	}
 	
 	async validate (identityString, action = {}) {
-		var dependencies = await SSExpander.expand(identityString);
-		if (dependencies["property_parent"]) {
-			for (let identity of dependencies["property_parent"]) {
-				const item = await window.assembly.get("property", identity);
-				if (item._success === true && item._name === "Target") {
-					if (validator.isValidKey(item._content) === true) {
-						return true;
+		return new Promise(async resolve => {
+			await new SSHead(identityString).forEachTypeOf(["property_parent"], async (array, heads) => {
+				await heads.forEachAsync(async head => {
+					const item = await head.get();
+					if (item._success === true && item._name === "Target") {
+						if (validator.isValidKey(item._content) === true) {
+							resolve(true);
+						}
 					}
-				}
-			}
-		}
-		
-		return false;
+				});
+			});
+			
+			resolve(false);
+		});
 	}
 }

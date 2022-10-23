@@ -1,10 +1,8 @@
 import * as identifier from "../scripts/identifier.js";
 
 export default class SSExpander {
-	static async expand (key) {
+	static async expand (key, sendSearches, searchArrays = ["object_uuid", "group_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"]) {
 		let output = {};
-		
-		const searchArrays = ["object_uuid", "group_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
 		
 		/*
 		
@@ -14,7 +12,7 @@ export default class SSExpander {
 		for (const array of searchArrays) {
 			const type = array.split("_")[0];
 			const headAttribute = array.split("_")[1];
-			const searchResults = JSON.parse(JSON.stringify((await window.assembly.sender.send("search", `("${headAttribute}", "${key}", "${type}")`))._output));
+			const searchResults = sendSearches === true ? JSON.parse(JSON.stringify((await window.assembly.sender.send("search", `("${headAttribute}", "${key}", "${type}")`))._output)) : [];
 			
 			let searchArea = window.assembly.state[type];
 			for (const identityString in searchArea) {
@@ -33,7 +31,7 @@ export default class SSExpander {
 				}
 			}
 			
-			if (searchResults.length > 0) output[array] = searchResults;
+			output[array] = searchResults;
 		}
 		
 		return output;

@@ -42,7 +42,7 @@ export default class SSItemSelected {
 		}
 	}
 	
-	addAddAction (array = "") {
+	async addAddAction (array = "") {
 		if (array === "") {
 			var type = this.selected.array.split("_")[0];
 			var headAttribute = this.selected.array.split("_")[1];
@@ -73,35 +73,34 @@ export default class SSItemSelected {
 			};
 		}
 		
+		details = await window.assembly.generateKeys(details);
 		details["_" + headAttribute] = this.identityString;
 		details._add = true;
-		this.render(type, details);
+		
+		var identity = identifier.identityFromString(type, identifier.identityToString(type, details));
+		await this.render(type, identity, details);
 	}
 	
-	removeAddAction () {
+	async removeAddAction () {
 		var type = this.selected.array.split("_")[0];
-		var details = identifier.identityFromString(type, this.selected.identityString);
-		details._removeItem = true;
-		this.render(type, details);
+		var identity = identifier.identityFromString(type, this.selected.identityString);
+		await this.render(type, identity, {_removeItem: true});
 	}
 	
-	addRemoveAction () {
+	async addRemoveAction () {
 		var type = this.selected.array.split("_")[0];
-		var details = identifier.identityFromString(type, this.selected.identityString);
-		details._remove = true;
-		this.render(type, details);
+		var identity = identifier.identityFromString(type, this.selected.identityString);
+		await this.render(type, identity, {_remove: true});
 	}
 	
-	removeRemoveAction () {
+	async removeRemoveAction () {
 		var type = this.selected.array.split("_")[0];
-		var details = identifier.identityFromString(type, this.selected.identityString);
-		details._removeRemove = true;
-		this.render(type, details);
+		var identity = identifier.identityFromString(type, this.selected.identityString);
+		await this.render(type, identity, {_removeRemove: true});
 	}
 	
-	async render (type, details) {
-		window.assembly.clientOnlyMode = true;
-		await window.assembly.set(type, details);
+	async render (type, identity, details) {
+		await window.assembly.setState(type, identity, details);
 		this.updateSelected(this.selected);
 	}
 }

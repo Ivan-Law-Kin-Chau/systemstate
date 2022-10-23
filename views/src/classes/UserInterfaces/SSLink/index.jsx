@@ -1,8 +1,10 @@
 import SSItem from "../../SSItem.jsx";
+import SSHead from "../../SSHead.js";
 
 import * as elements from "../../Elements/All.js";
 import * as validator from "../../../scripts/validator.js";
 import * as identifier from "../../../scripts/identifier.js";
+import * as listener from "../../../scripts/listener.js";
 
 import * as React from "react";
 
@@ -20,52 +22,56 @@ export default class SSLink {
 	}
 	
 	async load (action = {}) {
-		this.state.item = window.assembly.state["link"][this.identityString];
-		if (await this.validate(this.identityString, action) !== true) {
-			console.log("Invalid SSLink item: ");
-			console.log(this.state.item);
-			return "";
-		}
-		
-		var headAttribute = action.headAttribute ? action.headAttribute : null;
-		var renderState = {
-			item: this.state.item, 
-			identityString: this.identityString, 
-			selectedObject: action.selectedObject, 
-			headAttribute: headAttribute
-		};
-		
-		const SSThis = elements["SSThis"];
-		const SSKey = elements["SSKey"];
-		const SSButton = elements["SSButton"];
-		
-		return (<>
-			{"uuid" === headAttribute ? <>
-				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
-				
-				{SSItem.itemAddRemove(renderState)}
-			</> : <>
-				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_uuid"} elementValue={renderState.item["_uuid"]} red={SSItem.isRed(renderState)}/>
-			</>}:{"\u00a0"}
-			
-			{"start" === headAttribute ? <>
-				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
-				
-				{SSItem.itemAddRemove(renderState)}
-			</> : <>
-				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_start"} elementValue={renderState.item["_start"]} red={SSItem.isRed(renderState)}/>
-			</>}{"\u00a0"}
-			
-			<SSButton type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_direction"} elementValue={renderState.item["_direction"]} red={SSItem.isRed(renderState)}/>{"\u00a0"}
-			
-			{"end" === headAttribute ? <>
-				<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
-				
-				{SSItem.itemAddRemove(renderState)}
-			</> : <>
-				<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_end"} elementValue={renderState.item["_end"]} red={SSItem.isRed(renderState)}/>
-			</>}
-		</>);
+		return await listener.listen(async print => {
+			await new SSHead(this.identityString).forEachTypeOf(["link_uuid"], async (array, heads, parentHead, state) => {
+				await heads.forEachAsync(async head => {
+					this.state.item = await head.get();
+					if (await this.validate(this.identityString, action) !== true) {
+						console.log("Invalid SSLink item: ", this.state.item);
+					}
+					
+					var headAttribute = action.headAttribute ? action.headAttribute : null;
+					var renderState = {
+						item: this.state.item, 
+						identityString: this.identityString, 
+						selectedObject: action.selectedObject, 
+						headAttribute: headAttribute
+					};
+					
+					const SSThis = elements["SSThis"];
+					const SSKey = elements["SSKey"];
+					const SSButton = elements["SSButton"];
+					
+					print(<>
+						{"uuid" === headAttribute ? <>
+							<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
+							
+							{SSItem.itemAddRemove(renderState)}
+						</> : <>
+							<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_uuid"} elementValue={renderState.item["_uuid"]} red={SSItem.isRed(renderState)}/>
+						</>}:{"\u00a0"}
+						
+						{"start" === headAttribute ? <>
+							<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
+							
+							{SSItem.itemAddRemove(renderState)}
+						</> : <>
+							<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_start"} elementValue={renderState.item["_start"]} red={SSItem.isRed(renderState)}/>
+						</>}{"\u00a0"}
+						
+						<SSButton type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_direction"} elementValue={renderState.item["_direction"]} red={SSItem.isRed(renderState)}/>{"\u00a0"}
+						
+						{"end" === headAttribute ? <>
+							<SSThis type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} red={SSItem.isRed(renderState)}/>
+							
+							{SSItem.itemAddRemove(renderState)}
+						</> : <>
+							<SSKey type={this.state.item._type} headAttribute={headAttribute} id={this.identityString} elementAttribute={"_end"} elementValue={renderState.item["_end"]} red={SSItem.isRed(renderState)}/>
+						</>}
+					</>);
+				});
+			}, false);
+		});
 	}
 	
 	async save (action = {}) {
