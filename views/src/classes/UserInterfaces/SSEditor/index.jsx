@@ -1,6 +1,5 @@
 import WindowSpan from "./WindowSpan.jsx";
 
-import SSExpander from "../../SSExpander.js";
 import SSListener from "../../SSListener.js";
 import SSWindow from "../../SSWindow.jsx";
 import SSItemSelected from "../../SSItemSelected.js";

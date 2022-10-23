@@ -1,6 +1,5 @@
 import SSKey from "../../Elements/SSKey.jsx";
 
-import SSExpander from "../../SSExpander.js";
 import SSListener from "../../SSListener.js";
 import SSHead from "../../SSHead.js";
 
