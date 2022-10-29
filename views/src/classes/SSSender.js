@@ -39,6 +39,7 @@ export default class SSSender {
 			console.log(command);
 			return new Promise ((resolve, reject) => {
 				const sender = this;
+				
 				var terminal = new XMLHttpRequest();
 				terminal.onreadystatechange = async function () {
 					if (this.readyState == 4 && this.status == 200) {
@@ -47,6 +48,7 @@ export default class SSSender {
 						resolve(response);
 					}
 				}
+				
 				terminal.open("POST", "http://localhost:800/terminal", true);
 				terminal.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 				

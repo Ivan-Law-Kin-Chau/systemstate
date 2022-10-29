@@ -65,73 +65,112 @@ h1, h3, p {
 
 
 
-<h1>Terminology</h1>
+<h1>Technical Information</h1>
 
-<h3>Representation</h3>
-<p>A user interface is the representation of a concept in your browser. It can contain as many elements as it takes to represent the concept and facilitate your journey of using the Systemstate Editor to do things with various concepts. <b>SSEditor</b>, <b>SSAliase</b>, and <b>SSStory</b> are examples of user interfaces. Each user interface uses six necessary parts to represent a concept: </p><ul>
-	<li>Its head identity string, used by the software as the base point of an instance of that concept</li>
-	<li>Four functions to add, load, save and remove an instance of that concept respectively</li>
-	<li>A validate function to check whether the data at hand is a valid instance of that concept or not</li>
+<h3>Database Schema</h3>
+<p>In a database used by the Systemstate Editor, there are four tables: </p><ul>
+	<li>object: uuid (primary key)</li>
+	<li>group: uuid (primary key), parent (primary key)</li>
+	<li>link: uuid (primary key), start (key), end (key), direction</li>
+	<li>property: uuid (primary key), parent (key), name, content</li>
 </ul>
-<p>An item is a special kind of user interface which is low-level enough that it is the representation of an actual tuple from the database in your browser, hence it contains all the elements whose attributes make up the tuple. Since there are four tables in the database, there are four kinds of items as well: <b>SSObject</b>, <b>SSGroup</b>, <b>SSLink</b> and <b>SSProperty</b>. </p>
-<p>An element is the representation of an attribute of a tuple from the database, as an HTML element in your browser, such as <b>SSSelector</b>s and <b>SSKey</b>s. </p>
+<p>The primary key (which is a kind of keys) of a tuple can be used to identify that tuple from its specific table. Building on top of these primary keys, two ways can be used to identify a tuple, generally, from any table: </b><ul>
+	<li>Keys: An eight-character-long alphanumeric string. Given one key, tuples from the object, link and property tables can be identified with its uuid attribute; and given two keys, tuples from the group table can be identified with its uuid and parent attributes. </li>
+	<li>Identity strings: The same as keys, except the identity string of a group is equal to its two keys joined together with an underscore. This way, we can use identity strings like keys, but while knowing that each identity string can always, in itself, be sufficient to identify a tuple even if that tuple is in the group table. </li>
+</ul>
+<p>All of the eight attributes that are labelled as keys are foreign keys to the uuid attribute from the object table, making it so that there are no unintentional duplicates between keys used across different tables. So whenever you have a key, you can search the tables to get all the tuples with the key in one of the eight locations above, called the eight relationships: </p><ul>
+	<li>object_uuid</li>
+	<li>group_uuid</li>
+	<li>group_parent</li>
+	<li>link_uuid</li>
+	<li>link_start</li>
+	<li>link_end</li>
+	<li>property_uuid</li>
+	<li>property_parent</li>
+</ul>
+<p>This way, using a key is as a node and a relationship as an edge, the Systemstate Editor can simulate a hypergraph with a relational database. We call this system is called the Four Tables and Eight Relationships. </p>
 
-<h3>Identifiers</h3>
-<p>A key is an eight-character-long alphanumeric string for identifying items. <b>SSObject</b>s, <b>SSLink</b>s and <b>SSProperty</b>s can be identified using one key (representing its _uuid attribute), while <b>SSGroup</b>s can be identified using two keys (representing its _uuid and _parent attributes). </p>
-<p>An identity strings is the same as a key, except for each <b>SSGroup</b>, we can get its identity string by joining its two keys together with an underscore. The reason why this is a thing apart from keys is so that we can use identity strings with the assurance that each identity string can always, in itself, be sufficient to identify an item even if that item is an <b>SSGroup</b>. </p>
+<h3>Caching and Syncing Data</h3>
+<p>The back-end provides an API with these functions: </p><ul>
+	<li>Add, load, save and remove functions for tuples from all four tables. </li>
+	<li>A search function to search a table for tuples with a specific value for a specific attribute. </li>
+	<li>An undefine function to clear all tuples from the object table that are not used as foreign keys anywhere else, since an empty object that represents nothing is meaningless. </li>
+</ul>
+<p>The <b>SSSender</b> class in the front-end handles all interactions with this back-end API. It also caches all the data provided by the search function of the back-end API, while exposing a clearCache function to clear it. </p>
+<p>The <b>SSAssembly</b> class stores the data as seen from the front-end, including things like newly added data that are not yet on the database, or changes to the data that has not yet been saved. It does this with a JavaScript object called state, which contains four child JavaScript objects that list all the objects, groups, links and properties currently on the front-end, respectively. Each of these child JavaScript objects contain attribute-value pairs: the identity string of a tuple as the attribute and the information on the tuple, called an item, as the value. </p>
+<p>If the user adds an item, the identify string of that item will be added to the child JavaScript object as a new attribute, but subsequent changes to that item follows the following rule as well. If the user changes an item (this includes removing it), that changes its value, but not its attribute, of the child JavaScript object. Therefore, we can be sure that, unless the syncToServer function is called (we will talk about that later), no attribute from the <b>SSAssembly</b> state ever deviates from its corresponding identity string in the cache, if it exists; and that identity string in the cache, in turn, does not deviate from the database. </p>
+<p>So whenever the front-end has to know the items with the eight relationships to a certain key, it can ask the <b>SSSender</b> class for the identity strings, then append the identity strings that are only on the <b>SSAssembly</b> state, but not yet in the database and the cache. There will be no identity string that are no longer in the <b>SSAssembly</b> state, but still in the database and the cache to remove. And there will be no inconsistency between the <b>SSAssembly</b> state and the database and the cache, for the identity strings that are in both. </p>
+<p>Then when the user has completed editing the data as seen from the front-end and saves it to the back-end, the syncToServer function in the <b>SSAssembly</b> class will be called. That will update the attributes of the <b>SSAssembly</b> state according to the values, use the back-end API to update the database according to those values, call the clearCache function in the <b>SSSender</b> class, and call the <b>undefine</b> function in the back-end API. After all of these, the attributes of the <b>SSAssembly</b> state will be in-sync with the values again, the <b>SSAssembly</b> state will be in-sync with the database again, the cache will be cleared, and the meaningless objects in the database will be cleared. That completes an entire lifecycle of using the Systemstate Editor to edit some data. </p>
+
+<h3>User Interfaces</h3>
+<p>As mentioned above, given a key, the front-end can know the items with the eight relationships to a certain key. That is what the #searchForRelationships function in the <b>SSHead</b> class does. Given the instruction to do so, an <b>SSHead</b> class instance will use that function to find the items with the right relationships to a key, and then spawn one <b>SSHead</b> class instance for each of those items, to find the items with the right relationships to those items, and so on, recursively. The <b>SSAssembly</b> class exposes a getState function and a setState function to interact with items with a certain identity string in the <b>SSAssembly</b> state, and these <b>SSHead</b> class instances can also get and set information of items using the getState and setState functions, according to the given instructions. In this way, instances of the <b>SSHead</b> class are like explorers that traverse the hypergraph, one class instance per edge traversal; and workers that interact with the hypergraph, right from the locations that they have traversed to. </p>
+<p>And that is how user interfaces represent concepts on your browser, in the Systemstate Editor. Each user interface uses six necessary parts to represent a concept: </p><ul>
+	<li>Its head identity string, used as the base node of an instance of that concept. </li>
+	<li>Four functions to add, load, save and remove an instance of that concept respectively. </li>
+	<li>A validate function to check whether the data at hand is a valid instance of that concept or not. </li>
+</ul>
+<p>When a user interface is initialized, it receives its head identity string. It also receives instructions on which key within the head identity string to use, if it contains more than one key, and follows those instructions. Then, when its add, load, save or remove function is called, it creates instances of the <b>SSHead</b> class and instructs them accordingly. It can then listen to the <b>SSHead</b> class instances for output (if the <b>SSHead</b> class instances printed any), and render those elements on your browser. A user interface can contain as many elements as it takes to represent the concept it represents. <b>SSEditor</b>, <b>SSAliase</b>, and <b>SSStory</b> are examples of user interfaces. </p>
+<p>An item is a special kind of user interface which is low-level enough that it is the representation of an actual tuple from the database on your browser, hence it contains all the elements whose attributes make up the tuple. Since there are four tables in the database, there are four tables of items as well: <b>SSObject</b>, <b>SSGroup</b>, <b>SSLink</b> and <b>SSProperty</b>. </p>
+<p>An element is the representation of an attribute of a tuple from the database, as an HTML element on your browser, such as <b>SSSelector</b>s and <b>SSKey</b>s. </p>
 
 
 
 <h1>Design Principles</h1>
 
 <h3>Representative Design</h3>
-<p>To make the Systemstate Editor as user-friendly as possible, we established certain recurring heuristics that will be used in the design of the software from now on to help you intuitively understand how to use the Systemstate Editor: </p><ul>
-	<li>Whenever something blue (#0000FF) appears in your browser, it represents something you can perform an action on</li>
-	<li>Whenever something red (#FF0000) appears in your browser, it represents something selected</li>
-	<li>Whenever a hashtag (#) appears in your browser, you can click on the hashtag to select something</li>
-	<li>Whenever eight percentage signs in a row (%%%%%%%%) appears in your browser, it is a placeholder for an arbitrary key</li>
+<p>To make the Systemstate Editor as user-friendly as possible, we established certain recurring heuristics that will be used in the design of this software from now on to help you intuitively understand how to use the Systemstate Editor: </p><ul>
+	<li>Whenever something blue (#0000FF) appears on your browser, it represents something you can perform an action on. </li>
+	<li>Whenever something red (#FF0000) appears on your browser, it represents something selected. </li>
+	<li>Whenever a hashtag (#) appears on your browser, you can click on the hashtag to select something. </li>
+	<li>Whenever eight percentage signs in a row (%%%%%%%%) appears on your browser, it is a placeholder for an arbitrary key. </li>
 </ul>
 
 <h3>Unified Terminology</h3>
-<p>The newest version of the Systemstate Editor has a lot of its variable names changed to unify the terminology used throughout the software, and to separate the terminology about the Systemstate Editor from other terminologies, so that every word you can find in the codebase of the Systemstate Editor should mean one and only one thing. Here is a list of all the changes: </p><ul>
-	<li>"Attribute-value pairs" will be how we refer to the data structure. So "property" can only mean an <b>SSProperty</b> and "key" can only mean an <b>SSKey</b> (so elementKey is now called elementAttribute), even though in the past, "property" and "key" were used as synonyms of "attribute". And so "name" and "content" can only mean the two attributes in <b>SSProperty</b>s, even though in the past, this pair of words were used as synonyms of attributes and values, respectively, too</li>
-	<li>The use of the word "template" in variable names is depreciated since we are now using JSX to render things rather than a custom-written template abstraction made in 2020 (so templateType is now called type and templateThis is now called headAttribute instead)</li>
-	<li>The use of the words "class" and "component" to refer to user interfaces, items and elements are depreciated since we are now using React.js, and using "classes" and "components" to refer to both their React.js meanings and to user interfaces, items and elements will be confusing</li>
-	<li>At last, for additional unifications of terminology, we will always say "argument" instead of "parameter" and "throw" instead of "console.error" in the codebase</li>
+<p>The newest version of the Systemstate Editor has a lot of its variable names changed to unify the terminology used throughout the software, and to separate the terminology about the Systemstate Editor from other terminologies, so that every word you can find in the codebase of the Systemstate Editor should mean one and only one thing. Here is a list of all the changes from v2.0.1: </p><ul>
+	<li>To match the React terminology, the "action" in user interfaces is renamed to "props". </li>
+	<li>To match the RDBMS terminology, "type" is renamed to "table", "array" to "relationship", and "expand" to "#searchForRelationships". </li>
 </ul>
 <p>However, there are still some terminologies that we have failed to unify so far due to refactoring issues we might solve later: </p><ul>
-	<li>As of now, "this" is used as a synonym of "head" in some places, to refer to the identity string that each user interface has. But we still cannot just unify "head" and "this" into one word because "this" also refers to items at times, in a way that is not totally equivalent to "the head identity string of that item"</li>
-	<li>As of now, the props passed onto user interfaces are referred to as the "action" argument in their corresponding classes, a relic of the time when we tried to use Redux (which has reducers that have actions) in the codebase. But we still cannot just unify "props" and "action" into one word, because the <b>SSAliase</b> class uses "action" to mean an actual action passed onto the dispatch function in the <b>SSListener</b> class, making "action" not totally synonymous with "props"</li>
+	<li>As of now, "this" is used as a synonym of "head" in some places, to refer to the identity string that each user interface has. But we still cannot just unify "head" and "this" into one word because "this" also refers to items at times, in a way that is not totally equivalent to "the head identity string of that item". </li>
 </ul>
+
 
 
 <h1>Changelog</h1>
 
 <h3>2021/12/28: v1.0.0-pre-alpha</h3>
 <ul>
-	<li>Removed all PHP code other than the parts rewritten to be in JavaScript</li>
-	<li>Used an Express JS server instead of one written from scratch</li>
-	<li>Moved some features from the server side to the client side</li>
-	<li>Rewrote the JavaScript code to be in ES6 instead of in ES5</li>
-	<li>Changed the architecture to be object-oriented instead of procedural</li>
-	<li>Used Git thoroughly instead of as a last minute band-aid solution</li>
-	<li>Made a new logo to reflect all these changes</li>
+	<li>Removed all PHP code other than the parts rewritten to be in JavaScript. </li>
+	<li>Used an Express JS server instead of one written from scratch. </li>
+	<li>Moved some features from the server side to the client side. </li>
+	<li>Rewrote the JavaScript code to be in ES6 instead of in ES5. </li>
+	<li>Changed the architecture to be object-oriented instead of procedural. </li>
+	<li>Used Git thoroughly instead of as a last minute band-aid solution. </li>
+	<li>Made a new logo to reflect all these changes. </li>
 </ul>
 
 <h3>2022/04/19: v1.0.1-pre-alpha</h3>
 <ul>
-	<li>Added get and set functions to the <b>SSAssembly</b> class</li>
-	<li>Made it possible to select elements</li>
-	<li>Implemented the add action and the remove action</li>
+	<li>Added get and set functions to the <b>SSAssembly</b> class. </li>
+	<li>Made it possible to select elements. </li>
+	<li>Implemented the add action and the remove action. </li>
 </ul>
 
 <h3>2022/08/22: v2.0.0-pre-alpha</h3>
 <ul>
-	<li>Switched from Preact to React by using esbuild as a bundler</li>
-	<li>Introduced the window feature to interact with user interfaces</li>
-	<li>Made items a kind of user interfaces</li>
-	<li>Unified the terminology and Git repositories</li>
-	<li>Changed the software design and the logo</li>
+	<li>Switched from Preact to React by using esbuild as a bundler. </li>
+	<li>Introduced the window feature to interact with user interfaces. </li>
+	<li>Made items a kind of user interfaces. </li>
+	<li>Unified the terminology and Git repositories. </li>
+	<li>Changed the software design and the logo. </li>
+</ul>
+
+<h3>2022/10/25: v2.0.1-pre-alpha</h3>
+<ul>
+	<li>Added the <b>SSHead</b> class and the listener script. </li>
+	<li>Merged the <b>SSExpander</b> class into the <b>SSHead</b> class. </li>
+	<li>Unified more terminologies. </li>
+	<li>Improved the documentation. </li>
 </ul>
 
 
@@ -139,10 +178,10 @@ h1, h3, p {
 <h1>About</h1>
 
 <h3>Name</h3>
-<p>Systemstate Editor Pre-Alpha v2.0.0</p>
+<p>Systemstate Editor Pre-Alpha v2.0.1</p>
 
 <h3>Version</h3>
-<p>v2.0.0-pre-alpha</p>
+<p>v2.0.1-pre-alpha</p>
 
 <h3>License</h3>
 <p>Copyright (c) 2019-2022 Ivan Law Kin Chau. All rights reserved. </p>

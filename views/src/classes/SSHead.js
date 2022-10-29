@@ -12,11 +12,6 @@ export default class SSHead {
 	async #searchForRelationships (key, sendSearches, relationshipsToSearch = this.defaultRelationships) {
 		let output = [];
 		
-		/*
-		
-		Search for items that have the correct relationships with the key either on the server or in the SSSender cache, and then add to the search results those that are not yet on the server or in the SSSender cache, but already in the SSAssembly state. There will not be items that are no longer in the SSAssembly state, but still on the server or in the SSSender cache to remove, so the code to do so will not be written (to know why, read the comment just above the "this.state = {" line in the SSAssembly class)
-		
-		*/
 		for (const relationship of relationshipsToSearch) {
 			if (this.defaultRelationships.indexOf(relationship) === -1) throw `${relationship} is not a relationship`;
 			
