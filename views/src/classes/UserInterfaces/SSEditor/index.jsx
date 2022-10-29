@@ -56,7 +56,7 @@ export default class SSEditor {
 		const editor = this;
 		const renderOutput = await listener.listen(async print => {
 			// Get the dependencies of the editor using the editor's head identity string as the key (despite one being an identity string and the another being a key, they can be used interexchangably here because we asserted the length of the identity string above)
-			await new SSHead(this.identityString).forEachRelationshipOf(["group_parent", "object_uuid", "group_uuid", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent", "property_name", "property_content"], async (heads, relationship, parentHead, state) => {
+			await new SSHead(this.identityString).forEachRelationshipOf(["group_parent", "object_uuid", "group_uuid", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"], async (heads, relationship, parentHead, state) => {
 				let table = relationship.split("_")[0];
 				let headAttribute = relationship.split("_")[1];
 				
@@ -93,7 +93,7 @@ export default class SSEditor {
 						2. To know the identityString of the parent window to put in the action object when calling the dispatch function in the SSListener class, when selecting an element
 					
 					*/
-					print(<SSWindow identityString={identityString} key={windowString} windowString={windowString} selectedWindow={props.selectedWindow} setSelectedWindow={props.setSelectedWindow} setSelectedWindowWithRef={props.setSelectedWindow(windowString, ref)} ref={ref} defaultUserInterface={userInterface} selectedObject={editor.selected.selected} headAttribute={headAttribute}/>);
+					print(<SSWindow identityString={identityString} parentIdentityString={this.identityString} key={windowString} windowString={windowString} selectedWindow={props.selectedWindow} setSelectedWindow={props.setSelectedWindow} setSelectedWindowWithRef={props.setSelectedWindow(windowString, ref)} ref={ref} defaultUserInterface={userInterface} selectedObject={editor.selected.selected} headAttribute={headAttribute}/>);
 					
 					if ((relationship === "group_uuid" || relationship === "object_uuid" || relationship === "group_parent") && state.index + 1 < heads.length) print(<WindowSpan key={`${keyPrefix}_comma`}>,{"\u00a0"}</WindowSpan>);
 					

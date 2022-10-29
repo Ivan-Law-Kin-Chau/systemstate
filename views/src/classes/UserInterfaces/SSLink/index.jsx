@@ -2,7 +2,6 @@ import SSItem from "../../SSItem.jsx";
 import SSHead from "../../SSHead.js";
 
 import * as elements from "../../Elements/All.js";
-import * as validator from "../../../scripts/validator.js";
 import * as identifier from "../../../scripts/identifier.js";
 import * as listener from "../../../scripts/listener.js";
 
@@ -23,8 +22,10 @@ export default class SSLink {
 	
 	async load (props = {}) {
 		return await listener.listen(async print => {
-			await new SSHead(this.identityString).forEachRelationshipOf(["link_uuid"], async heads => {
+			await new SSHead(props.parentIdentityString).forEachRelationshipOf([`link_${props.headAttribute}`], async heads => {
 				await heads.forEachAsync(async head => {
+					if (head.identityString !== this.identityString) return;
+					
 					this.state.item = await head.get();
 					if (await this.validate(this.identityString, props) !== true) {
 						console.log("Invalid SSLink item: ", this.state.item);
@@ -86,18 +87,16 @@ export default class SSLink {
 		if (!SSItem.isSSItem(props)) return false;
 		if (props.defaultUserInterface !== "SSLink") return false;
 		if (typeof identityString === "undefined") identityString = this.identityString;
-		const item = window.assembly.state["link"][identityString];
-		if (typeof item === "undefined") throw `Item not loaded: ["link", "${identityString}"]`;
-		return SSLink.validateItem(item);
-	}
-	
-	// This is separate from the validate function since SSAssembly has to validate items that is not in the SSAssembly state yet
-	static validateItem (item) {
-		if (item._table !== "link") return false;
-		if (!validator.isValidKey(item._uuid)) return false;
-		if (!validator.isValidKey(item._start)) return false;
-		if (!validator.isValidKey(item._end)) return false;
-		if (!validator.isValidDirection(item._direction)) return false;
-		return true;
+		return new Promise(async resolve => {
+			await new SSHead(props.parentIdentityString).forEachRelationshipOf([`link_${props.headAttribute}`], async heads => {
+				await heads.forEachAsync(async head => {
+					if (head.identityString !== identityString) return;
+					
+					const item = await head.get();
+					if (typeof item === "undefined") throw `Item not loaded: ["link", "${identityString}"]`;
+					resolve(SSItem.isSSLink(item));
+				});
+			});
+		});
 	}
 }

@@ -1,6 +1,6 @@
 import SSSender from "./SSSender.js";
+import SSItem from "./SSItem.jsx";
 
-import * as userInterfaces from "./UserInterfaces/All.js";
 import * as convertor from "../scripts/convertor.js";
 import * as identifier from "../scripts/identifier.js";
 import * as generator from "../scripts/generator.js";
@@ -93,8 +93,7 @@ export default class SSAssembly {
 			var loadCommand = this.identityToLoadCommand(table, identity);
 			var item = await this.sender.send(loadCommand[0], loadCommand[1]);
 			if (item._success === true) {
-				let validatorClass = userInterfaces[convertor.convertCamelCaseToSS(table)];
-				if (validatorClass.validateItem(item) === true) {
+				if (SSItem["is" + convertor.convertCamelCaseToSS(table)](item) === true) {
 					this.state[table][identityString] = item;
 				} else {
 					throw `Invalid item: ["${table}", "${identityString}"]`;
@@ -147,8 +146,7 @@ export default class SSAssembly {
 			}
 		}
 		
-		let validatorClass = userInterfaces[convertor.convertCamelCaseToSS(table)];
-		if (validatorClass.validateItem(item) === true) {
+		if (SSItem["is" + convertor.convertCamelCaseToSS(table)](item) === true) {
 			item._success = true;
 			this.state[table][identityString] = item;
 		} else {

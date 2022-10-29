@@ -4,9 +4,12 @@ export default class SSHead {
 	constructor (identityString, parentHead = null) {
 		this.identityString = identityString;
 		this.parentHead = parentHead;
+		
+		// The default order of relationships to search, and the list of all possible relationships that can be searched. If the #searchForRelationships function tries to search a relationship that is not in this list, throw an error
+		this.defaultRelationships = ["object_uuid", "group_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"];
 	}
 	
-	static async searchForRelationships (key, sendSearches, relationshipsToSearch = ["object_uuid", "group_uuid", "group_parent", "link_uuid", "link_start", "link_end", "property_uuid", "property_parent"]) {
+	async #searchForRelationships (key, sendSearches, relationshipsToSearch = this.defaultRelationships) {
 		let output = [];
 		
 		/*
@@ -15,6 +18,8 @@ export default class SSHead {
 		
 		*/
 		for (const relationship of relationshipsToSearch) {
+			if (this.defaultRelationships.indexOf(relationship) === -1) throw `${relationship} is not a relationship`;
+			
 			const table = relationship.split("_")[0];
 			const headAttribute = relationship.split("_")[1];
 			const searchResults = sendSearches === true ? JSON.parse(JSON.stringify((await window.assembly.sender.send("search", `("${headAttribute}", "${key}", "${table}")`))._output)) : [];
@@ -46,7 +51,6 @@ export default class SSHead {
 	}
 	
 	async #loopThroughRelationships (callbackFunction) {
-		// A place that the chained functions can read or write if they need to keep track of state
 		let state = {};
 		
 		for (let relationshipList of this.relationshipLists) {
@@ -92,13 +96,13 @@ export default class SSHead {
 	
 	async forEachRelationship (callbackFunction, sendSearches = true) {
 		identifier.assertIdentityStringLength(8, this.identityString);
-		this.relationshipLists = await SSHead.searchForRelationships(this.identityString, sendSearches);
+		this.relationshipLists = await this.#searchForRelationships(this.identityString, sendSearches);
 		await this.#loopThroughRelationships(callbackFunction);
 	}
 	
 	async forEachRelationshipOf (relationshipsToSearch, callbackFunction, sendSearches = true) {
 		identifier.assertIdentityStringLength(8, this.identityString);
-		this.relationshipLists = await SSHead.searchForRelationships(this.identityString, sendSearches, relationshipsToSearch);
+		this.relationshipLists = await this.#searchForRelationships(this.identityString, sendSearches, relationshipsToSearch);
 		await this.#loopThroughRelationships(callbackFunction);
 	}
 	

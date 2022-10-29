@@ -2,7 +2,6 @@ import SSItem from "../../SSItem.jsx";
 import SSHead from "../../SSHead.js";
 
 import * as elements from "../../Elements/All.js";
-import * as validator from "../../../scripts/validator.js";
 import * as identifier from "../../../scripts/identifier.js";
 import * as listener from "../../../scripts/listener.js";
 
@@ -23,8 +22,10 @@ export default class SSObject {
 	
 	async load (props = {}) {
 		return await listener.listen(async print => {
-			await new SSHead(this.identityString).forEachRelationshipOf(["object_uuid"], async heads => {
+			await new SSHead(props.parentIdentityString).forEachRelationshipOf([`object_${props.headAttribute}`], async heads => {
 				await heads.forEachAsync(async head => {
+					if (head.identityString !== this.identityString) return;
+					
 					this.state.item = await head.get();
 					if (await this.validate(this.identityString, props) !== true) {
 						console.log("Invalid SSObject item: ", this.state.item);
@@ -65,15 +66,16 @@ export default class SSObject {
 		if (!SSItem.isSSItem(props)) return false;
 		if (props.defaultUserInterface !== "SSObject") return false;
 		if (typeof identityString === "undefined") identityString = this.identityString;
-		const item = window.assembly.state["object"][identityString];
-		if (typeof item === "undefined") throw `Item not loaded: ["object", "${identityString}"]`;
-		return SSObject.validateItem(item);
-	}
-	
-	// This is separate from the validate function since SSAssembly has to validate items that is not in the SSAssembly state yet
-	static validateItem (item) {
-		if (item._table !== "object") return false;
-		if (!validator.isValidKey(item._uuid)) return false;
-		return true;
+		return new Promise(async resolve => {
+			await new SSHead(props.parentIdentityString).forEachRelationshipOf([`object_${props.headAttribute}`], async heads => {
+				await heads.forEachAsync(async head => {
+					if (head.identityString !== identityString) return;
+					
+					const item = await head.get();
+					if (typeof item === "undefined") throw `Item not loaded: ["object", "${identityString}"]`;
+					resolve(SSItem.isSSObject(item));
+				});
+			});
+		});
 	}
 }
