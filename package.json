@@ -1,0 +1,14 @@
+{
+	"dependencies": {
+		"express": "^4.17.1",
+		"pegjs": "^0.10.0",
+		"rangy": "^1.3.1",
+		"slate": "^0.94.1",
+		"slate-react": "^0.98.0"
+	},
+	"devDependencies": {
+		"esbuild": "^0.14.49",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0"
+	}
+}
