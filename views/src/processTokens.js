@@ -68,7 +68,7 @@ function hasOrphans (tokens, startAt, endAt) {
 	}, false);
 }
 
-function traverseParseTree (parseTree, allPaths, currentPath = []) {
+function traverseParseTree (parseTree, possibilityObject, currentPath = []) {
 	if (typeof parseTree === "object") {
 		Object.keys(parseTree).forEach(openKey => {
 			Object.keys(parseTree[openKey]).forEach(closeKey => {
@@ -76,17 +76,17 @@ function traverseParseTree (parseTree, allPaths, currentPath = []) {
 				subPath.push([parseInt(openKey.split("_")[1]), parseInt(closeKey.split("_")[1])]);
 				
 				if (typeof parseTree[openKey][closeKey] === "object") {
-					traverseParseTree(parseTree[openKey][closeKey], allPaths, subPath);
+					traverseParseTree(parseTree[openKey][closeKey], possibilityObject, subPath);
 				} else if (typeof parseTree[openKey][closeKey] === "boolean") {
-					// Check whether allPaths already contain that path or not
+					// Check whether possibilityObject.possibilities already contain that path or not
 					const checkedPath = subPath.sort((a, b) => a[0] - b[0]);
 					let duplicateFound = false;
 					
-					allPaths.forEach(referencePath => {
-						if (JSON.stringify(referencePath.path) === JSON.stringify(checkedPath)) duplicateFound = true;
+					possibilityObject.possibilities.forEach(possibility => {
+						if (JSON.stringify(possibility.path) === JSON.stringify(checkedPath)) duplicateFound = true;
 					});
 					
-					if (duplicateFound === false) allPaths.push({
+					if (duplicateFound === false) possibilityObject.possibilities.push({
 						path: checkedPath, 
 						hasOrphans: parseTree[openKey][closeKey]
 					});
@@ -94,11 +94,28 @@ function traverseParseTree (parseTree, allPaths, currentPath = []) {
 			});
 		});
 	} else if (typeof parseTree === "boolean") {
-		allPaths.push({
+		possibilityObject.possibilities.push({
 			path: [], 
 			hasOrphans: parseTree
 		});
 	}
+}
+
+function hasOverlaps (checkedPath) {
+	if (checkedPath.length === 1) return false;
+	
+	let changes = -1;
+	while (changes !== 0) {
+		changes = 0;
+		for (let leftIndex = 0; leftIndex < checkedPath.length; leftIndex++) {
+			for (let rightIndex = 0; rightIndex < checkedPath.length; rightIndex++) {
+				if (checkedPath[leftIndex][0] < checkedPath[rightIndex][0] && 
+					checkedPath[leftIndex][1] > checkedPath[rightIndex][0]) return true;
+			}
+		}
+	}
+	
+	return false;
 }
 
 export default function processTokens (tokens) {
@@ -106,19 +123,25 @@ export default function processTokens (tokens) {
 	const parseTree = recursivelyProcessTokens(tokens);
 	
 	// Remove duplicates
-	let allPaths = [];
-	traverseParseTree(parseTree, allPaths);
+	let possibilityObject = {possibilities: []};
+	traverseParseTree(parseTree, possibilityObject);
+	
+	// Remove possibilities that have overlapping brackets
+	let possibilities = possibilityObject.possibilities;
+	for (let index = 0; index < possibilities.length; index++) {
+		if (hasOverlaps(possibilities[index].path) === true) possibilities.splice(index, 1);
+	}
 	
 	// Check is there a possibility where all hasOrphans are false
-	for (let index = 0; index < allPaths.length; index++) {
-		if (allPaths[index].hasOrphans === false) return [
+	for (let index = 0; index < possibilities.length; index++) {
+		if (possibilities[index].hasOrphans === false) return [
 			{
-				path: allPaths[index].path, 
+				path: possibilities[index].path, 
 				hasOrphans: false
 			}
 		];
 	}
 	
 	// If there is no such possibility, then return all possibilities
-	return allPaths;
+	return possibilities;
 }
