@@ -1,6 +1,6 @@
 import {Editor, Node, Path, Point, Text, Transforms} from "slate";
 
-import processTokens from "./processTokens.js";
+import getPossibilities from "./getPossibilities.js";
 
 export default withTokens = (editor, tokenizer) => {
 	editor.isInline = element => {
@@ -17,7 +17,7 @@ export default withTokens = (editor, tokenizer) => {
 			Node.parent(editor, path).type === "paragraph" && 
 			Node.parent(editor, path).children.length === 1) {
 				const tokens = tokenizer.parse(Node.get(editor, path).text);
-				let possibilities = processTokens(tokens);
+				let possibilities = getPossibilities(tokens);
 				
 				let trackedTokens = [];
 				const convertBracketToType = bracket => {
