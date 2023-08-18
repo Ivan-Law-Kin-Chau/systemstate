@@ -4,7 +4,7 @@ import * as ReactDOMClient from "react-dom/client";
 
 export default Controlled = props => {
 	return <span style={{
-		// border: props.element.type === "paragraph" ? "initial" : "1px solid #EEEEEE", 
-		backgroundColor: props.element.isTracked === true ? "#CCCCFF" : "initial"
+		// border: "1px solid #EEEEEE", 
+		backgroundColor: props.leaf.isTracked === true ? "#CCCCFF" : "initial"
 	}} {...props.attributes}>{props.children}</span>;
 }

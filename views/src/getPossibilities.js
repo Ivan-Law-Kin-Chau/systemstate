@@ -59,7 +59,12 @@ export default function getPossibilities (tokens) {
 	
 	// Detects orphaned brackets, such as in "[]]", where no matter how you pair opening bracketCharacters to closing bracketCharacters, there will always be a bracketCharacter left that cannot be paired
 	const hasOrphans = path => {
-		return path.length * 2 !== tokens.length;
+		const bracketCharacterCount = tokens.reduce((bracketCharacterCount, currentToken) => {
+			if (currentToken.type === "bracketCharacter") bracketCharacterCount++;
+			return bracketCharacterCount;
+		}, 0);
+		
+		return path.length * 2 !== bracketCharacterCount;
 	};
 	
 	findPossibilities();

@@ -16,7 +16,7 @@ export default Main = props => {
 	
 	const initialValue = [{type: "paragraph", children: [{text: ""}]}];
 	
-	const renderElement = props => <Controlled {...props}/>;
+	const renderLeaf = props => <Controlled {...props}/>;
 	
 	return <>
 		<pre>
@@ -25,12 +25,15 @@ export default Main = props => {
 			</div>
 		</pre>
 		<Slate editor={editor} initialValue={initialValue} onChange={() => setEditorChildren(editor.children)}>
-			<Editable tabIndex="-1" renderElement={renderElement} style={{
+			<Editable tabIndex="-1" renderLeaf={renderLeaf} style={{
 				border: "1px solid #000000", 
 			}} onKeyDown={event => {
 				if (event.keyCode === 9) {
 					event.preventDefault();
 					editor.insertText("\t");
+				} else if (event.keyCode === 13) {
+					event.preventDefault();
+					editor.insertText("\n");
 				}
 			}}/>
 		</Slate>

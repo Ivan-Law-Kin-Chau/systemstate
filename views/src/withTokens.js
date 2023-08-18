@@ -3,19 +3,33 @@ import {Editor, Node, Path, Point, Text, Transforms} from "slate";
 import getPossibilities from "./getPossibilities.js";
 
 export default withTokens = (editor, tokenizer) => {
-	editor.isInline = element => {
-		if (element.isToken === true) return true;
-		return false;
-	}
-	
 	window.pointRefPairs = [];
+	
+	// Each new token being rendered gets a unique key from this variable so that the default normalizeNode function would not merge tokens with identical tokens before or after them
+	window.tokensRendered = -1;
+	
 	const {normalizeNode} = editor;
 	editor.normalizeNode = entry => {
 		const [node, path] = entry;
 		
+		if (node.type === "paragraph" && 
+			!Path.equals(path, [0])) {
+				tokensRendered++;
+				
+				Transforms.insertNodes(editor, {key: tokensRendered, type: "ignoredCharacter", text: "\n", nominalText: "\n", isToken: true}, {
+					at: [...path, 0]
+				});
+				
+				Transforms.mergeNodes(editor, {
+					at: path
+				});
+				
+				return;
+			}
+		
 		if (Text.isText(Node.get(editor, path)) && 
 			Node.parent(editor, path).type === "paragraph" && 
-			Node.parent(editor, path).children.length === 1) {
+			node.isToken !== true) {
 				const tokens = tokenizer.parse(Node.get(editor, path).text);
 				let possibilities = getPossibilities(tokens);
 				
@@ -84,49 +98,47 @@ export default withTokens = (editor, tokenizer) => {
 					}
 					
 					if (possibilityWithHighestScore === null) {
-						// Delete all brackets within the same paragraph
-						for (let index = 0; index < pointRefPairs.length; index++) {
-							if (pointRefPairs[index].openingPointRef.current !== null && 
-								pointRefPairs[index].openingPointRef.current.path[0] !== path[0]) continue;
-							if (pointRefPairs[index].closingPointRef.current !== null && 
-								pointRefPairs[index].closingPointRef.current.path[0] !== path[0]) continue;
-							pointRefPairs.splice(index, 1);
-						}
+						// Delete all brackets
+						pointRefPairs = [];
 					} else {
-						// Delete the brackets that no longer exist within the same paragraph
-						for (let index = 0; index < pointRefPairs.length; index++) {
-							if (pointRefPairs[index].openingPointRef.current !== null && 
-								pointRefPairs[index].openingPointRef.current.path[0] !== path[0]) continue;
-							if (pointRefPairs[index].closingPointRef.current !== null && 
-								pointRefPairs[index].closingPointRef.current.path[0] !== path[0]) continue;
-							
+						// Delete the brackets that no longer exist
+						let pointRefIndexesToSplice = [];
+						
+						for (let pointRefIndex = 0; pointRefIndex < pointRefPairs.length; pointRefIndex++) {
 							let bracketStillExists = false;
 							
-							possibilityWithHighestScore.path.forEach(bracket => {
-								if (pointRefPairs[index].openingPointRef.current === null) return;
-								if (pointRefPairs[index].openingPointRef.current.offset !== bracket[0]) return;
-								if (pointRefPairs[index].closingPointRef.current === null) return;
-								if (pointRefPairs[index].closingPointRef.current.offset !== bracket[1]) return;
+							for (let bracketIndex = 0; bracketIndex < possibilityWithHighestScore.path.length; bracketIndex++) {
+								const bracket = possibilityWithHighestScore.path[bracketIndex];
+								if (pointRefPairs[pointRefIndex].openingPointRef.current === null) continue;
+								if (pointRefPairs[pointRefIndex].openingPointRef.current.offset !== bracket[0]) continue;
+								if (pointRefPairs[pointRefIndex].closingPointRef.current === null) continue;
+								if (pointRefPairs[pointRefIndex].closingPointRef.current.offset !== bracket[1]) continue;
 								bracketStillExists = true;
 								
 								trackedTokens.push({index: bracket[0]});
 								trackedTokens.push({index: bracket[1]});
-							});
+							}
 							
-							if (bracketStillExists === false) pointRefPairs.splice(index, 1);
+							// If the splice is performed immediately, then it will decrease the indexes of the remaining elements in the pointRefPairs array, which will make the value of pointRefIndex < pointRefPairs.length true earlier than it should, ending the for loop. Therefore, the pointRefIndexes to splice are kept at a variable, and the actual splices are performed after the for loop ends
+							if (bracketStillExists === false) pointRefIndexesToSplice.push(pointRefIndex);
 						}
+						
+						pointRefIndexesToSplice.forEach(pointRefIndex => pointRefPairs.splice(pointRefIndex, 1));
 					}
 				}
 				
 				let incrementablePath = structuredClone(path);
 				
 				for (let index = 0; index < tokens.length; index++) {
-					let currentToken = structuredClone(tokens[index]);
-					currentToken.children = [{text: currentToken.children.join("")}];
-					currentToken.nominalChildren = currentToken.children;
-					currentToken.isToken = true;
+					tokensRendered++;
 					
-					Transforms.wrapNodes(editor, currentToken, {
+					Transforms.setNodes(editor, {
+						key: tokensRendered, 
+						type: tokens[index].type, 
+						text: tokens[index].children.join(""), 
+						nominalText: tokens[index].children.join(""), 
+						isToken: true
+					}, {
 						at: {
 							anchor: {path: incrementablePath, offset: 0}, 
 							focus: {path: incrementablePath, offset: tokens[index].children.join("").length}
@@ -137,9 +149,8 @@ export default withTokens = (editor, tokenizer) => {
 					
 					const trackedCurrentTokens = trackedTokens.filter(bracket => bracket.index === index);
 					if (trackedCurrentTokens.length > 0) {
-						// Set the opening or closing point of a pointRefPair. The point's path points to the text node within the token node, instead of the token node itself. That is because the token node may get unwrapped in the future, after which the token node will stop existing for a short moment of time. If the point's path points to the token node, then when this happens, the point's path will be pointing to a node that no longer exists, which makes it null. However, if the point's path points to the text node within the token node instead, then the point's path will be pointing to a node that still exists, which does not make it null
 						if (trackedCurrentTokens[0].setPoint !== undefined) {
-							trackedCurrentTokens[0].setPoint({path: [...incrementablePath, 0], offset: 0});
+							trackedCurrentTokens[0].setPoint({path: incrementablePath, offset: 0});
 						}
 						
 						Transforms.setNodes(editor, {isTracked: true}, {
@@ -166,11 +177,19 @@ export default withTokens = (editor, tokenizer) => {
 			}
 		
 		if (node.isToken === true && 
-			JSON.stringify(node.nominalChildren) !== JSON.stringify(node.children)) {
-				Transforms.unwrapNodes(editor, {
-					at: Path.parent(path), 
-					match: node => node.isToken === true, 
-					split: true
+			node.nominalText !== node.text) {
+				const previousAnchorPath = editor.selection.anchor.path;
+				
+				[...Node.children(editor, Path.parent(path), {reverse: true})].forEach(childNodeEntry => {
+					let [childNode, childPath] = childNodeEntry;
+					
+					Transforms.mergeNodes(editor, {
+						at: childPath
+					});
+				});
+				
+				Transforms.unsetNodes(editor, ["key", "type", "nominalText", "isToken", "isTracked"], {
+					at: [0, 0]
 				});
 			}
 		
