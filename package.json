@@ -3,6 +3,7 @@
 		"express": "^4.17.1"
 	},
 	"devDependencies": {
+		"diff": "^5.1.0",
 		"esbuild": "^0.14.49",
 		"pegjs": "^0.10.0",
 		"react": "^18.2.0",
