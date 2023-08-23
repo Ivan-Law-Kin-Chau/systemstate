@@ -18,7 +18,7 @@ export default function getPossibilities (tokens) {
 				if (openingBracketType !== closingBracketType) continue;
 				if (hasBreachedBracketBoundary(path, [openingBracketIndex, closingBracketIndex])) continue;
 				
-				let newSearchedIndexes = structuredClone(searchedIndexes);
+				let newSearchedIndexes = [...searchedIndexes];
 				newSearchedIndexes.push(openingBracketIndex);
 				newSearchedIndexes.push(closingBracketIndex);
 				

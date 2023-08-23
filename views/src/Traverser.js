@@ -133,14 +133,23 @@ export default class Traverser {
 		
 		var currentIndexes = null;
 		var characterIndexes = null;
-		var getIndexes = () => structuredClone(characterIndexes);
+		var getIndexes = () => {
+			if (characterIndexes === null) return null;
+			return {...characterIndexes};
+		};
 		
 		if (this.hasStream("nodes")) {
 			var currentPoint = null;
-			var getPoint = () => structuredClone(currentPoint);
+			var getPoint = () => {
+				if (currentPoint === null) return null;
+				return {path: [...currentPoint.path], offset: currentPoint.offset};
+			};
 			
 			var currentNodeEntry = null;
-			var getNodeEntry = () => structuredClone(currentNodeEntry);
+			var getNodeEntry = () => {
+				if (currentNodeEntry === null) return null;
+				return [{...currentNodeEntry[0]}, [...currentNodeEntry[1]]];
+			};
 		} else {
 			var getPoint = () => {
 				throw "Nodes not provided";
