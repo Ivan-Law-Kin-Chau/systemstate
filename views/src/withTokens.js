@@ -1,7 +1,7 @@
 import {Editor, Node, Path, Text, Transforms} from "slate";
 
 import getPEGResults from "./getPEGResults.js";
-import getUnwraps from "./getUnwraps.js";
+import getChanges from "./getChanges.js";
 import getTrackedTokens from "./getTrackedTokens.js";
 import Traverser from "./Traverser.js";
 
@@ -59,12 +59,12 @@ export default withTokens = editor => {
 			const {tokens, path} = getPEGResults(text);
 			
 			// Find the changes between previousTokens and tokens, and then turn the area affected by each change into a text node that is not a token, so that the tokens within it can be rerendered below
-			let unwraps = getUnwraps(previousTokens, tokens);
+			let changes = getChanges(previousTokens, tokens);
 			previousTokens = tokens;
 			
 			Transforms.unsetNodes(editor, ["key", "type", "nominalText", "isToken", "isTracked"], {
 				at: [0], 
-				match: (node, path) => path.length === 2 && path[0] === 0 && unwraps.includes(path[1])
+				match: (node, path) => path.length === 2 && path[0] === 0 && changes.includes(path[1])
 			});
 			
 			Transforms.unsetNodes(editor, ["key", "type", "nominalText", "isToken", "isTracked"], {

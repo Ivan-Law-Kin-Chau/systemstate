@@ -1,6 +1,6 @@
 import * as Diff from "diff";
 
-export default function getUnwraps (previousTokens, tokens) {
+export default function getChanges (previousTokens, tokens) {
 	let changeObjects = Diff.diffArrays(previousTokens, tokens, {
 		comparator: (left, right) => {
 			if (left.type !== right.type) return false;
@@ -16,7 +16,7 @@ export default function getUnwraps (previousTokens, tokens) {
 	});
 	
 	let currentCharacter = 0;
-	let unwrapAreas = [];
+	let changedAreas = [];
 	for (let index = 0; index < changeObjects.length; index++) {
 		const changedTokens = changeObjects[index].value;
 		const characterCount = changedTokens.reduce((characterCount, currentToken) => {
@@ -25,31 +25,31 @@ export default function getUnwraps (previousTokens, tokens) {
 		}, 0);
 		
 		if (changeObjects[index].added === true) {
-			unwrapAreas.push([currentCharacter, currentCharacter + characterCount]);
+			changedAreas.push([currentCharacter, currentCharacter + characterCount]);
 		}
 		
 		currentCharacter += characterCount;
 	}
 	
-	let unwraps = [];
-	if (unwrapAreas.length === 0) return unwraps;
+	let changes = [];
+	if (changedAreas.length === 0) return changes;
 	
 	currentCharacter = 0;
-	currentUnwrapAreaIndex = 0;
+	currentChangedAreaIndex = 0;
 	for (let index = 0; index < previousTokens.length; index++) {
 		const previousToken = previousTokens[index];
 		const characterCount = previousToken.children.join("").length;
 		
-		if (currentCharacter <= unwrapAreas[currentUnwrapAreaIndex][0] && 
-			currentCharacter + characterCount >= unwrapAreas[currentUnwrapAreaIndex][0] && 
-			currentCharacter + characterCount <= unwrapAreas[currentUnwrapAreaIndex][1]) {
-				unwraps.push(index);
-				currentUnwrapAreaIndex++;
-				if (unwrapAreas[currentUnwrapAreaIndex] === undefined) break;
+		if (currentCharacter <= changedAreas[currentChangedAreaIndex][0] && 
+			currentCharacter + characterCount >= changedAreas[currentChangedAreaIndex][0] && 
+			currentCharacter + characterCount <= changedAreas[currentChangedAreaIndex][1]) {
+				changes.push(index);
+				currentChangedAreaIndex++;
+				if (changedAreas[currentChangedAreaIndex] === undefined) break;
 			}
 		
 		currentCharacter += characterCount;
 	}
 	
-	return unwraps;
+	return changes;
 }
