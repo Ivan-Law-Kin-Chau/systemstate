@@ -15,7 +15,7 @@ const App = () => {
 		fetch(`/parse.pegjs`)
 			.then(response => response.text())
 			.then(parser => {
-				window.parser = PEG.generate(parser);
+				window.parser = PEG.generate(parser, {cache: true});
 				console.log("Parser ready");
 			});
 	}, []);
@@ -24,7 +24,7 @@ const App = () => {
 		fetch(`/tokenize.pegjs`)
 			.then(response => response.text())
 			.then(tokenizer => {
-				window.tokenizer = PEG.generate(tokenizer);
+				window.tokenizer = PEG.generate(tokenizer, {cache: true});
 				console.log("Tokenizer ready");
 			});
 	}, []);
