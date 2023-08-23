@@ -3,17 +3,17 @@ tokens
 
 bracketCharacter
  = bracketCharacter:[\{\}\[\]\(\)] {
-	return {type: "bracketCharacter", children: [bracketCharacter]};
+	return {type: "bracketCharacter", isToken: true, children: [bracketCharacter]};
 }
 
 arrow
  = arrow:("<->" / "<-" / "->") {
-	return {type: "arrow", children: [arrow]};
+	return {type: "arrow", isToken: true, children: [arrow]};
 }
 
 keyValuePair
  = key:string "=" value:string {
-	return {type: "keyValuePair", key: key.delimited, value: value.delimited, children: ["\"", key.children[0], "\"=\"", value.children[0], "\""]};
+	return {type: "keyValuePair", isToken: true, key: key.delimited, value: value.delimited, children: ["\"", key.children[0], "\"=\"", value.children[0], "\""]};
 }
 
 string = string:("\"" stringCharacters "\"") {
@@ -49,5 +49,5 @@ ignoredCharacter = ignoredCharacter:[ \t\n] {
 }
 
 errorCharacter = errorCharacter:. {
-	return {type: "errorCharacter", children: [errorCharacter]};
+	return {type: "errorCharacter", isToken: true, children: [errorCharacter]};
 }

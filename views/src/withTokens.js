@@ -5,7 +5,7 @@ import getPossibilities from "./getPossibilities.js";
 import getTrackedTokens from "./getTrackedTokens.js";
 import Traverser from "./Traverser.js";
 
-export default withTokens = (editor, tokenizer) => {
+export default withTokens = editor => {
 	window.pointRefPairs = [];
 	
 	// Each new token being rendered gets a unique key from this variable so that the default normalizeNode function would not merge tokens with identical tokens before or after them
