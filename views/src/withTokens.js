@@ -1,7 +1,7 @@
 import {Editor, Node, Path, Text, Transforms} from "slate";
 
+import getPEGResults from "./getPEGResults.js";
 import getUnwraps from "./getUnwraps.js";
-import getPossibilities from "./getPossibilities.js";
 import getTrackedTokens from "./getTrackedTokens.js";
 import Traverser from "./Traverser.js";
 
@@ -56,8 +56,9 @@ export default withTokens = editor => {
 		
 		if (parseRequired === true) {
 			const text = Node.string(Node.get(editor, [0]));
-			const tokens = tokenizer.parse(text);
+			const {tokens, path} = getPEGResults(text);
 			
+			// Find the changes between previousTokens and tokens, and then turn the area affected by each change into a text node that is not a token, so that the tokens within it can be rerendered below
 			let unwraps = getUnwraps(previousTokens, tokens);
 			previousTokens = tokens;
 			
@@ -76,13 +77,14 @@ export default withTokens = editor => {
 				match: (node, path) => node.isToken !== true && Path.hasPrevious(path) && Text.equals(Node.get(editor, path), Node.get(editor, Path.previous(path)), {loose: true})
 			});
 			
-			const possibilities = getPossibilities(tokens);
-			let trackedTokens = getTrackedTokens(editor, possibilities, tokens);
+			// Find the tracked tokens, as they may have to be rerendered below
+			let trackedTokens = getTrackedTokens(editor, tokens, path);
 			if (tokens.length === 0) {
 				normalizeNode(entry);
 				return;
 			}
 			
+			// Figure out what are the tokens that have to be rerendered
 			const traverser = new Traverser();
 			traverser.setStream("characters", text);
 			traverser.setStream("nodes", editor.children[0].children, node => node.text);
@@ -92,7 +94,7 @@ export default withTokens = editor => {
 				if (state.rangesToReset === undefined) state.rangesToReset = [];
 				let index = getIndexes().tokens;
 				
-				// There are three scenarios where a token will have to be normalized. First is if a previously tracked token is no longer tracked. In that case, isStillTracked will be false. Second is if a token not previously tracked will become tracked. In that case, willBeTracked will be true. Third is if a node that has not been rendered as tokens yet is found. In that case, currentNode.isToken will not be true
+				// There are three kinds of tokens that have to be rerendered. First is if a previously tracked token is no longer tracked. In that case, isStillTracked will be false. Second is if a token not previously tracked will become tracked. In that case, willBeTracked will be true. Third is if a node that has not been rendered as tokens yet is found. In that case, currentNode.isToken will not be true
 				let isStillTracked = null;
 				let willBeTracked = null;
 				
@@ -138,6 +140,7 @@ export default withTokens = editor => {
 			
 			let {rangesToReset} = traverser.traverse();
 			
+			// Rerender the tokens that have to be rerendered
 			rangesToReset.forEach(rangeObject => {
 				const index = rangeObject.index;
 				

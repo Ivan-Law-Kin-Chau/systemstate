@@ -1,11 +1,11 @@
 {
 	"dependencies": {
-		"express": "^4.17.1"
+		"express": "^4.17.1",
+		"pegjs": "^0.10.0"
 	},
 	"devDependencies": {
 		"diff": "^5.1.0",
 		"esbuild": "^0.14.49",
-		"pegjs": "^0.10.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"slate": "^0.94.1",

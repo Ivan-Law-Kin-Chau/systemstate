@@ -14,13 +14,19 @@ const App = () => {
 	React.useEffect(() => {
 		fetch(`/parse.pegjs`)
 			.then(response => response.text())
-			.then(parser => window.parser = PEG.generate(parser));
+			.then(parser => {
+				window.parser = PEG.generate(parser);
+				console.log("Parser ready");
+			});
 	}, []);
 	
 	React.useEffect(() => {
 		fetch(`/tokenize.pegjs`)
 			.then(response => response.text())
-			.then(tokenizer => window.tokenizer = PEG.generate(tokenizer));
+			.then(tokenizer => {
+				window.tokenizer = PEG.generate(tokenizer);
+				console.log("Tokenizer ready");
+			});
 	}, []);
 	
 	const [editor] = React.useState(() => withTokens(withReact(createEditor())));
