@@ -2,8 +2,6 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as ReactDOMClient from "react-dom/client";
 
-import PEG from "pegjs";
-
 import {createEditor, Editor} from "slate";
 import {Slate, Editable, withReact} from "slate-react";
 import withTokens from "./withTokens.js";
@@ -11,24 +9,6 @@ import withTokens from "./withTokens.js";
 import Controlled from "./controlled.jsx";
 
 const App = () => {
-	React.useEffect(() => {
-		fetch(`/parse.pegjs`)
-			.then(response => response.text())
-			.then(parser => {
-				window.parser = PEG.generate(parser, {cache: true});
-				console.log("Parser ready");
-			});
-	}, []);
-	
-	React.useEffect(() => {
-		fetch(`/tokenize.pegjs`)
-			.then(response => response.text())
-			.then(tokenizer => {
-				window.tokenizer = PEG.generate(tokenizer, {cache: true});
-				console.log("Tokenizer ready");
-			});
-	}, []);
-	
 	const [editor] = React.useState(() => withTokens(withReact(createEditor())));
 	window.editor = editor;
 	

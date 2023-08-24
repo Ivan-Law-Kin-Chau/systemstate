@@ -1,4 +1,6 @@
 node_modules/
 package-lock.json
-views/dist/bundle.css
+views/dist/parse.js
+views/dist/tokenize.js
 views/dist/bundle.js
+views/dist/bundle.css
