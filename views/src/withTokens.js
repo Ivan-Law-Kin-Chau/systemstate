@@ -1,4 +1,4 @@
-import {Editor, Node, Path, Text, Transforms} from "slate";
+import {Editor, Node, Path, Point, Text, Transforms} from "slate";
 
 import getPEGResults from "./getPEGResults.js";
 import getChanges from "./getChanges.js";
@@ -79,114 +79,131 @@ export default withTokens = editor => {
 			
 			// Find the tracked tokens, as they may have to be rerendered below
 			let trackedTokens = getTrackedTokens(editor, tokens, path);
-			if (tokens.length === 0) {
-				normalizeNode(entry);
-				return;
-			}
-			
-			// Figure out what are the tokens that have to be rerendered
-			const traverser = new Traverser();
-			traverser.setStream("characters", text);
-			traverser.setStream("nodes", editor.children[0].children, node => node.text);
-			traverser.setStream("tokens", tokens, token => token.children.join(""));
-			
-			traverser.setListener("tokens", "start", function (state, getIndexes, getPoint, getNodeEntry) {
-				if (state.rangesToReset === undefined) state.rangesToReset = [];
-				let index = getIndexes().tokens;
+			if (tokens.length !== 0) {
+				// Figure out what are the tokens that have to be rerendered
+				const traverser = new Traverser();
+				traverser.setStream("characters", text);
+				traverser.setStream("nodes", editor.children[0].children, node => node.text);
+				traverser.setStream("tokens", tokens, token => token.children.join(""));
 				
-				// There are three kinds of tokens that have to be rerendered. First is if a previously tracked token is no longer tracked. In that case, isStillTracked will be false. Second is if a token not previously tracked will become tracked. In that case, willBeTracked will be true. Third is if a node that has not been rendered as tokens yet is found. In that case, currentNode.isToken will not be true
-				let isStillTracked = null;
-				let willBeTracked = null;
-				
-				const [currentNode, currentPath] = getNodeEntry();
-				if (currentNode.isTracked === true) {
-					isStillTracked = false;
-					for (let trackedTokenIndex = 0; trackedTokenIndex < trackedTokens.length; trackedTokenIndex++) {
-						if (trackedTokens[trackedTokenIndex].index === index) {
-							isStillTracked = true;
-							break;
+				traverser.setListener("tokens", "start", function (state, getIndexes, getPoint, getNodeEntry) {
+					if (state.rangesToReset === undefined) state.rangesToReset = [];
+					let index = getIndexes().tokens;
+					
+					// There are three kinds of tokens that have to be rerendered. First is if a previously tracked token is no longer tracked. In that case, isStillTracked will be false. Second is if a token not previously tracked will become tracked. In that case, willBeTracked will be true. Third is if a node that has not been rendered as tokens yet is found. In that case, currentNode.isToken will not be true
+					let isStillTracked = null;
+					let willBeTracked = null;
+					
+					const [currentNode, currentPath] = getNodeEntry();
+					if (currentNode.isTracked === true) {
+						isStillTracked = false;
+						for (let trackedTokenIndex = 0; trackedTokenIndex < trackedTokens.length; trackedTokenIndex++) {
+							if (trackedTokens[trackedTokenIndex].index === index) {
+								isStillTracked = true;
+								break;
+							}
+						}
+					} else {
+						willBeTracked = false;
+						for (let trackedTokenIndex = 0; trackedTokenIndex < trackedTokens.length; trackedTokenIndex++) {
+							if (trackedTokens[trackedTokenIndex].index === index) {
+								willBeTracked = true;
+								break;
+							}
 						}
 					}
-				} else {
-					willBeTracked = false;
-					for (let trackedTokenIndex = 0; trackedTokenIndex < trackedTokens.length; trackedTokenIndex++) {
-						if (trackedTokens[trackedTokenIndex].index === index) {
-							willBeTracked = true;
-							break;
-						}
+					
+					if (currentNode.isToken !== true || isStillTracked === false || willBeTracked === true) {
+						state.startPoint = getPoint();
+					} else {
+						state.startPoint = null;
 					}
-				}
-				
-				if (currentNode.isToken !== true || isStillTracked === false || willBeTracked === true) {
-					state.startPoint = getPoint();
-				} else {
-					state.startPoint = null;
-				}
-			});
-			
-			traverser.setListener("tokens", "end", function (state, getIndexes, getPoint, getNodeEntry) {
-				if (state.startPoint !== null) {
-					state.rangesToReset.push({
-						index: getIndexes().tokens, 
-						range: Editor.rangeRef(editor, {
-							anchor: state.startPoint, 
-							focus: getPoint()
-						})
-					});
-				}
-				
-				state.startPoint = null;
-			});
-			
-			let {rangesToReset} = traverser.traverse();
-			
-			// Rerender the tokens that have to be rerendered
-			rangesToReset.forEach(rangeObject => {
-				const index = rangeObject.index;
-				
-				tokensRendered++;
-				
-				Transforms.setNodes(editor, {
-					key: tokensRendered, 
-					type: tokens[index].type, 
-					text: tokens[index].children.join(""), 
-					nominalText: tokens[index].children.join(""), 
-					isToken: true
-				}, {
-					at: rangeObject.range.current, 
-					match: Text.isText, 
-					split: true
 				});
 				
-				const trackedCurrentTokens = trackedTokens.filter(token => token.index === index);
-				if (trackedCurrentTokens.length !== 0) {
-					if (trackedCurrentTokens[0].setPoint !== undefined) {
-						trackedCurrentTokens[0].setPoint(rangeObject.range.current.anchor);
+				traverser.setListener("tokens", "end", function (state, getIndexes, getPoint, getNodeEntry) {
+					if (state.startPoint !== null) {
+						state.rangesToReset.push({
+							index: getIndexes().tokens, 
+							range: Editor.rangeRef(editor, {
+								anchor: state.startPoint, 
+								focus: getPoint()
+							})
+						});
 					}
 					
-					Transforms.setNodes(editor, {isTracked: true}, {
-						at: rangeObject.range.current.anchor.path
-					});
-				} else {
-					Transforms.unsetNodes(editor, "isTracked", {
-						at: rangeObject.range.current.anchor.path
-					});
-				}
+					state.startPoint = null;
+				});
 				
-				rangeObject.range.unref();
-			});
+				let {rangesToReset} = traverser.traverse();
+				
+				// Rerender the tokens that have to be rerendered
+				rangesToReset.forEach(rangeObject => {
+					const index = rangeObject.index;
+					
+					tokensRendered++;
+					
+					Transforms.setNodes(editor, {
+						key: tokensRendered, 
+						type: tokens[index].type, 
+						text: tokens[index].children.join(""), 
+						nominalText: tokens[index].children.join(""), 
+						isToken: true
+					}, {
+						at: rangeObject.range.current, 
+						match: Text.isText, 
+						split: true
+					});
+					
+					const trackedCurrentTokens = trackedTokens.filter(token => token.index === index);
+					if (trackedCurrentTokens.length !== 0) {
+						if (trackedCurrentTokens[0].setPoint !== undefined) {
+							trackedCurrentTokens[0].setPoint(rangeObject.range.current.anchor);
+						}
+						
+						Transforms.setNodes(editor, {isTracked: true}, {
+							at: rangeObject.range.current.anchor.path
+						});
+					} else {
+						Transforms.unsetNodes(editor, "isTracked", {
+							at: rangeObject.range.current.anchor.path
+						});
+					}
+					
+					rangeObject.range.unref();
+				});
+				
+				pointRefPairs.forEach(pointRefPair => {
+					if (pointRefPair.notCreated === true) {
+						delete pointRefPair.notCreated;
+						
+						pointRefPair.openingPointRef = Editor.pointRef(editor, pointRefPair.openingPoint);
+						delete pointRefPair.openingPoint;
+						
+						pointRefPair.closingPointRef = Editor.pointRef(editor, pointRefPair.closingPoint);
+						delete pointRefPair.closingPoint;
+					}
+				});
+			}
+		}
+		
+		if (Text.isText(node) && Node.parent(editor, path).type === "paragraph" && node.isToken === true && node.text.charAt(node.text.length - 1) === "\n") {
+			let transformed = false;
 			
-			pointRefPairs.forEach(pointRefPair => {
-				if (pointRefPair.notCreated === true) {
-					delete pointRefPair.notCreated;
-					
-					pointRefPair.openingPointRef = Editor.pointRef(editor, pointRefPair.openingPoint);
-					delete pointRefPair.openingPoint;
-					
-					pointRefPair.closingPointRef = Editor.pointRef(editor, pointRefPair.closingPoint);
-					delete pointRefPair.closingPoint;
+			if (Point.isPoint(editor.selection.anchor) && 
+				Point.equals(editor.selection.anchor, {path: path, offset: node.text.length}) && 
+				Node.has(editor, Path.next(path))) {
+					Transforms.setPoint(editor, {path: Path.next(path), offset: 0}, {edge: "anchor"});
+					transformed = true;
 				}
-			});
+			
+			if (Point.isPoint(editor.selection.focus) && 
+				Point.equals(editor.selection.focus, {path: path, offset: node.text.length}) && 
+				Node.has(editor, Path.next(path))) {
+					Transforms.setPoint(editor, {path: Path.next(path), offset: 0}, {edge: "focus"});
+					transformed = true;
+				}
+			
+			if (transformed === true) return;
 		}
 		
 		normalizeNode(entry);
