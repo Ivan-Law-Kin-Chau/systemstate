@@ -47,15 +47,15 @@ export default function getTrackedTokens (editor, tokens, path) {
 	});
 	
 	const {pointRefsFound} = traverser.traverse();
-	if (pointRefsFound !== undefined) {
-		for (let pointRefIndex = 0; pointRefIndex < pointRefsFound.length; pointRefIndex++) {
-			if (pointRefsFound[pointRefIndex][0] !== null && pointRefsFound[pointRefIndex][1] !== null) {
+	for (let pointRefIndex = 0; pointRefIndex < pointRefPairs.length; pointRefIndex++) {
+		if (pointRefsFound !== undefined && 
+			pointRefsFound[pointRefIndex][0] !== null && 
+			pointRefsFound[pointRefIndex][1] !== null) {
 				trackedTokens.push({index: pointRefsFound[pointRefIndex][0]});
 				trackedTokens.push({index: pointRefsFound[pointRefIndex][1]});
 			} else {
 				pointRefPairs.splice(pointRefIndex, 1);
 			}
-		}
 	}
 	
 	// path contains all the brackets that have to end up being rendered
@@ -64,7 +64,7 @@ export default function getTrackedTokens (editor, tokens, path) {
 	if (path !== null) {
 		// Get the brackets in path that are not in pointRefsFound
 		const newBrackets = path.filter(bracket => {
-			for (let pointRefIndex = 0; pointRefIndex < pointRefsFound.length; pointRefIndex++) {
+			for (let pointRefIndex = 0; pointRefIndex < pointRefPairs.length; pointRefIndex++) {
 				if (pointRefsFound[pointRefIndex][0] === bracket[0] && 
 					pointRefsFound[pointRefIndex][1] === bracket[1]) return false;
 			}
