@@ -90,7 +90,7 @@ export default class Traverser {
 		this.types.push(type);
 	}
 	
-	hasListener (type, event) {
+	hasListeners (type, event) {
 		if (typeof type !== "string" || typeof event !== "string") {
 			throw "Type mismatch";
 		}
@@ -99,14 +99,10 @@ export default class Traverser {
 			throw "Event mismatch";
 		}
 		
-		if (this.listeners[type] === undefined) {
-			return false;
-		}
-		
-		return typeof this.listeners[type][event] === "function";
+		return this.listeners[type] !== undefined;
 	}
 	
-	setListener (type, event, listener) {
+	addListener (type, event, listener) {
 		if (!this.hasStream(type)) {
 			throw "Type not provided";
 		}
@@ -120,10 +116,13 @@ export default class Traverser {
 		}
 		
 		if (this.listeners[type] === undefined) {
-			this.listeners[type] = {};
+			this.listeners[type] = {
+				start: [], 
+				end: []
+			};
 		}
 		
-		this.listeners[type][event] = listener;
+		this.listeners[type][event].push(listener);
 	}
 	
 	traverse () {
@@ -187,18 +186,20 @@ export default class Traverser {
 			const characterObject = this.streams.characters[characterInStream];
 			
 			characterObject.starts.forEach(type => {
-				if (this.hasListener(type, "start")) {
-					this.listeners[type].start(state, getIndexes, getPoint, getNodeEntry);
+				if (this.hasListeners(type, "start")) {
+					this.listeners[type].start.forEach(listener => listener(state, getIndexes, getPoint, getNodeEntry));
 				}
 			});
 			
+			currentPoint.offset += 1;
+			
 			characterObject.ends.forEach(type => {
-				if (this.hasListener(type, "end")) {
-					currentPoint.offset += 1;
-					this.listeners[type].end(state, getIndexes, getPoint, getNodeEntry);
-					currentPoint.offset -= 1;
+				if (this.hasListeners(type, "end")) {
+					this.listeners[type].end.forEach(listener => listener(state, getIndexes, getPoint, getNodeEntry));
 				}
 			});
+			
+			currentPoint.offset -= 1;
 			
 			currentIndexes = characterIndexes;
 		}

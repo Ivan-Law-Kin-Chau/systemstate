@@ -86,7 +86,7 @@ export default withTokens = editor => {
 				traverser.setStream("nodes", editor.children[0].children, node => node.text);
 				traverser.setStream("tokens", tokens, token => token.children.join(""));
 				
-				traverser.setListener("tokens", "start", function (state, getIndexes, getPoint, getNodeEntry) {
+				traverser.addListener("tokens", "start", function (state, getIndexes, getPoint, getNodeEntry) {
 					if (state.tokensToRerender === undefined) state.tokensToRerender = [];
 					let index = getIndexes().tokens;
 					
@@ -120,7 +120,7 @@ export default withTokens = editor => {
 					}
 				});
 				
-				traverser.setListener("tokens", "end", function (state, getIndexes, getPoint, getNodeEntry) {
+				traverser.addListener("tokens", "end", function (state, getIndexes, getPoint, getNodeEntry) {
 					if (state.startPoint !== null) {
 						state.tokensToRerender.push({
 							index: getIndexes().tokens, 

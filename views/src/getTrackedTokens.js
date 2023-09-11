@@ -18,7 +18,7 @@ export default function getTrackedTokens (editor, tokens, path) {
 	traverser.setStream("nodes", editor.children[0].children, node => node.text);
 	traverser.setStream("tokens", tokens, token => token.children.join(""));
 	
-	traverser.setListener("characters", "start", function (state, getIndexes, getPoint, getNodeEntry) {
+	traverser.addListener("characters", "start", function (state, getIndexes, getPoint, getNodeEntry) {
 		if (state.pointRefsFound === undefined) state.pointRefsFound = pointRefPairs.map(pointRefPair => [null, null]);
 		const indexes = getIndexes();
 		
