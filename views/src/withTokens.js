@@ -87,7 +87,7 @@ export default withTokens = editor => {
 				traverser.setStream("tokens", tokens, token => token.children.join(""));
 				
 				traverser.setListener("tokens", "start", function (state, getIndexes, getPoint, getNodeEntry) {
-					if (state.rangesToReset === undefined) state.rangesToReset = [];
+					if (state.tokensToRerender === undefined) state.tokensToRerender = [];
 					let index = getIndexes().tokens;
 					
 					// There are three kinds of tokens that have to be rerendered. First is if a previously tracked token is no longer tracked. In that case, isStillTracked will be false. Second is if a token not previously tracked will become tracked. In that case, willBeTracked will be true. Third is if a node that has not been rendered as tokens yet is found. In that case, currentNode.isToken will not be true
@@ -122,7 +122,7 @@ export default withTokens = editor => {
 				
 				traverser.setListener("tokens", "end", function (state, getIndexes, getPoint, getNodeEntry) {
 					if (state.startPoint !== null) {
-						state.rangesToReset.push({
+						state.tokensToRerender.push({
 							index: getIndexes().tokens, 
 							range: Editor.rangeRef(editor, {
 								anchor: state.startPoint, 
@@ -134,11 +134,11 @@ export default withTokens = editor => {
 					state.startPoint = null;
 				});
 				
-				let {rangesToReset} = traverser.traverse();
+				let {tokensToRerender} = traverser.traverse();
 				
 				// Rerender the tokens that have to be rerendered
-				rangesToReset.forEach(rangeObject => {
-					const index = rangeObject.index;
+				tokensToRerender.forEach(tokenRangeObject => {
+					const index = tokenRangeObject.index;
 					
 					tokensRendered++;
 					
@@ -149,7 +149,7 @@ export default withTokens = editor => {
 						nominalText: tokens[index].children.join(""), 
 						isToken: true
 					}, {
-						at: rangeObject.range.current, 
+						at: tokenRangeObject.range.current, 
 						match: Text.isText, 
 						split: true
 					});
@@ -157,19 +157,19 @@ export default withTokens = editor => {
 					const trackedCurrentTokens = trackedTokens.filter(token => token.index === index);
 					if (trackedCurrentTokens.length !== 0) {
 						if (trackedCurrentTokens[0].setPoint !== undefined) {
-							trackedCurrentTokens[0].setPoint(rangeObject.range.current.anchor);
+							trackedCurrentTokens[0].setPoint(tokenRangeObject.range.current.anchor);
 						}
 						
 						Transforms.setNodes(editor, {isTracked: true}, {
-							at: rangeObject.range.current.anchor.path
+							at: tokenRangeObject.range.current.anchor.path
 						});
 					} else {
 						Transforms.unsetNodes(editor, "isTracked", {
-							at: rangeObject.range.current.anchor.path
+							at: tokenRangeObject.range.current.anchor.path
 						});
 					}
 					
-					rangeObject.range.unref();
+					tokenRangeObject.range.unref();
 				});
 				
 				pointRefPairs.forEach(pointRefPair => {
