@@ -18,8 +18,9 @@ export default function getTrackedTokens (editor, tokens, path) {
 	traverser.setStream("nodes", editor.children[0].children, node => node.text);
 	traverser.setStream("tokens", tokens, token => token.children.join(""));
 	
-	traverser.addListener("characters", "start", function (state, getIndexes, getPoint, getNodeEntry) {
-		if (state.pointRefsFound === undefined) state.pointRefsFound = pointRefPairs.map(pointRefPair => [null, null]);
+	let pointRefsFound = pointRefPairs.map(pointRefPair => [null, null]);
+	
+	traverser.addListener("characters", "start", function (getIndexes, getPoint, getNodeEntry) {
 		const indexes = getIndexes();
 		
 		for (let pointRefIndex = 0; pointRefIndex < pointRefPairs.length; pointRefIndex++) {
@@ -33,23 +34,23 @@ export default function getTrackedTokens (editor, tokens, path) {
 			if (Point.isPoint(currentPoint)) {
 				if (Point.isPoint(openingPoint) && Point.equals(currentPoint, openingPoint)) {
 					if (convertTypeToBracket(pointRefPairs[pointRefIndex].type)[0] === text[indexes.characters]) {
-						state.pointRefsFound[pointRefIndex][0] = indexes.tokens;
+						pointRefsFound[pointRefIndex][0] = indexes.tokens;
 					}
 				}
 				
 				if (Point.isPoint(closingPoint) && Point.equals(currentPoint, closingPoint)) {
 					if (convertTypeToBracket(pointRefPairs[pointRefIndex].type)[1] === text[indexes.characters]) {
-						state.pointRefsFound[pointRefIndex][1] = indexes.tokens;
+						pointRefsFound[pointRefIndex][1] = indexes.tokens;
 					}
 				}
 			}
 		}
 	});
 	
-	const {pointRefsFound} = traverser.traverse();
+	traverser.traverse();
+	
 	for (let pointRefIndex = 0; pointRefIndex < pointRefPairs.length; pointRefIndex++) {
-		if (pointRefsFound !== undefined && 
-			pointRefsFound[pointRefIndex][0] !== null && 
+		if (pointRefsFound[pointRefIndex][0] !== null && 
 			pointRefsFound[pointRefIndex][1] !== null) {
 				trackedTokens.push({index: pointRefsFound[pointRefIndex][0]});
 				trackedTokens.push({index: pointRefsFound[pointRefIndex][1]});

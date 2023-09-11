@@ -159,8 +159,6 @@ export default class Traverser {
 			};
 		}
 		
-		let state = {};
-		
 		for (let characterInStream = 0; characterInStream < this.streams.characters.length; characterInStream++) {
 			characterIndexes = this.streams.characters[characterInStream].indexes;
 			
@@ -187,7 +185,7 @@ export default class Traverser {
 			
 			characterObject.starts.forEach(type => {
 				if (this.hasListeners(type, "start")) {
-					this.listeners[type].start.forEach(listener => listener(state, getIndexes, getPoint, getNodeEntry));
+					this.listeners[type].start.forEach(listener => listener(getIndexes, getPoint, getNodeEntry));
 				}
 			});
 			
@@ -195,7 +193,7 @@ export default class Traverser {
 			
 			characterObject.ends.forEach(type => {
 				if (this.hasListeners(type, "end")) {
-					this.listeners[type].end.forEach(listener => listener(state, getIndexes, getPoint, getNodeEntry));
+					this.listeners[type].end.forEach(listener => listener(getIndexes, getPoint, getNodeEntry));
 				}
 			});
 			
@@ -203,7 +201,5 @@ export default class Traverser {
 			
 			currentIndexes = characterIndexes;
 		}
-		
-		return state;
 	}
 }

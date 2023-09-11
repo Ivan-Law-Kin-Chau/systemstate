@@ -86,8 +86,10 @@ export default withTokens = editor => {
 				traverser.setStream("nodes", editor.children[0].children, node => node.text);
 				traverser.setStream("tokens", tokens, token => token.children.join(""));
 				
-				traverser.addListener("tokens", "start", function (state, getIndexes, getPoint, getNodeEntry) {
-					if (state.tokensToRerender === undefined) state.tokensToRerender = [];
+				let tokensToRerender = [];
+				let startPoint = null;
+				
+				traverser.addListener("tokens", "start", function (getIndexes, getPoint, getNodeEntry) {
 					let index = getIndexes().tokens;
 					
 					// There are three kinds of tokens that have to be rerendered. First is if a previously tracked token is no longer tracked. In that case, isStillTracked will be false. Second is if a token not previously tracked will become tracked. In that case, willBeTracked will be true. Third is if a node that has not been rendered as tokens yet is found. In that case, currentNode.isToken will not be true
@@ -114,27 +116,27 @@ export default withTokens = editor => {
 					}
 					
 					if (currentNode.isToken !== true || isStillTracked === false || willBeTracked === true) {
-						state.startPoint = getPoint();
+						startPoint = getPoint();
 					} else {
-						state.startPoint = null;
+						startPoint = null;
 					}
 				});
 				
-				traverser.addListener("tokens", "end", function (state, getIndexes, getPoint, getNodeEntry) {
-					if (state.startPoint !== null) {
-						state.tokensToRerender.push({
+				traverser.addListener("tokens", "end", function (getIndexes, getPoint, getNodeEntry) {
+					if (startPoint !== null) {
+						tokensToRerender.push({
 							index: getIndexes().tokens, 
 							range: Editor.rangeRef(editor, {
-								anchor: state.startPoint, 
+								anchor: startPoint, 
 								focus: getPoint()
 							})
 						});
 					}
 					
-					state.startPoint = null;
+					startPoint = null;
 				});
 				
-				let {tokensToRerender} = traverser.traverse();
+				traverser.traverse();
 				
 				// Rerender the tokens that have to be rerendered
 				tokensToRerender.forEach(tokenRangeObject => {
