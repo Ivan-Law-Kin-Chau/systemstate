@@ -1,15 +1,10 @@
-import {Node, Path, Point} from "slate";
+import {Node} from "slate";
 
 import Traverser from "./Traverser.js";
+import Tracked from "./Tracked.js";
 
 export default function getTrackedTokens (editor, tokens, path) {
 	let trackedTokens = [];
-	
-	const convertTypeToBracket = type => {
-		if (type === "SSUserInterface") return "{}";
-		if (type === "keyOfTheHead") return "[]";
-		if (type === "keyOfSomethingElse") return "()";
-	};
 	
 	const text = Node.string(Node.get(editor, [0]));
 	
@@ -18,60 +13,30 @@ export default function getTrackedTokens (editor, tokens, path) {
 	traverser.setStream("nodes", editor.children[0].children, node => node.text);
 	traverser.setStream("tokens", tokens, token => token.children.join(""));
 	
-	let pointRefsFound = pointRefPairs.map(pointRefPair => [null, null]);
-	
-	traverser.addListener("characters", "start", function (getIndexes, getPoint, getNodeEntry) {
-		const indexes = getIndexes();
-		
-		for (let pointRefIndex = 0; pointRefIndex < pointRefPairs.length; pointRefIndex++) {
-			if (pointRefPairs[pointRefIndex].openingPointRef === undefined || 
-				pointRefPairs[pointRefIndex].closingPointRef === undefined) continue;
-			
-			const openingPoint = pointRefPairs[pointRefIndex].openingPointRef.current;
-			const closingPoint = pointRefPairs[pointRefIndex].closingPointRef.current;
-			const currentPoint = getPoint();
-			
-			if (Point.isPoint(currentPoint)) {
-				if (Point.isPoint(openingPoint) && Point.equals(currentPoint, openingPoint)) {
-					if (convertTypeToBracket(pointRefPairs[pointRefIndex].type)[0] === text[indexes.characters]) {
-						pointRefsFound[pointRefIndex][0] = indexes.tokens;
-					}
-				}
-				
-				if (Point.isPoint(closingPoint) && Point.equals(currentPoint, closingPoint)) {
-					if (convertTypeToBracket(pointRefPairs[pointRefIndex].type)[1] === text[indexes.characters]) {
-						pointRefsFound[pointRefIndex][1] = indexes.tokens;
-					}
-				}
-			}
-		}
-	});
-	
+	rootTracked.recursivelyCall(tracked => tracked.addListenerToTraverser(text, traverser));
 	traverser.traverse();
 	
-	for (let pointRefIndex = 0; pointRefIndex < pointRefPairs.length; pointRefIndex++) {
-		if (pointRefsFound[pointRefIndex][0] !== null && 
-			pointRefsFound[pointRefIndex][1] !== null) {
-				trackedTokens.push({index: pointRefsFound[pointRefIndex][0]});
-				trackedTokens.push({index: pointRefsFound[pointRefIndex][1]});
-			} else {
-				pointRefPairs.splice(pointRefIndex, 1);
-			}
-	}
+	rootTracked.recursivelyCall(tracked => tracked.handleTraverseResults(trackedTokens));
 	
 	// path contains all the brackets that have to end up being rendered
-	// pointRefsFound contains all the brackets that are currently already rendered
-	// Therefore, only the brackets that are in path but not in pointRefFound have to be added
+	// rootTracked contains all the brackets that are currently already rendered
+	// Therefore, only the brackets that are in path but not in rootTracked have to be added
 	if (path !== null) {
-		// Get the brackets in path that are not in pointRefsFound
-		const newBrackets = path.filter(bracket => {
-			for (let pointRefIndex = 0; pointRefIndex < pointRefPairs.length; pointRefIndex++) {
-				if (pointRefsFound[pointRefIndex][0] === bracket[0] && 
-					pointRefsFound[pointRefIndex][1] === bracket[1]) return false;
+		// Remove the brackets in path that are already in rootTracked
+		rootTracked.recursivelyCall(tracked => {
+			if (["SSUserInterface", "keyOfTheHead", "keyOfSomethingElse"].includes(tracked.type)) {
+				path.forEach((bracket, index) => {
+					if (tracked.dependencies.opening.index === bracket[0] && 
+						tracked.dependencies.closing.index === bracket[1]) path.splice(index, 1);
+				});
 			}
-			
-			return true;
 		});
+		
+		const convertTypeToBracket = type => {
+			if (type === "SSUserInterface") return "{}";
+			if (type === "keyOfTheHead") return "[]";
+			if (type === "keyOfSomethingElse") return "()";
+		};
 		
 		const convertBracketToType = bracket => {
 			if (bracket === "{" || bracket === "}") return "SSUserInterface";
@@ -80,23 +45,27 @@ export default function getTrackedTokens (editor, tokens, path) {
 		};
 		
 		// Add those brackets
-		newBrackets.forEach(bracket => {
-			const openingBracket = tokens[bracket[0]].children[0];
-			const closingBracket = tokens[bracket[1]].children[0];
-			if (convertBracketToType(openingBracket) === convertBracketToType(closingBracket)) {
-				const newPointRefPair = {type: convertBracketToType(openingBracket), notCreated: true};
+		path.forEach(bracket => {
+			const opening = tokens[bracket[0]].children[0];
+			const closing = tokens[bracket[1]].children[0];
+			
+			if (convertBracketToType(opening) === convertBracketToType(closing)) {
+				const tracked = new Tracked(convertBracketToType(opening), {
+					opening: {index: bracket[0], character: opening}, 
+					closing: {index: bracket[1], character: closing}
+				});
 				
 				trackedTokens.push({
 					index: bracket[0], 
-					setPoint: point => newPointRefPair.openingPoint = point
+					setPoint: point => tracked.dependencies.opening.point = point
 				});
 				
 				trackedTokens.push({
 					index: bracket[1], 
-					setPoint: point => newPointRefPair.closingPoint = point
+					setPoint: point => tracked.dependencies.closing.point = point
 				});
 				
-				pointRefPairs.push(newPointRefPair);
+				rootTracked.addChild(tracked);
 			}
 		});
 	}

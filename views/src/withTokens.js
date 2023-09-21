@@ -4,9 +4,10 @@ import getPEGResults from "./getPEGResults.js";
 import getChanges from "./getChanges.js";
 import getTrackedTokens from "./getTrackedTokens.js";
 import Traverser from "./Traverser.js";
+import Tracked from "./Tracked.js";
 
 export default withTokens = editor => {
-	window.pointRefPairs = [];
+	window.rootTracked = new Tracked("root");
 	
 	// Each new token being rendered gets a unique key from this variable so that the default normalizeNode function would not merge tokens with identical tokens before or after them
 	window.tokensRendered = -1;
@@ -174,17 +175,7 @@ export default withTokens = editor => {
 					tokenRangeObject.range.unref();
 				});
 				
-				pointRefPairs.forEach(pointRefPair => {
-					if (pointRefPair.notCreated === true) {
-						delete pointRefPair.notCreated;
-						
-						pointRefPair.openingPointRef = Editor.pointRef(editor, pointRefPair.openingPoint);
-						delete pointRefPair.openingPoint;
-						
-						pointRefPair.closingPointRef = Editor.pointRef(editor, pointRefPair.closingPoint);
-						delete pointRefPair.closingPoint;
-					}
-				});
+				rootTracked.recursivelyCall(tracked => tracked.addPointRefs(editor));
 			}
 		}
 		
