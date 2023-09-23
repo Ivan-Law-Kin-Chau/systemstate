@@ -51,8 +51,8 @@ export default function getTrackedTokens (editor, tokens, path) {
 			
 			if (convertBracketToType(opening) === convertBracketToType(closing)) {
 				const tracked = new Tracked(convertBracketToType(opening), {
-					opening: {index: bracket[0], character: opening}, 
-					closing: {index: bracket[1], character: closing}
+					opening: {type: "point", index: bracket[0], character: opening}, 
+					closing: {type: "point", index: bracket[1], character: closing}
 				});
 				
 				trackedTokens.push({

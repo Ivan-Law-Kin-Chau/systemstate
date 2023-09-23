@@ -10,6 +10,8 @@ export default class Tracked {
 	
 	addListenerToTraverser (text, traverser) {
 		for (let dependency of Object.values(this.dependencies)) {
+			if (dependency.type !== "point") continue;
+			
 			dependency.index = null;
 			if (dependency.pointRef === undefined) continue;
 			
@@ -36,7 +38,9 @@ export default class Tracked {
 			this.remove();
 		} else {
 			for (let dependency of Object.values(this.dependencies)) {
-				trackedTokens.push({index: dependency.index});
+				if (dependency.type === "point") {
+					trackedTokens.push({index: dependency.index});
+				}
 			}
 		}
 	}
@@ -48,6 +52,12 @@ export default class Tracked {
 	
 	removeChild (index) {
 		this.children.splice(index, 1);
+		
+		for (let key in this.dependencies) {
+			if (this.dependencies[key].type === "children" && this.dependencies[key].index === index) {
+				this.dependencies[key].index = null;
+			}
+		}
 	}
 	
 	remove () {
@@ -59,8 +69,8 @@ export default class Tracked {
 	}
 	
 	recursivelyCall (callback) {
-		callback(this);
 		this.children.forEach(child => child.recursivelyCall(callback));
+		callback(this);
 	}
 	
 	addPointRefs (editor) {
@@ -68,8 +78,10 @@ export default class Tracked {
 			this.created = true;
 			
 			for (let dependency of Object.values(this.dependencies)) {
-				dependency.pointRef = Editor.pointRef(editor, dependency.point);
-				delete dependency.point;
+				if (dependency.type === "point") {
+					dependency.pointRef = Editor.pointRef(editor, dependency.point);
+					delete dependency.point;
+				}
 			}
 		}
 	}
