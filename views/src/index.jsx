@@ -6,7 +6,7 @@ import {createEditor, Editor} from "slate";
 import {Slate, Editable, withReact} from "slate-react";
 import withTokens from "./withTokens.js";
 
-import Controlled from "./controlled.jsx";
+import Controlled from "./Controlled.jsx";
 
 const App = () => {
 	const [editor] = React.useState(() => withTokens(withReact(createEditor())));
