@@ -1,6 +1,16 @@
 {
+	"name": "systemstate-editor",
+	"version": "v2.0.1-pre-alpha",
+	"license": "UNLICENSED",
+	"private": true,
+	"author": {
+		"name": "Ivan Law Kin Chau",
+		"email": "ivanlawkinchau@gmail.com"
+	},
 	"dependencies": {
-		"express": "^4.17.1"
+		"body-parser": "^1.19.0",
+		"express": "^4.17.1",
+		"sqlite3": "^5.0.2"
 	},
 	"devDependencies": {
 		"diff": "^5.1.0",

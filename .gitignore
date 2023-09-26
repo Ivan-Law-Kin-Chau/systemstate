@@ -1,5 +1,7 @@
 node_modules/
 package-lock.json
+database/sqlite3.exe
+database/systemstate.db
 views/dist/parse.js
 views/dist/tokenize.js
 views/dist/bundle.js
