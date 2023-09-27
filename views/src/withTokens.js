@@ -48,7 +48,7 @@ export default withTokens = editor => {
 			parseRequired = true;
 		}
 		
-		if (Text.isText(node) && Node.parent(editor, path).type === "paragraph" && (
+		if (Text.isText(node) && Node.parent(editor, path).type === "paragraph" && node.isSearchBox !== true && (
 			node.isToken !== true || 
 			(node.isToken === true && node.nominalText !== node.text)
 		)) {

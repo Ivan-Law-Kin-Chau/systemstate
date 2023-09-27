@@ -4,10 +4,11 @@ import * as ReactDOMClient from "react-dom/client";
 
 import SSAssembly from "./classes/SSAssembly.js";
 
-import {createEditor, Editor} from "slate";
+import {createEditor, Editor, Node, Transforms} from "slate";
 import {Slate, Editable, withReact} from "slate-react";
 import withTokens from "./withTokens.js";
 
+import {ModeContext, SearchBox} from "./SearchBox.jsx";
 import Controlled from "./Controlled.jsx";
 
 const App = () => {
@@ -15,20 +16,27 @@ const App = () => {
 	window.editor = editor;
 	
 	const [editorChildren, setEditorChildren] = React.useState(editor.children);
+	const [mode, setMode] = React.useState("typing");
 	
 	const initialValue = [{type: "paragraph", children: [{text: ""}]}];
 	
-	const renderLeaf = props => <Controlled {...props}/>;
+	const renderLeaf = props => {
+		if (props.leaf.isSearchBox === true) {
+			return <SearchBox {...props}/>;
+		} else {
+			return <Controlled {...props}/>;
+		}
+	};
 	
-	return <>
+	return <ModeContext.Provider value={{editor, mode, setMode}}>
 		<pre>
 			<div>
 				{JSON.stringify(editorChildren, null, "\t")}
 			</div>
 		</pre>
 		<Slate editor={editor} initialValue={initialValue} onChange={() => setEditorChildren(editor.children)}>
-			<Editable tabIndex="-1" renderLeaf={renderLeaf} style={{
-				border: "1px solid #000000", 
+			<Editable tabIndex="-1" renderLeaf={renderLeaf} readOnly={mode === "searching"} style={{
+				border: "1px solid #000000"
 			}} onKeyDown={event => {
 				if (event.keyCode === 9) {
 					event.preventDefault();
@@ -36,10 +44,15 @@ const App = () => {
 				} else if (event.keyCode === 13) {
 					event.preventDefault();
 					editor.insertText("\n");
+				} else if (event.key === "Control") {
+					setMode("searching");
+					
+					// The text cannot be empty, or the search box would be removed by Slate's default normalizeNode function
+					Transforms.insertNodes(editor, {text: "SEARCH_BOX", isSearchBox: true});
 				}
 			}}/>
 		</Slate>
-	</>;
+	</ModeContext.Provider>;
 };
 
 const root = ReactDOMClient.createRoot(document.getElementById("app"));
