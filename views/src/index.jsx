@@ -47,7 +47,8 @@ root.render(<App/>);
 
 window.assembly = new SSAssembly();
 
-window.search = async function (searchTerm = "") {
+window.search = async function (props = {}) {
+	const searchTerm = props.searchTerm || "";
 	const relationshipsToSearch = ["object_uuid", "group_uuid", "group_parent", "link_uuid", "link_start", "link_end", "link_direction", "property_uuid", "property_parent", "property_name", "property_content"];
 	let searchResults = [];
 
