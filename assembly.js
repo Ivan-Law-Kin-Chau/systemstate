@@ -7,6 +7,10 @@ module.exports = class Assembly {
 		return input.split(`"`).join(`""`);
 	}
 	
+	delimit_descriptive (input) {
+		return input.split(`%`).join(`\\%`).split(`_`).join(`\\_`);
+	}
+	
 	convert_boolean_to_sql (input) {
 		if (input === null) {
 			return "null";
@@ -26,6 +30,18 @@ module.exports = class Assembly {
 			return true;
 		} else if (input === 0) {
 			return false;
+		} else {
+			throw "Conversion error: " + input;
+		}
+	}
+	
+	convert_direction_to_sql (input) {
+		if (input === "<->") {
+			return "null";
+		} else if (input === "->") {
+			return "true";
+		} else if (input === "<-") {
+			return "false";
 		} else {
 			throw "Conversion error: " + input;
 		}
@@ -365,12 +381,21 @@ module.exports = class Assembly {
 		});
 	}
 	
-	
-	async search (attribute, value, table = "object") {
-		if (table === "group") {
-			var sql = `SELECT uuid, parent FROM "${table}" WHERE ${this.delimit(attribute)} LIKE "${this.delimit(value)}";`;
+	async search (attribute, value, table = "object", descriptive = null) {
+		if (table === "link" && attribute === "direction" && ["<->", "->", "<-"].indexOf(value) !== -1) {
+			var sql = `SELECT uuid FROM "${table}" WHERE ${this.delimit(attribute)} LIKE ${this.convert_direction_to_sql(value)};`;
+		} else if (descriptive === true) {
+			if (table === "group") {
+				var sql = `SELECT uuid, parent FROM "${table}" WHERE ${this.delimit(attribute)} LIKE "%${this.delimit_descriptive(this.delimit(value))}%" ESCAPE "\\";`;
+			} else {
+				var sql = `SELECT uuid FROM "${table}" WHERE ${this.delimit(attribute)} LIKE "%${this.delimit_descriptive(this.delimit(value))}%" ESCAPE "\\";`;
+			}
 		} else {
-			var sql = `SELECT uuid FROM "${table}" WHERE ${this.delimit(attribute)} LIKE "${this.delimit(value)}";`;
+			if (table === "group") {
+				var sql = `SELECT uuid, parent FROM "${table}" WHERE ${this.delimit(attribute)} LIKE "${this.delimit(value)}";`;
+			} else {
+				var sql = `SELECT uuid FROM "${table}" WHERE ${this.delimit(attribute)} LIKE "${this.delimit(value)}";`;
+			}
 		}
 		
 		return this.query(sql, (rows, resolve) => {
